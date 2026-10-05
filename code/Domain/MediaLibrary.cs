@@ -21,7 +21,7 @@ public class MediaLibrary
         List<Media> results = new List<Media>();
         foreach (var m in library)
         {
-            if (m.Genres.Contains(genre))
+            if (m.Genres.Exists(g => g.ToLower().Contains(genre.ToLower())))
             {
                 results.Add(m);
             }
@@ -34,7 +34,7 @@ public class MediaLibrary
         List<Media> results = new List<Media>();
         foreach (var m in library)
         {
-            if (m.Genres.Contains(genre) && m.ReleaseYear >= minYear && m.ReleaseYear <= maxYear)
+            if (m.Genres.Exists(g => g.ToLower().Contains(genre.ToLower())) && m.ReleaseYear >= minYear && m.ReleaseYear <= maxYear)
             {
                 results.Add(m);
             }
@@ -45,11 +45,12 @@ public class MediaLibrary
     public List<Media> SearchByActor(List<Media> library, string actorName)
     {
         List<Media> results = new List<Media>();
+
         foreach (var m in library)
         {
             foreach (var actor in m.Cast)
             {
-                if (actor.FullName == actorName)
+                if (actor.FullName.ToLower().Contains(actorName.ToLower()))
                 {
                     results.Add(m);
                     break;
@@ -58,6 +59,7 @@ public class MediaLibrary
         }
         return results;
     }
+
 
     public List<Media> GetTopRated(List<Media> library, int count)
     {
