@@ -8,7 +8,7 @@
 
 Основна особливість проєкту — **Нотатки**: користувач може швидко зберегти будь-яку згадку про фільм або серіал у довільній формі, навіть якщо він ще не знає його точної назви. Пізніше ця нотатка може бути пов’язана з конкретним медіа та додана до відповідного списку.
 
-Технології: C#, .NET 10. На поточному етапі реалізовано консольну версію. Для наступних завдань планується підключення графічного інтерфейсу на базі Windows Forms/WPF/Blazor та зовнішнні бібліотеки.
+Технології: C#, .NET 10. На поточному етапі реалізовано консольну версію. Для наступних завдань планується підключення графічного інтерфейсу на базі Blazor та зовнішнні бібліотеки.
 ## 2. Мета проєкту
 
 Метою є створення персональної системи для роботи з фільмами та серіалами, яка дозволяє:
@@ -62,7 +62,7 @@ C# дозволяє розвивати проєкт у декількох нап
 
 ## 6. GUI
 
-Для першої графічної версії планується використати Windows Forms/WPF/Blazor.
+Для першої графічної версії планується використати Blazor.
 
 Основна логіка проєкту залишатиметься в окремих класах та сервісах, а GUI фреймворки виконуватимуть роль користувацького інтерфейсу.
 
@@ -150,15 +150,13 @@ Capture може перебувати у станах:
 5. Розширення рекомендаційної та соціальної функціональності.
 
 ### Джерела
-1. https://github.com/ertugrulgacal/Movie-Tracker-App
-2. https://github.com/LeilaniL/movieTracker
+1. https://github.com/ertugrulgacal/Movie-Tracker-App code example, stucture
+2. https://github.com/LeilaniL/movieTracker code example
 3. LLM
 4. https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H
 5. https://dribbble.com/tags/glassmorphism напрям дизайну застосунка
 6. https://dribbble.com/search/raycast дизайн
-7. https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept
-8. http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App
-9. https://dribbble.com/shots/27590903-AI-Cybersecurity-SaaS-Website-Landing-Page-UI-Design
-10. https://dribbble.com/search/movie-site
-11. https://www.youtube.com/watch?v=FGqj4q09NtA WPF
-12. https://www.youtube.com/watch?v=OJygSefHVr0 WPF
+7. https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept concept 
+8. http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App concept
+9. https://dribbble.com/search/movie-site concept
+10. https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1 blazor tutorial
