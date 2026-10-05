@@ -5,7 +5,9 @@ class Program
 {
 
     static List<Media> library = new List<Media>();
-    static MediaLibrary mediaLibrary = new MediaLibrary();
+    static MediaSearch searchService = new MediaSearch();
+    static MediaRecommendation recommendationService = new MediaRecommendation();
+    static CaptureProcessing captureService = new CaptureProcessing();
     static User me = new User("spacedream");
     static Watchlist myWatchlist = null!;
     static FranchiseTimeLine tarantinoVerse = null!;
@@ -67,8 +69,8 @@ class Program
             me.LogSearch(query); 
 
             List<Media> found = new List<Media>();
-            if (subChoice == "1") found = mediaLibrary.SearchByTitle(library, query);
-            else if (subChoice == "2") found = mediaLibrary.SearchByActor(library, query);
+            if (subChoice == "1") found = searchService.SearchByTitle(library, query);
+            else if (subChoice == "2") found = searchService.SearchByActor(library, query);
 
             PrintList(found);
         }
@@ -81,14 +83,14 @@ class Program
             Console.Write("Максимальний рік (до): ");
             int.TryParse(Console.ReadLine(), out int maxYear);
 
-            var found = mediaLibrary.AdvancedSearch(library, genre, minYear, maxYear);
+            var found = searchService.AdvancedSearch(library, genre, minYear, maxYear);
             PrintList(found);
         }
         else if (choice == "4")
         {
             Console.Write("Скільки тайтлів показати у топі? ");
             int.TryParse(Console.ReadLine(), out int count);
-            var top = mediaLibrary.GetTopRated(library, count);
+            var top = recommendationService.GetTopRated(library, count);
 
             Console.WriteLine("\n--- Найвищий Vibe Rating ---");
             foreach (var item in top)
@@ -102,7 +104,7 @@ class Program
 
             if (target != null)
             {
-                var similar = mediaLibrary.FindSimilar(library, target, 3);
+                var similar = recommendationService.FindSimilar(library, target, 3);
                 Console.WriteLine($"\nСхожі на '{target.Title}':");
                 PrintList(similar);
             }
@@ -118,7 +120,7 @@ class Program
             if (string.IsNullOrWhiteSpace(tag)) tag = null!;
 
             var criteria = new RouletteCriteria(maxMins, tag);
-            var randomPick = mediaLibrary.ChooseByRoulette(library, criteria);
+            var randomPick = recommendationService.ChooseByRoulette(library, criteria);
 
             if (randomPick != null)
                 Console.WriteLine($"\n🎲 Випало: {randomPick.Title} ({randomPick.CalculateTimeDebt()} хв.)");
@@ -212,10 +214,10 @@ class Program
                 string query = Console.ReadLine() ?? "";
                 if (string.IsNullOrWhiteSpace(query)) continue;
 
-                var found = mediaLibrary.SearchByTitle(library, query);
+                var found = searchService.SearchByTitle(library, query);
                 if (found.Count > 0)
                 {
-                    mediaLibrary.ResolveCapture(cap, found[0]);
+                    captureService.ResolveCapture(cap, found[0]);
                     me.MoveResolvedCaptureToWatchlist(cap, "Мої плани");
                     Console.WriteLine($"Прив'язано до {found[0].Title} і додано в 'Мої плани'.");
                 }
@@ -359,6 +361,7 @@ class Program
         bill.AddReview(review);
 
         library.Add(bill);
+
 
         Movie mood = new Movie("In the Mood for Love", 2000, 98, dir2);
         mood.AddGenre("Romance");
