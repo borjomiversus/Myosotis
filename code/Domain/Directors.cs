@@ -7,9 +7,6 @@ public class Director : Person
 
     public Director(string fullName, int birthYear, string signatureStyle) : base(fullName, birthYear)
     {
-        if (string.IsNullOrWhiteSpace(signatureStyle))
-            throw new ArgumentException("Стиль режисера має бути вказаний.");
-
         SignatureStyle = signatureStyle;
         DirectedWorks = new List<string>();
     }
