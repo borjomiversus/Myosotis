@@ -6,3 +6,6 @@
 /bin/Debug/net10.0
 /.vs
 /code/.gitattributes
+/MayosotisWeb/bin/Debug/net10.0
+/MayosotisWeb/obj
+/MayosotisWeb/MayosotisWeb.csproj.user
