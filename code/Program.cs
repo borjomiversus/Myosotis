@@ -46,7 +46,6 @@ class Program
         }
     }
 
-    // --- ПІДМЕНЮ 1: МЕДІАТЕКА ---
     static void MenuLibrary()
     {
         Console.WriteLine("\n--- МЕДІАТЕКА ---");
