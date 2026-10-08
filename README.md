@@ -161,3 +161,4 @@ Capture може перебувати у станах:
 9. https://dribbble.com/search/movie-site concept
 10. https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1 blazor tutorial
 11. https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly documentation
+12. https://github.com/AdrienTorris/awesome-blazor useful 
