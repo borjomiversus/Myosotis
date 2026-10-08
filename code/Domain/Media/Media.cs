@@ -113,6 +113,13 @@ public abstract class Media : IComparable<Media>
         return viewerAge >= AgeRestriction.Value;
     }
 
+    public void SetPosterUrl(string url)
+    {
+        if (!string.IsNullOrWhiteSpace(url))
+            PosterUrl = url;
+    }
+
+
     public int CountSharedGenres(Media other)
     {
         if (other == null)
