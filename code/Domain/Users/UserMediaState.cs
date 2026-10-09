@@ -14,6 +14,7 @@ public enum WatchStatus
 
 public class UserMediaState
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public Media Item { get; private set; }
     public WatchStatus Status { get; private set; }
     public DateTime? StartedAt { get; private set; }

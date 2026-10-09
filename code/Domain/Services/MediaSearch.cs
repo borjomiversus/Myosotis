@@ -2,6 +2,12 @@
 
 public class MediaSearch
 {
+    //для Blazor, щоб знаходити медіа за  ID
+    public Media? GetById(List<Media> library, Guid id)
+    {
+        return library.FirstOrDefault(m => m.Id == id);
+    }
+
     public List<Media> SearchByTitle(List<Media> library, string title)
     {
         List<Media> results = new List<Media>();

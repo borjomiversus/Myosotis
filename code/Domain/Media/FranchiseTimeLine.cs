@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 public class FranchiseTimeLine
 {
-	public string UniverseName { get; private set; }
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public string UniverseName { get; private set; }
     public List<Media> ChronologicalList { get; private set; }
 
 

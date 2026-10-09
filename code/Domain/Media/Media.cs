@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public abstract class Media : IComparable<Media>
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Title { get; private set; }
     public int ReleaseYear { get; private set; }
     public string? ProductionStudio { get; private set; }

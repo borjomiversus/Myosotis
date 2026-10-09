@@ -2,6 +2,7 @@ using System;
 
 public class Review
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public User Author { get; private set; }
     public Media AboutMedia { get; private set; }
     public string Text { get; private set; }

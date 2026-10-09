@@ -3,6 +3,7 @@
 // запис "де я зупинилась і чому".
 public class WatchCheckpoint
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public Series PausedSeries { get; private set; }
     public int Season { get; private set; }
     public int Episode { get; private set; }

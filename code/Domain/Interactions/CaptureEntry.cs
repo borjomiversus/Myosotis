@@ -7,9 +7,9 @@ public enum CaptureStatus
     Archived
 }
 
-// Сюди падає все, що зачепило користувача, ще до того, як стало структурованим Media.
 public class CaptureEntry
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string RawNote { get; private set; }
     public string? Source { get; private set; }
     public DateTime CapturedAt { get; private set; }

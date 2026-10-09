@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class Watchlist
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Name { get; private set; }
     public bool IsPrivate { get; private set; }
     public List<WatchlistEntry> Entries { get; private set; }

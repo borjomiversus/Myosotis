@@ -2,6 +2,7 @@
 
 public class Episode
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public int Number { get; private set; }
     public string Title { get; private set; }
     public int RuntimeMinutes { get; private set; }

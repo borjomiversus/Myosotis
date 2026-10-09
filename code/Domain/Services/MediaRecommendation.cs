@@ -24,7 +24,7 @@ public class MediaRecommendation
         List<Media> similar = new List<Media>();
         foreach (var m in library)
         {
-            if (m != reference) similar.Add(m);
+            if (m.Id != reference.Id) similar.Add(m);
         }
 
         similar.Sort((a, b) => {

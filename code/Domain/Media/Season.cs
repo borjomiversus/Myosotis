@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class Season
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public int Number { get; private set; }
     public List<Episode> Episodes { get; private set; }
 

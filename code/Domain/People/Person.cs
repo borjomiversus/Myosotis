@@ -2,6 +2,7 @@
 
 public class Person
 {
+   public Guid Id { get; private set; } = Guid.NewGuid();
     public string FullName { get; private set; }
     public int BirthYear { get; private set; }
     public string? Biography { get; private set; }

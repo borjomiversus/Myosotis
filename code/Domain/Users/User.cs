@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class User
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Username { get; private set; }
     public List<Watchlist> Watchlists { get; private set; }
     public List<CaptureEntry> Captures { get; private set; }

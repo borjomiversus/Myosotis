@@ -3,6 +3,7 @@ using System;
 
 public class WatchlistEntry
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public Media Item { get; private set; }
     public string? PersonalNote { get; private set; }
     public DateTime AddedAt { get; private set; }
