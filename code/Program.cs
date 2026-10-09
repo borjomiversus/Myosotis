@@ -122,7 +122,7 @@ class Program
             var randomPick = recommendationService.ChooseByRoulette(library, criteria);
 
             if (randomPick != null)
-                Console.WriteLine($"\n🎲 Випало: {randomPick.Title} ({randomPick.CalculateTimeDebt()} хв.)");
+                Console.WriteLine($"\nВипало: {randomPick.Title} ({randomPick.CalculateTimeDebt()} хв.)");
             else
                 Console.WriteLine("\nНічого не знайдено.");
         }

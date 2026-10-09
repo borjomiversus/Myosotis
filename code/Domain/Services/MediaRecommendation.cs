@@ -40,23 +40,49 @@ public class MediaRecommendation
         return result;
     }
 
+
     public Media? ChooseByRoulette(List<Media> library, RouletteCriteria criteria)
     {
-        List<Media> filtered = new List<Media>();
-        foreach (var m in library)
+        var filtered = new List<Media>();
+
+        foreach (var media in library)
         {
-            if (m.CalculateTimeDebt() <= criteria.MaxMinutes)
+            int duration = media switch
             {
-                if (string.IsNullOrEmpty(criteria.Tag))
-                    filtered.Add(m);
-                else if (m.Tags.Contains(criteria.Tag) || m.Genres.Contains(criteria.Tag))
-                    filtered.Add(m);
+                Movie movie => movie.DurationMinutes,
+                Series series => series.AverageEpisodeLength,
+                _ => media.CalculateTimeDebt()
+            };
+
+            if (duration > criteria.MaxMinutes)
+                continue;
+
+            if (!string.IsNullOrWhiteSpace(criteria.Tag))
+            {
+                string selectedTag = criteria.Tag.Trim();
+
+                bool matchesGenre = media.Genres.Any(g =>
+                    string.Equals(
+                        g.Trim(),
+                        selectedTag,
+                        StringComparison.OrdinalIgnoreCase));
+
+                bool matchesTag = media.Tags.Any(t =>
+                    string.Equals(
+                        t.Trim(),
+                        selectedTag,
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (!matchesGenre && !matchesTag)
+                    continue;
             }
+
+            filtered.Add(media);
         }
 
-        if (filtered.Count == 0) return null;
+        if (filtered.Count == 0)
+            return null;
 
-        Random random = new Random();
-        return filtered[random.Next(filtered.Count)];
+        return filtered[Random.Shared.Next(filtered.Count)];
     }
 }
