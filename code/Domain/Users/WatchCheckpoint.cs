@@ -35,4 +35,24 @@ public class WatchCheckpoint
             ? $"На паузі: S{Season}E{Episode} ({Timecode}). Причина: {Reason}"
             : "Перегляд відновлено";
     }
+
+    public int GetProgressPercent()
+    {
+        string[] parts = Timecode.Split(':');
+        int seconds = 0;
+        foreach (string part in parts)
+        {
+            int number;
+            if (!int.TryParse(part, out number))
+                return 0;
+            seconds = seconds * 60 + number;
+        }
+
+        int totalSeconds = PausedSeries.AverageEpisodeLength * 60;
+        if (totalSeconds <= 0)
+            return 0;
+
+        int percent = seconds * 100 / totalSeconds;
+        return percent > 100 ? 100 : percent;
+    }
 }

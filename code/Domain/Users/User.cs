@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 
 public class User
 {
@@ -14,6 +16,9 @@ public class User
 
     public User(string username)
     {
+        if (string.IsNullOrWhiteSpace(username))
+            throw new ArgumentException("Ім'я користувача не може бути порожнім.", nameof(username));
+
         Username = username;
         Watchlists = new List<Watchlist>();
         Captures = new List<CaptureEntry>();
@@ -82,6 +87,60 @@ public class User
         WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now));
     }
 
+    // статус для тайтла або змінює вже існуючий.
+    public void SetStatus(Media item, WatchStatus status)
+    {
+        UserMediaState? existing = null;
+        foreach (var s in MediaStates)
+        {
+            if (s.Item == item)
+            {
+                existing = s;
+                break;
+            }
+        }
+
+        if (existing == null)
+            MediaStates.Add(new UserMediaState(item, status));
+        else
+            existing.ChangeStatus(status);
+    }
+
+    public bool IsWatched(Media item)
+    {
+        foreach (var s in MediaStates)
+        {
+            if (s.Item == item && s.Status == WatchStatus.Watched)
+                return true;
+        }
+        return false;
+    }
+
+    // Watched + запис в історію
+    public void CompleteWatching(Media item)
+    {
+        if (IsWatched(item)) return;
+        SetStatus(item, WatchStatus.Watched);
+        MarkAsWatched(item);
+    }
+
+    // для статистики та рулетки
+    public List<Media> GetPlannedMedia()
+    {
+        var result = new List<Media>();
+        foreach (var list in Watchlists)
+        {
+            foreach (var entry in list.Entries)
+            {
+                if (IsWatched(entry.Item)) continue;
+                if (entry.Item is Series s && s.IsCaughtUp()) continue;
+                if (!result.Contains(entry.Item))
+                    result.Add(entry.Item);
+            }
+        }
+        return result;
+    }
+
     public List<CaptureEntry> GetUnresolvedCaptures()
     {
         List<CaptureEntry> unresolved = new List<CaptureEntry>();
@@ -106,6 +165,16 @@ public class User
         return totalDebt;
     }
 
+    public int GetMonthlyWatchCount(int year, int month)
+    {
+        int count = 0;
+        foreach (var h in WatchHistory)
+        {
+            if (h.WatchDate.Year == year && h.WatchDate.Month == month)
+                count++;
+        }
+        return count;
+    }
 
     public Dictionary<string, int> GetMonthlyGenreStats(int year, int month)
     {
@@ -125,5 +194,34 @@ public class User
             }
         }
         return stats;
+    }
+
+    public string? GetMonthlyTopDirector(int year, int month)
+    {
+        var counts = new Dictionary<string, int>();
+        foreach (var h in WatchHistory)
+        {
+            if (h.WatchDate.Year != year || h.WatchDate.Month != month) continue;
+
+            var director = h.WatchedItem.MediaDirector;
+            if (director == null) continue;
+
+            if (counts.ContainsKey(director.FullName))
+                counts[director.FullName]++;
+            else
+                counts[director.FullName] = 1;
+        }
+
+        string? best = null;
+        int bestCount = 0;
+        foreach (var pair in counts)
+        {
+            if (pair.Value > bestCount)
+            {
+                best = pair.Key;
+                bestCount = pair.Value;
+            }
+        }
+        return best;
     }
 }
