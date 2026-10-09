@@ -1,5 +1,5 @@
 <Solution>
   <Project Path="../code/projectmovies.csproj" />
-  <Project Path="../MayosotisWeb/MyosotisWeb.csproj" Id="131c14fc-fb8c-41e6-99e5-ba0700b0b7d0" />
+  <Project Path="../MyosotisWeb/MyosotisWeb.csproj" />
   <Project Path="Myosotis.Tests/tests.csproj" />
 </Solution>

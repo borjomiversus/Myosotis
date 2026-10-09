@@ -1,7 +1,340 @@
 ﻿@page "/"
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject MediaRecommendation RecService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<div class="max-w-[1200px] mx-auto px-margin py-margin">
+    <div class="flex flex-col w-full">
 
-<h1>Hello, world!</h1>
+<!-- Шапка сторінки -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-lg mb-space-xl relative overflow-hidden p-6 rounded-2xl bg-surface-container-low border border-surface-variant/20 shadow-lg">
+    
+    <!-- анімка -->
+    <div class="absolute -top-24 -right-24 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+    <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
 
-Welcome to your new app.
+    <div class="flex flex-col gap-space-xs relative z-10">
+        <span class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.14em]">@DateTime.Now.ToString("dddd, MMMM dd").ToUpper()</span>
+        <h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight mt-1">
+            Good evening, <span class="italic font-normal text-primary-fixed">@DataService.CurrentUser.Username.</span>
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant/80 italic font-serif">
+            What story will stay with you tonight?
+        </p>
+    </div>            
+            <!-- Панель дій -->
+            <div class="flex items-center gap-space-sm self-start md:self-auto relative">
+                
+                <button @onclick="OpenCaptureModal" class="flex items-center gap-space-xs px-4 py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors group">
+                    <span class="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-primary transition-colors">edit_note</span>
+                    <span class="font-title-md text-title-md">Capture</span>
+                </button>
+
+                <!-- Кнопка Рулетки з меню вибору -->
+                <div class="relative">
+                 
+
+                    <!-- Кнопка Рулетки, яка тепер викликає діалогове вікно -->
+<button @onclick="OpenRouletteDialog" class="flex items-center gap-space-xs px-5 py-2 rounded-full bg-primary-container text-on-primary-container hover:bg-primary transition-all shadow-[0_0_16px_rgba(132,220,198,0.22)] active:scale-95">
+    <span class="material-symbols-outlined text-[18px]">casino</span>
+    <span class="font-title-md text-title-md font-semibold tracking-wide">Roulette</span>
+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поле швидкого додавання capture -->
+        @if (isCaptureOpen)
+        {
+            <div class="bg-surface-container-high p-4 rounded-xl mb-6 flex gap-3 items-center">
+                <MudTextField @bind-Value="newCaptureText" Placeholder="Write a quick thought, quote or idea..." Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" />
+                <button @onclick="SaveCapture" class="px-4 py-2 bg-primary-container text-on-primary-container rounded-lg font-title-md">Save</button>
+                <button @onclick="() => isCaptureOpen = false" class="px-3 py-2 text-on-surface-variant">Cancel</button>
+            </div>
+        }
+
+<!-- 4 Картки статистики -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-md mb-space-xl">
+    
+    <!-- Lists -->
+    <div class="bg-surface-container-high rounded-xl p-space-md hover:bg-surface-variant transition-all flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-space-sm">
+            <span class="font-label-caps text-on-surface-variant">LISTS</span>
+            <span class="material-symbols-outlined text-primary text-[16px]">folder_special</span>
+        </div>
+        <div>
+            <div class="font-stat-metric text-on-surface leading-none mb-1">
+                @DataService.CurrentUser.Watchlists.Count.ToString("D2")
+            </div>
+            <p class="font-label-sm text-on-surface-variant/70">Tailored themes</p>
+        </div>
+    </div>
+    
+    <!-- Planned -->
+    <div class="bg-surface-container-high rounded-xl p-space-md hover:bg-surface-variant transition-all flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-space-sm">
+            <span class="font-label-caps text-on-surface-variant">PLANNED</span>
+            <span class="material-symbols-outlined text-secondary text-[16px]">bookmark</span>
+        </div>
+        <div>
+            <div class="font-stat-metric text-on-surface leading-none mb-1">
+                @DataService.CurrentUser.GetPlannedMedia().Count
+            </div>
+            <p class="font-label-sm text-on-surface-variant/70">in backlog</p>
+        </div>
+    </div>
+    
+    <!-- Watched -->
+    <div class="bg-surface-container-high rounded-xl p-space-md hover:bg-surface-variant transition-all flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-space-sm">
+            <span class="font-label-caps text-on-surface-variant">WATCHED</span>
+            <span class="material-symbols-outlined text-primary-fixed text-[16px]">task_alt</span>
+        </div>
+        <div>
+            <!-- Беремо загальну кількість переглянутого з історії -->
+            <div class="font-stat-metric text-on-surface leading-none mb-1">
+                @DataService.CurrentUser.WatchHistory.Count
+            </div>
+            <p class="font-label-sm text-on-surface-variant/70">titles logged</p>
+        </div>
+    </div>
+    
+    <!-- Captures -->
+    <div class="bg-surface-container-high rounded-xl p-space-md hover:bg-surface-variant transition-all flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-space-sm">
+            <span class="font-label-caps text-on-surface-variant">CAPTURES</span>
+            <span class="material-symbols-outlined text-tertiary text-[16px]">format_quote</span>
+        </div>
+        <div>
+            <div class="font-stat-metric text-on-surface leading-none mb-1">
+                @DataService.CurrentUser.GetUnresolvedCaptures().Count
+            </div>
+            <p class="font-label-sm text-on-surface-variant/70">scene notes</p>
+        </div>
+    </div>
+</div>
+
+<!-- Підбірки (Watchlists) з DemoDataService -->
+<div class="flex flex-col mb-space-xl">
+    <div class="flex items-baseline justify-between mb-space-md">
+        <h2 class="font-headline-md text-headline-md text-on-surface font-serif">Your watchlists</h2>
+        <a class="text-[#84dcc6] font-bold text-[14px] hover:text-white transition-colors flex items-center gap-1 group cursor-pointer" @onclick='() => Navigation.NavigateTo("/watchlists")'>
+            <span>View all lists</span>
+            <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+        @{
+            int listIndex = 1;
+            var stitchBgImages = new[] {
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuCk02AcIUxLfCgsTfhyFQ2K03QEsbES_HvoVRfZVgxhXDApuI40ztUdDhOAJJ0wZ8GLAIlMLriSsZ4O_0FUTTFEQ2F6fNS2zvkMa0dykyGoosbcBjdWmdzhVqVm57042lN7gj_CRdkSGeLf1AlVl00VOXQRuDUtSG3o-FQbnvapF-lQ3ydAORdJ5G2SiWTpbRxWNHAN5DKrfLMT5yjmvAA2ELCjrBuEVwlwolfYcPFw31zHHyDg5Q",
+                "https://lh3.googleusercontent.com/aida-public/AB6AXuD5HGlDecA7SE_LP67-JUjBK6wNBxk3vtF2hQwC4diCyroBvIWqJE2MVR2z9sm9BwTGN5WWE4B-BpY_M-rqpxO9GtERcQM0mjZ5WhkOotoUj1il7LqNAmjRILrMLikAWw1VvAzGgKR-V62NZHMwDdVrKKTIcKyJilTEfh-5fGY9DrLW6JpX5Wiqsw_L2K98oiQIs9Wako6S8oGyvkP7RA8cTOv0Ru8Apo_C1c_X3URy85yKHZMG1g"
+            };
+        }
+        @foreach (var list in DataService.CurrentUser.Watchlists)
+        {
+            var bgUrl = stitchBgImages[(listIndex - 1) % stitchBgImages.Length];
+            
+            <!-- Додано клавішу group та onclick для переходу на сторінку підбірки -->
+            <div @onclick="() => OpenList(list.Name)" class="bg-cover bg-center rounded-xl h-36 relative overflow-hidden group shadow-md flex flex-col justify-between p-space-md cursor-pointer">
+                <!-- Анімований фон при наведенні -->
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('@bgUrl')"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-low/70 to-transparent pointer-events-none"></div>
+                
+                <div class="relative z-10 flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded-full bg-surface-container-lowest/85 backdrop-blur-sm text-on-surface font-label-caps text-label-caps">LIST 0@(listIndex)</span>
+                </div>
+                <div class="relative z-10 flex items-end justify-between">
+                    <div class="flex flex-col">
+                        <h3 class="font-headline-md text-headline-md text-on-surface font-serif leading-snug group-hover:text-primary transition-colors">@list.Name</h3>
+                        <span class="font-label-sm text-label-sm text-on-surface-variant">@list.Entries.Count titles</span>
+                    </div>
+                    <button class="w-8 h-8 rounded-full bg-surface-container-high/80 text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                    </button>
+                </div>
+            </div>
+            listIndex++;
+        }
+    </div>
+</div>
+<!-- Нижній блок -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
+    
+    <!-- Continue Watching -->
+    @if (DataService.ActiveCheckpoint != null && DataService.ActiveCheckpoint.IsActive)
+    {
+        <div class="lg:col-span-7 flex flex-col">
+            <div class="flex items-baseline justify-between mb-space-md">
+                <h2 class="font-headline-md text-headline-md text-on-surface font-serif">Continue watching</h2>
+                <span class="font-label-caps text-on-surface-variant/70 tracking-widest">RESUME SESSION</span>
+            </div>
+            
+            <div class="bg-cover bg-center rounded-2xl relative overflow-hidden flex-1 min-h-[260px] p-space-lg flex flex-col justify-between shadow-lg" 
+                 style="background-image: url('@DataService.ActiveCheckpoint.PausedSeries.PosterUrl')">
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/85 to-surface-container-lowest/40"></div>
+                
+                <div class="relative z-10 flex items-center gap-space-sm flex-wrap">
+                    <span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-caps">
+                        SEASON @DataService.ActiveCheckpoint.Season • EPISODE @DataService.ActiveCheckpoint.Episode
+                    </span>
+                    <span class="font-label-sm text-on-surface-variant">
+                        @string.Join(" • ", DataService.ActiveCheckpoint.PausedSeries.Genres)
+                    </span>
+                </div>
+                
+                <div class="relative z-10 flex flex-col gap-space-md mt-6">
+                    <div>
+                        <!-- Назва серіалу -->
+                        <h3 class="font-headline-lg text-on-surface font-serif font-bold tracking-tight mb-1 text-[28px]">
+                            @DataService.ActiveCheckpoint.PausedSeries.Title
+                        </h3>
+                        <!-- Опис серіалу -->
+                        <p class="font-body-md text-on-surface-variant/90 max-w-lg line-clamp-2">
+                            @DataService.ActiveCheckpoint.PausedSeries.Description
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-space-md pt-space-xs">
+                        <button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container hover:bg-primary transition-all flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(132,220,198,0.2)]">
+                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                        </button>
+                        <div class="flex-1 flex flex-col gap-1.5">
+                            <div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-container rounded-full transition-all duration-500" 
+                                     style="width: @(DataService.ActiveCheckpoint.GetProgressPercent())%;"></div>
+                            </div>
+                            <div class="flex items-center justify-between font-label-sm text-on-surface-variant">
+                                <span>@DataService.ActiveCheckpoint.Timecode watched</span>
+                                <!-- Причина виводиться акуратно справа -->
+                                <span class="text-right max-w-[50%] truncate" title="@DataService.ActiveCheckpoint.GetStatusDescription()">
+                                    @DataService.ActiveCheckpoint.GetStatusDescription()
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Підготовка даних для статистики -->
+    @{
+        int currentYear = DateTime.Now.Year;
+        int currentMonth = DateTime.Now.Month;
+        int monthlyWatched = DataService.CurrentUser.GetMonthlyWatchCount(currentYear, currentMonth);
+        int timeDebt = DataService.CurrentUser.GetMonthlyStats(currentYear, currentMonth);
+        string topDirector = DataService.CurrentUser.GetMonthlyTopDirector(currentYear, currentMonth) ?? "No specific director";
+        
+        var genreStats = DataService.CurrentUser.GetMonthlyGenreStats(currentYear, currentMonth);
+        var topGenres = genreStats.OrderByDescending(x => x.Value).Take(4).ToList();
+        
+        string[] ukrainianMonths = { "СІЧЕНЬ", "ЛЮТИЙ", "БЕРЕЗЕНЬ", "КВІТЕНЬ", "ТРАВЕНЬ", "ЧЕРВЕНЬ", "ЛИПЕНЬ", "СЕРПЕНЬ", "ВЕРЕСЕНЬ", "ЖОВТЕНЬ", "ЛИСТОПАД", "ГРУДЕНЬ" };
+        string currentMonthUa = ukrainianMonths[currentMonth - 1];
+    }
+
+    <!-- This month -->
+    <div class="lg:col-span-5 flex flex-col">
+        <!-- Змінено класи: додано text-headline-md для великого розміру -->
+        <div class="flex items-baseline justify-between mb-6 px-1">
+    <h2 class="font-headline-md text-on-surface font-serif">This month</h2>
+    <a class="text-[#84dcc6] font-bold text-[14px] hover:text-white transition-colors flex items-center gap-1 group cursor-pointer" href="/history">
+        <span>Full history</span>
+        <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+    </a>
+</div>
+        
+        <div class="bg-surface-container-high rounded-2xl p-space-lg flex-1 flex flex-col justify-between shadow-md">
+            <div class="flex items-start justify-between pb-space-md">
+                <div class="flex flex-col">
+                    <!-- Замість LOG тепер STATS -->
+                    <span class="font-label-caps text-on-surface-variant tracking-[0.1em]">@currentMonthUa STATS</span>
+                    <div class="font-stat-metric text-on-surface mt-1 flex items-baseline gap-1.5">
+                        @monthlyWatched <span class="font-headline-md font-normal text-on-surface-variant text-[16px]">titles</span>
+                    </div>
+                </div>
+                
+                @if (timeDebt > 0)
+                {
+                    <div class="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded-lg border border-surface-variant/30">
+                        <span class="material-symbols-outlined text-[16px] text-primary">schedule</span>
+                        <span class="font-title-md text-on-surface">@timeDebt <span class="text-on-surface-variant text-[13px] font-normal">хв time debt</span></span>
+                    </div>
+                }
+            </div>
+
+            <!-- Блок жанрів -->
+            @if (topGenres.Any() && monthlyWatched > 0)
+            {
+                <div class="flex flex-col gap-3 my-4">
+                    @foreach (var genre in topGenres)
+                    {
+                        int widthPercent = (genre.Value * 100) / monthlyWatched;
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex justify-between items-center font-label-sm">
+                                <span class="text-on-surface font-medium">@genre.Key</span>
+                                <span class="text-on-surface-variant">@genre.Value titles</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-container rounded-full" style="width: @widthPercent%;"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            
+            <div class="flex flex-col gap-space-md mt-auto border-t border-surface-variant/30 pt-4">
+                <div class="flex items-center justify-between">
+                    <span class="font-label-sm text-on-surface-variant">Top Director</span>
+                    <span class="font-title-md text-on-surface text-right">@topDirector</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+@code {
+    private bool isCaptureOpen = false;
+    private string newCaptureText = "";
+
+    private void OpenCaptureModal()
+    {
+        isCaptureOpen = !isCaptureOpen;
+    }
+
+    private void SaveCapture()
+    {
+        if (!string.IsNullOrWhiteSpace(newCaptureText))
+        {
+            DataService.CurrentUser.AddCapture(newCaptureText, "Quick Dashboard");
+            Snackbar.Add("Capture успішно збережено!", Severity.Success);
+            newCaptureText = "";
+            isCaptureOpen = false;
+        }
+    }
+
+    private void OpenRouletteDialog()
+    {
+        var options = new DialogOptions 
+        { 
+            CloseButton = true, 
+            MaxWidth = MaxWidth.Small, 
+            FullWidth = true,
+            Position = DialogPosition.Center
+        };
+        
+
+         DialogService.ShowAsync<RouletteDialog>("Cinematic Roulette", options);
+
+    }
+
+    private void OpenList(string listName)
+{
+    Navigation.NavigateTo($"/watchlists/{Uri.EscapeDataString(listName)}");
+}
+}
+

@@ -1,0 +1,133 @@
+﻿@using MudBlazor
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject MediaRecommendation RecService
+
+<MudDialog Style="background-color: var(--bg-surface, #171f32); color: #dae2fc; border: 1px solid #2E3B5B; border-radius: 1rem; padding: 24px; max-width: 450px; width: 100%;">
+    <TitleContent>
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[24px]">casino</span>
+            <span class="font-headline-md text-on-surface font-serif text-lg">Cinematic Roulette</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="flex flex-col gap-4 py-2">
+            <p class="text-sm text-on-surface-variant font-serif italic">
+                Боретеся з вибором на вечір? Довіртеся кінематографічному жребию.
+            </p>
+
+            <!-- Вибір підбірки -->
+            <div>
+                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">ОБРАТИ ПІДБІРКУ</label>
+                <MudSelect T="string" @bind-Value="selectedWatchlistName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Style="color: white; background-color: #131b2e;">
+                    <MudSelectItem Value="@((string)null)">Усі підбірки (Вся бібліотека)</MudSelectItem>
+                    @foreach (var wl in DataService.CurrentUser.Watchlists)
+                    {
+                        <MudSelectItem Value="@wl.Name">@wl.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+
+            <!-- Вибір жанру -->
+            <div>
+                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">ЖАНР</label>
+                <MudSelect T="string" @bind-Value="selectedGenre" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Style="color: white; background-color: #131b2e;">
+                    <MudSelectItem Value="@((string)null)">Усі жанри</MudSelectItem>
+                    <MudSelectItem Value="@("Drama")">Drama</MudSelectItem>
+                    <MudSelectItem Value="@("Comedy")">Comedy</MudSelectItem>
+                    <MudSelectItem Value="@("Romance")">Romance</MudSelectItem>
+                    <MudSelectItem Value="@("Sci-Fi")">Sci-Fi</MudSelectItem>
+                    <MudSelectItem Value="@("Action")">Action</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <!-- Вибір часу -->
+            <div>
+                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">МАКСИМАЛЬНИЙ ЧАС</label>
+                <MudSelect T="int" @bind-Value="selectedMaxMinutes" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Style="color: white; background-color: #131b2e;">
+                    <MudSelectItem Value="90">До 1.5 годин (до 90 хв)</MudSelectItem>
+                    <MudSelectItem Value="120">До 2 годин (до 120 хв)</MudSelectItem>
+                    <MudSelectItem Value="180">До 3 годин (до 180 хв)</MudSelectItem>
+                    <MudSelectItem Value="1000">Без обмежень часу</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <!-- Результат вибору рулетки -->
+            @if (pickedMedia != null)
+            {
+                <div class="mt-4 p-4 rounded-xl bg-surface-container-high border border-primary/30 flex items-center gap-4 animate-fade-in">
+                    <img src="@pickedMedia.PosterUrl" alt="@pickedMedia.Title" class="w-16 h-24 object-cover rounded-lg shadow-md" />
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-label-caps text-primary">РУЛЕТКА ОБРАЛА</span>
+                        <h4 class="font-headline-md text-on-surface text-base font-bold">@pickedMedia.Title</h4>
+                        <span class="text-xs text-on-surface-variant">@pickedMedia.ReleaseYear • @string.Join(", ", pickedMedia.Genres)</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <div class="flex justify-between w-full items-center pt-2">
+            <button @onclick="() => MudDialog.Cancel()" class="px-4 py-2 text-sm text-on-surface-variant hover:text-on-surface">
+                Закрити
+            </button>
+            <button @onclick="Spin" disabled="@isSpinning" class="px-6 py-2 rounded-full bg-primary-container text-on-primary-container font-title-md font-semibold hover:bg-primary transition-all shadow-[0_0_16px_rgba(132,220,198,0.22)] flex items-center gap-2">
+                @if (isSpinning)
+                {
+                    <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    <span>Крутимо...</span>
+                }
+                else
+                {
+                    <span class="material-symbols-outlined text-[18px]">casino</span>
+                    <span>Крутити рулетку</span>
+                }
+            </button>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private string? selectedGenre;
+    private string? selectedWatchlistName;
+    private int selectedMaxMinutes = 1000;
+    private bool isSpinning = false;
+    private Media? pickedMedia;
+
+    private async Task Spin()
+    {
+        isSpinning = true;
+        pickedMedia = null;
+        StateHasChanged();
+
+        await Task.Delay(800);
+
+        IEnumerable<Media> library;
+        if (!string.IsNullOrEmpty(selectedWatchlistName))
+        {
+            var targetList = DataService.CurrentUser.Watchlists
+                .FirstOrDefault(w => w.Name == selectedWatchlistName);
+            
+            library = targetList?.Entries.Select(e => e.Item).Distinct() ?? Enumerable.Empty<Media>();
+        }
+        else
+        {
+            library = DataService.CurrentUser.Watchlists
+                .SelectMany(w => w.Entries)
+                .Select(e => e.Item)
+                .Distinct();
+        }
+
+        var mediaList = library.ToList();
+        if (mediaList.Any())
+        {
+            var criteria = new RouletteCriteria(selectedMaxMinutes, selectedGenre);
+            pickedMedia = RecService.ChooseByRoulette(mediaList, criteria);
+        }
+
+        isSpinning = false;
+    }
+}

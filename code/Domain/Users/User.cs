@@ -87,7 +87,6 @@ public class User
         WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now));
     }
 
-    // статус для тайтла або змінює вже існуючий.
     public void SetStatus(Media item, WatchStatus status)
     {
         UserMediaState? existing = null;

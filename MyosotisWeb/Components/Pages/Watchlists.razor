@@ -1,0 +1,111 @@
+﻿@page "/watchlists"
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-8 pb-20">
+    
+    <!-- Шапка сторінки -->
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+        <div class="flex flex-col gap-2">
+            <span class="text-[12px] text-gray-400 font-bold tracking-[0.15em] uppercase">Curated Archives</span>
+            <h1 class="text-[48px] text-white font-serif font-bold tracking-tight leading-none">Your Watchlists</h1>
+            <p class="text-[16px] text-gray-300 italic max-w-2xl mt-1">
+                Themed sanctuaries for midnight screenings, slow Sundays, and quiet wonders.
+            </p>
+        </div>
+        <button @onclick="CreateNewList" class="flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#84dcc6] text-[#00382e] font-bold hover:bg-[#6ec2ac] transition-colors shadow-[0_0_20px_rgba(132,220,198,0.15)] cursor-pointer shrink-0">
+            <span class="material-symbols-outlined text-[20px]">playlist_add</span>
+            <span class="text-[15px]">New Watchlist</span>
+        </button>
+    </div>
+
+    <!-- Рядок пошуку -->
+    <div class="flex items-center">
+        <div class="relative w-full max-w-md bg-[#171f32] rounded-full px-4 py-3 flex items-center gap-2 border border-white/5">
+            <span class="material-symbols-outlined text-[20px] text-gray-400">search</span>
+            <input type="text" class="bg-transparent border-0 outline-none text-[15px] text-white w-full placeholder:text-gray-500" placeholder="Filter collections..." />
+        </div>
+    </div>
+
+    <!-- Сітка карток (2 колонки) -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+        @{
+            int index = 1;
+            string[] defaultCovers = {
+                "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1000", // Туманний ліс
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1000", // Гори
+                "https://images.unsplash.com/photo-1505322022379-7c3353ee6291?q=80&w=1000", // Нічне місто
+                "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000"  // Космос/Абстракція
+            };
+        }
+        
+        @foreach (var list in DataService.CurrentUser.Watchlists)
+        {
+            string coverUrl = index <= defaultCovers.Length ? defaultCovers[index - 1] : defaultCovers[0];
+            string formattedIndex = index.ToString("D2");
+
+            <div @onclick="() => OpenList(list.Name)" class="relative h-[300px] rounded-[24px] overflow-hidden bg-[#171f32] cursor-pointer group shadow-xl border border-white/5 flex flex-col justify-between p-7">
+                
+                <!-- Фонові зображення та градієнти -->
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('@coverUrl')"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0b1325] via-[#0b1325]/70 to-transparent"></div>
+
+                <!-- Верхні бейджі (Номер списку та Кількість) -->
+                <div class="relative z-10 flex items-start justify-between">
+                    <span class="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[11px] font-bold text-white uppercase tracking-widest">
+                        LIST @formattedIndex
+                    </span>
+                    <span class="px-4 py-1.5 rounded-full bg-[#131b2e]/80 backdrop-blur-md border border-[#84dcc6]/30 text-[13px] font-medium text-[#84dcc6]">
+                        @list.Entries.Count titles
+                    </span>
+                </div>
+
+                <!-- Основний контент (Назва та деталі) -->
+                <div class="relative z-10 flex flex-col gap-2 mt-auto">
+                    <h3 class="font-serif text-[38px] font-bold text-white leading-tight group-hover:text-[#84dcc6] transition-colors">
+                        @list.Name
+                    </h3>
+                    
+                    <!-- Генеруємо динамічний опис на основі наповнення підбірки -->
+                    <p class="text-[15px] text-gray-300 line-clamp-2 pr-4">
+                        @(list.IsPrivate ? "Private sanctuary. " : "Public archive. ")
+                        @if (list.Entries.Any())
+                        {
+                            @($"Featuring \"{list.Entries.First().Item.Title}\" and {list.Entries.Count - 1} other titles awaiting your time.")
+                        }
+                        else
+                        {
+                            @("An empty canvas waiting for your next cinematic discoveries.")
+                        }
+                    </p>
+                    
+                    <!-- Нижній рядок -->
+                    <div class="flex items-center justify-between mt-5 pt-5 border-t border-white/10">
+                        <span class="text-[13px] text-gray-400 font-medium tracking-wide">
+                            Created @DateTime.Now.ToString("MMMM yyyy")
+                        </span>
+                        <div class="flex items-center gap-1.5 text-[#84dcc6] font-bold text-[15px] group-hover:translate-x-1 transition-transform">
+                            <span>Explore titles</span>
+                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 600;">arrow_forward</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            index++;
+        }
+    </section>
+</div>
+
+@code {
+    private void OpenList(string listName)
+    {
+        Navigation.NavigateTo($"/watchlists/{Uri.EscapeDataString(listName)}");
+    }
+
+    private void CreateNewList()
+    {
+        Snackbar.Add("Відкриваємо вікно створення нової підбірки!", Severity.Success);
+    }
+}
