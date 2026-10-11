@@ -157,3 +157,4 @@ Capture може перебувати у станах:
 15. https://design.dev/tools/ tools for ui
 16. https://mudblazor.com/docs/overview docs mudblazor
 17. https://www.youtube.com/watch?v=xS4ISh6ZehU tailwind
+18. https://serializd.com/discover концепт
