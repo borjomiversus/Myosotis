@@ -155,3 +155,5 @@ Capture може перебувати у станах:
 13. https://www.originkit.dev/ ui
 14. https://smoothui.dev/docs/components ui
 15. https://design.dev/tools/ tools for ui
+16. https://mudblazor.com/docs/overview docs mudblazor
+17. https://www.youtube.com/watch?v=xS4ISh6ZehU tailwind
