@@ -1,110 +1,69 @@
 ﻿@inherits LayoutComponentBase
-@using MyosotisWeb.ServicesWeb
-@inject ISnackbar Snackbar
-@inject DemoDataService DataService
+@using MudBlazor
 @inject NavigationManager Navigation
+@inject MyosotisWeb.ServicesWeb.DemoDataService DataService
 
-<MudThemeProvider IsDarkMode="true" />
+<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
-<MudPopoverProvider />
 
 <div class="bg-surface font-body-md text-body-md text-on-surface antialiased">
+
     <!-- БІЧНЕ МЕНЮ -->
     <aside class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-low border-r border-surface-variant/40 z-50 flex flex-col justify-between">
         <div class="flex flex-col">
             <div class="h-16 px-space-md flex items-center gap-space-sm border-b border-surface-variant/30">
+                <img src="images/myosotis-logo.png" alt="" class="w-7 h-7 object-contain" onerror="this.style.display='none'" />
                 <span class="font-headline-md text-headline-md italic text-primary tracking-wide">Myosotis</span>
             </div>
+
             <nav class="flex flex-col gap-space-xs px-space-sm pt-space-lg">
-                <a class="group flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="/">
-                    <div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Overview</span></div>
-                </a>
-                <a class="group flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="/watchlists">
-                    <div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">bookmark</span><span>Watchlists</span></div>
-                </a>
-                <a class="group flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="/captures">
-                    <div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">format_quote</span><span>Captures</span></div>
-                </a>
-                <a class="group flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" href="/history">
-                    <div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">schedule</span><span>History</span></div>
-                </a>
+                @foreach (var item in navItems)
+                {
+                    <NavLink href="@item.Href"
+                             Match="@(item.Href == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                             class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+                             ActiveClass="bg-surface-container-high text-on-surface">
+                        <span class="material-symbols-outlined text-[18px]">@item.Icon</span>
+                        <span>@item.Label</span>
+                    </NavLink>
+                }
             </nav>
         </div>
+
         <div class="p-space-md border-t border-surface-variant/30 bg-surface-container-lowest/40">
-            <div class="flex items-center gap-space-sm mb-space-sm">
+            <div class="flex items-center gap-space-sm">
+                <div class="w-9 h-9 rounded-full bg-secondary text-on-primary-container flex items-center justify-center font-title-md text-title-md">@Initial</div>
                 <div class="flex flex-col min-w-0">
-                    <span class="font-title-md text-title-md text-on-surface truncate">My Profile</span>
-                    <span class="font-label-sm text-label-sm text-on-surface-variant truncate">Personal Sanctuary</span>
+                    <span class="font-title-md text-title-md text-on-surface truncate">@Me.Username</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant truncate">@Me.WatchHistory.Count titles logged</span>
                 </div>
             </div>
         </div>
     </aside>
 
     <div class="pl-[240px]">
+
         <!-- ШАПКА -->
         <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-surface-variant/30 z-40 flex items-center justify-between px-margin">
-            
-            <!-- ІНТЕРАКТИВНИЙ ПОШУК -->
-            <div class="relative w-72">
-                <div class="flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-lg border border-surface-variant/40 focus-within:border-primary transition-colors">
-                    <span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
-                    <input type="text" 
-                           @bind="searchQuery" 
-                           @bind:event="oninput" 
-                           placeholder="Search films, watchlists..." 
-                           class="bg-transparent border-0 outline-none text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/60 w-full" />
-                    
-                    @if (!string.IsNullOrWhiteSpace(searchQuery))
-                    {
-                        <button @onclick="ClearSearch" class="text-on-surface-variant hover:text-on-surface">
-                            <span class="material-symbols-outlined text-[16px]">close</span>
-                        </button>
-                    }
-                </div>
-
-                <!-- ВИПАДАЮЧИЙ СПИСОК РЕЗУЛЬТАТІВ -->
-                @if (!string.IsNullOrWhiteSpace(searchQuery) && (filteredMedia.Any() || filteredWatchlists.Any()))
-                {
-                    <div class="absolute left-0 right-0 mt-2 bg-surface-container-high rounded-xl border border-surface-variant/40 shadow-2xl overflow-hidden z-50 p-2 flex flex-col gap-1">
-                        
-                        <!-- Знайдені фільми / серіали -->
-                        @if (filteredMedia.Any())
-                        {
-                            <div class="px-2 py-1 text-[10px] font-label-caps text-on-surface-variant uppercase">Movies & Series</div>
-                            @foreach (var item in filteredMedia)
-                            {
-                                <div @onclick="() => SelectMedia(item)" class="px-3 py-2 rounded-lg hover:bg-surface-variant/60 cursor-pointer flex items-center justify-between transition-colors">
-                                    <span class="text-on-surface text-sm font-medium">@item.Title</span>
-                                    <span class="text-xs text-on-surface-variant">@string.Join(", ", item.Genres)</span>
-                                </div>
-                            }
-                        }
-
-                        <!-- Знайдені підбірки -->
-                        @if (filteredWatchlists.Any())
-                        {
-                            <div class="px-2 py-1 text-[10px] font-label-caps text-on-surface-variant uppercase mt-1">Watchlists</div>
-                            @foreach (var list in filteredWatchlists)
-                            {
-                                <div @onclick="() => SelectWatchlist(list.Name)" class="px-3 py-2 rounded-lg hover:bg-surface-variant/60 cursor-pointer flex items-center justify-between transition-colors">
-                                    <span class="text-on-surface text-sm font-medium">@list.Name</span>
-                                    <span class="text-xs text-primary">@list.Entries.Count titles</span>
-                                </div>
-                            }
-                        }
-                    </div>
-                }
+            <div class="flex items-center gap-space-sm w-80 bg-surface-container-low px-space-md py-space-xs rounded-lg border border-surface-variant/40">
+                <span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+                <input @bind="searchText"
+                       @bind:event="oninput"
+                       @onkeydown="OnSearchKey"
+                       placeholder="Search your library…"
+                       class="bg-transparent outline-none w-full text-on-surface placeholder:text-on-surface-variant/60" />
             </div>
 
-            <div class="flex items-center gap-space-md">
-                <button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-container text-on-primary-container font-title-md text-title-md hover:bg-primary transition-colors">
-                    <span class="material-symbols-outlined text-[16px]">add</span><span>New Entry</span>
-                </button>
-            </div>
+            <button @onclick="GoToCaptures"
+                    class="flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-container text-on-primary-container font-title-md text-title-md hover:bg-primary transition-colors">
+                <span class="material-symbols-outlined text-[16px]">edit_note</span>
+                <span>Capture</span>
+            </button>
         </header>
 
-        <!-- МІСЦЕ ДЛЯ СТОРІНОК -->
+        <!-- СТОРІНКИ -->
         <main class="relative pt-16 bg-surface min-h-screen">
             @Body
         </main>
@@ -112,48 +71,43 @@
 </div>
 
 @code {
-    private string searchQuery = string.Empty;
-    private MediaSearch mediaSearch = new MediaSearch();
-
-    // 1. Збираємо всю доступну бібліотеку медіа з твоїх підбірок (як це передбачено бекендом)
-    private List<Media> library => 
-        DataService.CurrentUser.Watchlists
-            .SelectMany(w => w.Entries)
-            .Select(e => e.Item)
-            .Distinct()
-            .ToList();
-
-    // 2. Використовуємо твій рідний метод SearchByTitle з класу MediaSearch
-    private IEnumerable<Media> filteredMedia => 
-        string.IsNullOrWhiteSpace(searchQuery) 
-            ? new List<Media>() 
-            : mediaSearch.SearchByTitle(library, searchQuery);
-
-    // 3. Шукаємо по назвах підбірок
-    private IEnumerable<Watchlist> filteredWatchlists =>
-        string.IsNullOrWhiteSpace(searchQuery) 
-            ? new List<Watchlist>() 
-            : DataService.CurrentUser.Watchlists.Where(w => w.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
-
-    private void ClearSearch()
+    private readonly (string Href, string Icon, string Label)[] navItems =
     {
-        searchQuery = string.Empty;
+        ("/", "dashboard", "Overview"),
+        ("/watchlists", "bookmark", "Watchlists"),
+        ("/captures", "format_quote", "Captures"),
+        ("/history", "schedule", "History")
+    };
+
+    private string searchText = "";
+
+    private User Me => DataService.CurrentUser;
+
+    private string Initial => string.IsNullOrEmpty(Me.Username) ? "?" : Me.Username.Substring(0, 1).ToUpper();
+
+    private void OnSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter" || string.IsNullOrWhiteSpace(searchText)) return;
+        Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(searchText.Trim())}");
     }
 
-    private void SelectMedia(Media item)
+    private void GoToCaptures()
     {
-        // Використовуємо твої методи з класу User
-        DataService.CurrentUser.LogSearch(item.Title);
-        DataService.CurrentUser.RecordView(item);
-        
-        searchQuery = string.Empty;
-        Snackbar.Add($"Відкрито: {item.Title}", Severity.Info);
+        Navigation.NavigateTo("/captures");
     }
 
-    private void SelectWatchlist(string listName)
+    // Компоненти Mud (діалог, снекбар) теж у кольорах бренду.
+    private MudTheme _theme = new MudTheme
     {
-        DataService.CurrentUser.LogSearch(listName);
-        searchQuery = string.Empty;
-        Navigation.NavigateTo($"/watchlists/{Uri.EscapeDataString(listName)}");
-    }
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#84DCC6",
+            Secondary = "#5C80BC",
+            Tertiary = "#D4915A",
+            Background = "#1A2235",
+            Surface = "#232A47",
+            TextPrimary = "#E2E8F0",
+            TextSecondary = "#A3ADC2"
+        }
+    };
 }

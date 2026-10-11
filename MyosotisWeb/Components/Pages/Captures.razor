@@ -1,0 +1,160 @@
+﻿@page "/captures"
+@using System.Globalization
+@using MudBlazor
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject ISnackbar Snackbar
+
+<PageTitle>Myosotis · Captures</PageTitle>
+
+<div class="max-w-[1200px] mx-auto px-margin py-margin">
+
+    <div class="mb-space-xl">
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">Captures</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant/80 italic font-serif">Save it now. Figure out what it is later.</p>
+    </div>
+
+    <!-- Швидке додавання -->
+    <div class="flex gap-3 items-center bg-surface-container-high p-4 rounded-xl mb-space-xl">
+        <input @bind="newCaptureText"
+               @bind:event="oninput"
+               @onkeydown="OnCaptureKey"
+               placeholder="Half-remembered scene, a title, anything…"
+               class="flex-1 bg-surface-container-low rounded-lg px-4 py-2 outline-none text-on-surface placeholder:text-on-surface-variant/60 border border-surface-variant/40 focus:border-primary-container" />
+        <button @onclick="AddCapture" class="px-4 py-2 bg-primary-container text-on-primary-container rounded-lg font-title-md hover:bg-primary transition-colors">Catch it</button>
+    </div>
+
+    @if (VisibleCaptures().Count == 0)
+    {
+        <p class="font-body-md text-on-surface-variant">No captures yet. Write down the first thing that caught your eye.</p>
+    }
+
+    <div class="flex flex-col gap-space-md">
+        @foreach (var c in VisibleCaptures())
+        {
+            <div class="bg-surface-container-high rounded-2xl p-5 flex flex-col gap-4">
+
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <div class="font-title-md text-title-md text-on-surface">&ldquo;@c.RawNote&rdquo;</div>
+                        <div class="mt-1 font-label-sm text-label-sm text-on-surface-variant">
+                            @(c.Source ?? "unknown source") · @c.CapturedAt.ToString("MMM d, HH:mm", En)
+                        </div>
+                    </div>
+
+                    @if (c.Status == CaptureStatus.Unresolved)
+                    {
+                        <span class="shrink-0 px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary font-label-caps text-label-caps">UNRESOLVED</span>
+                    }
+                    else
+                    {
+                        <span class="shrink-0 px-2.5 py-0.5 rounded-full bg-primary-container/15 text-primary font-label-caps text-label-caps">RECOGNIZED</span>
+                    }
+                </div>
+
+                @if (c.Status == CaptureStatus.Unresolved)
+                {
+                    <div class="flex flex-wrap gap-2">
+                        <select @onchange="e => PickTitle(c, e.Value?.ToString())" class="@SelectClass">
+                            <option value="">What is it? Pick a title…</option>
+                            @foreach (var m in DataService.Library)
+                            {
+                                <option value="@m.Title">@m.Title (@m.ReleaseYear)</option>
+                            }
+                        </select>
+                        <button @onclick="() => Link(c)" class="px-4 py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors font-title-md">Link</button>
+                    </div>
+                }
+                else if (c.ResolvedMedia != null)
+                {
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="text-on-surface">Recognized as <span class="font-semibold text-primary">@c.ResolvedMedia.Title</span> (@c.ResolvedMedia.ReleaseYear)</span>
+
+                        @if (Me.Watchlists.Count == 0)
+                        {
+                            <span class="text-on-surface-variant">Create a list first on the Watchlists page.</span>
+                        }
+                        else
+                        {
+                            <select @onchange="e => PickList(c, e.Value?.ToString())" class="@SelectClass">
+                                @foreach (var list in Me.Watchlists)
+                                {
+                                    <option value="@list.Name">@list.Name</option>
+                                }
+                            </select>
+                            <button @onclick="() => AddToList(c)" class="px-4 py-2 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors font-title-md">Add to list</button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private static readonly CultureInfo En = new CultureInfo("en-US");
+    private const string SelectClass = "bg-surface-container-low border border-surface-variant/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary-container";
+
+    private string newCaptureText = "";
+    private readonly Dictionary<CaptureEntry, string> pickedTitles = new Dictionary<CaptureEntry, string>();
+    private readonly Dictionary<CaptureEntry, string> pickedLists = new Dictionary<CaptureEntry, string>();
+
+    private User Me => DataService.CurrentUser;
+
+    private List<CaptureEntry> VisibleCaptures()
+    {
+        return Me.Captures
+            .Where(c => c.Status != CaptureStatus.Archived)
+            .OrderByDescending(c => c.CapturedAt)
+            .ToList();
+    }
+
+    private void OnCaptureKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") AddCapture();
+    }
+
+    private void AddCapture()
+    {
+        if (string.IsNullOrWhiteSpace(newCaptureText)) return;
+
+        Me.AddCapture(newCaptureText.Trim(), "Captures page");
+        newCaptureText = "";
+    }
+
+    private void PickTitle(CaptureEntry capture, string? title)
+    {
+        pickedTitles[capture] = title ?? "";
+    }
+
+    private void PickList(CaptureEntry capture, string? listName)
+    {
+        pickedLists[capture] = listName ?? "";
+    }
+
+    private void Link(CaptureEntry capture)
+    {
+        string title;
+        if (!pickedTitles.TryGetValue(capture, out title!) || string.IsNullOrEmpty(title))
+        {
+            Snackbar.Add("Pick a title first", Severity.Warning);
+            return;
+        }
+
+        Media? media = DataService.Library.FirstOrDefault(m => m.Title == title);
+        if (media == null) return;
+
+        capture.Resolve(media);
+        Snackbar.Add($"Recognized as \"{media.Title}\"", Severity.Success);
+    }
+
+    private void AddToList(CaptureEntry capture)
+    {
+        string listName;
+        if (!pickedLists.TryGetValue(capture, out listName!) || string.IsNullOrEmpty(listName))
+            listName = Me.Watchlists[0].Name; // у select за замовчуванням вибрано перший
+
+        if (Me.MoveResolvedCaptureToWatchlist(capture, listName))
+            Snackbar.Add($"Added to \"{listName}\"", Severity.Success);
+    }
+}
