@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MyosotisWeb.ServicesWeb
@@ -8,11 +9,13 @@ namespace MyosotisWeb.ServicesWeb
         public User CurrentUser { get; private set; }
         public WatchCheckpoint ActiveCheckpoint { get; private set; }
 
+        // бібліотека всіх фільмів 
+        public List<Media> Library { get; private set; } = new();
+
         public DemoDataService()
         {
             CurrentUser = new User("spacedream");
 
-            // 1. СТВОРЕННЯ РЕЖИСЕРІВ
             var gilligan = new Director("Vince Gilligan", 1967, "Character Drama");
             var fletcher = new Director("Anne Fletcher", 1966, "Rom-Com");
             var karWai = new Director("Wong Kar-wai", 1958, "Visual Poetry");
@@ -20,7 +23,6 @@ namespace MyosotisWeb.ServicesWeb
             var rogen = new Director("Seth Rogen", 1982, "Satirical Sci-Fi");
             var chanWook = new Director("Park Chan-wook", 1963, "Revenge Thrillers");
 
-            // 2. СТВОРЕННЯ МЕДІА (з повними описами та постерами)
             var breakingBad = new Series("Breaking Bad", 2008, 47, 0, gilligan);
             breakingBad.UpdateDescription("Вчитель хімії дізнається про свій діагноз і вирішує забезпечити сім'ю, виготовляючи метамфетамін.");
             breakingBad.AddGenre("Crime");
@@ -47,7 +49,7 @@ namespace MyosotisWeb.ServicesWeb
             killBill.AddGenre("Thriller");
             killBill.SetPosterUrl("/images/posters/kill-bill.jpg");
 
-            var futureMan = new Series("Future Man", 2017, 30, 13, rogen); // 13 серій залишено для логіки "Unwatched"
+            var futureMan = new Series("Future Man", 2017, 30, 13, rogen);
             futureMan.UpdateDescription("Прибиральник Джош проходить відеогру і раптово зустрічає прибульців з майбутнього, які кажуть йому врятувати світ.");
             futureMan.AddGenre("Comedy");
             futureMan.AddGenre("Sci-Fi");
@@ -60,7 +62,8 @@ namespace MyosotisWeb.ServicesWeb
             oldboy.AddGenre("Mystery");
             oldboy.SetPosterUrl("/images/posters/oldboy.jpg");
 
-            // 3. СТВОРЕННЯ ПІДБІРОК (Watchlists)
+            Library.AddRange(new Media[] { breakingBad, dresses, moodForLove, killBill, futureMan, oldboy });
+
             var vibeList = CurrentUser.CreateWatchlist("Comfort Vibes", true);
             vibeList.AddEntry(breakingBad, "Можна передивлятись вічно");
             vibeList.AddEntry(moodForLove, "Ідеальна естетика");
@@ -71,18 +74,15 @@ namespace MyosotisWeb.ServicesWeb
             crazyList.AddEntry(oldboy, "Обов'язково додивитись");
             crazyList.AddEntry(futureMan, "Просто дичина");
 
-            // 4. ІСТОРІЯ ТА СТАТИСТИКА
+            // історія
             CurrentUser.MarkAsWatched(moodForLove);
             CurrentUser.MarkAsWatched(dresses);
 
-            // 5. ДОДАВАННЯ CAPTURES
             CurrentUser.AddCapture("Той фільм про помсту з молотком", "TikTok");
             CurrentUser.AddCapture("Романтика Вонг Карвая", "YouTube");
 
-            // 6. СТВОРЕННЯ CHECKPOINT (Для віджета Continue Watching)
             ActiveCheckpoint = new WatchCheckpoint(futureMan, 1, 4, "12:45", "Треба було йти спати");
 
-            // 7. СТАТУСИ ПЕРЕГЛЯДУ
             CurrentUser.MediaStates.Add(new UserMediaState(moodForLove, WatchStatus.Watched));
             CurrentUser.MediaStates.Add(new UserMediaState(dresses, WatchStatus.Watched));
             CurrentUser.MediaStates.Add(new UserMediaState(futureMan, WatchStatus.Watching));
