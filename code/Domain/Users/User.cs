@@ -13,6 +13,7 @@ public class User
     public List<Media> RecentlyViewed { get; private set; }
     public List<WatchHistoryEntry> WatchHistory { get; private set; }
     public List<UserMediaState> MediaStates { get; private set; }
+    public List<WatchCheckpoint> Checkpoints { get; private set; }
 
     public User(string username)
     {
@@ -26,6 +27,7 @@ public class User
         RecentlyViewed = new List<Media>();
         WatchHistory = new List<WatchHistoryEntry>();
         MediaStates = new List<UserMediaState>();
+        Checkpoints = new List<WatchCheckpoint>();
     }
 
     public Watchlist CreateWatchlist(string name, bool isPrivate = true)
@@ -222,5 +224,65 @@ public class User
             }
         }
         return best;
+    }
+
+    public bool RemoveWatchlist(Guid id)
+    {
+        Watchlist? target = null;
+        foreach (var w in Watchlists)
+        {
+            if (w.Id == id)
+            {
+                target = w;
+                break;
+            }
+        }
+
+        if (target != null)
+        {
+            Watchlists.Remove(target);
+            return true;
+        }
+        return false;
+    }
+
+    public bool DeleteCapture(Guid id)
+    {
+        CaptureEntry? target = null;
+        foreach (var c in Captures)
+        {
+            if (c.Id == id)
+            {
+                target = c;
+                break;
+            }
+        }
+
+        if (target != null)
+        {
+            Captures.Remove(target);
+            return true;
+        }
+        return false;
+    }
+
+    public bool RemoveFromHistory(Guid historyEntryId)
+    {
+        WatchHistoryEntry? target = null;
+        foreach (var h in WatchHistory)
+        {
+            if (h.Id == historyEntryId)
+            {
+                target = h;
+                break;
+            }
+        }
+
+        if (target != null)
+        {
+            WatchHistory.Remove(target);
+            return true;
+        }
+        return false;
     }
 }
