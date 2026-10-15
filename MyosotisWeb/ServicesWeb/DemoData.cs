@@ -23,13 +23,17 @@ namespace MyosotisWeb.ServicesWeb
             var rogen = new Director("Seth Rogen", 1982, "Satirical Sci-Fi");
             var chanWook = new Director("Park Chan-wook", 1963, "Revenge Thrillers");
 
-            var breakingBad = new Series("Breaking Bad", 2008, 47, 0, gilligan);
+            var breakingBad = new Series("Breaking Bad", 2008, 47, 1, gilligan);
             breakingBad.UpdateDescription("Вчитель хімії дізнається про свій діагноз і вирішує забезпечити сім'ю, виготовляючи метамфетамін.");
             breakingBad.AddGenre("Crime");
             breakingBad.AddGenre("Drama");
             breakingBad.AddGenre("Thriller");
             breakingBad.SetPosterUrl("/images/posters/breaking-bad.jpg");
             breakingBad.SetVibeRating(new VibeRating(10, 9, 8, 9, 10, 7));
+            var season1 = new Season(1);
+
+            season1.AddEpisode(new Episode(1, "Pilot", 58));
+            breakingBad.AddSeason(season1);
 
             var dresses = new Movie("27 Dresses", 2008, 111, fletcher);
             dresses.UpdateDescription("Джейн завжди була подружкою нареченої, але ніколи — головною героїнею. Все змінюється, коли її сестра збирається заміж за чоловіка, якого кохає Джейн.");
@@ -72,13 +76,13 @@ namespace MyosotisWeb.ServicesWeb
             var crazyList = CurrentUser.CreateWatchlist("Adrenaline", true);
             crazyList.AddEntry(killBill, "Класика Тарантіно");
             crazyList.AddEntry(oldboy, "Обов'язково додивитись");
-            crazyList.AddEntry(futureMan, "Просто дичина");
+            crazyList.AddEntry(futureMan, "Просто цікаво");
 
             // історія
             CurrentUser.MarkAsWatched(moodForLove);
             CurrentUser.MarkAsWatched(dresses);
 
-            CurrentUser.AddCapture("Той фільм про помсту з молотком", "TikTok");
+            CurrentUser.AddCapture("Той фільм корейський", "TikTok");
             CurrentUser.AddCapture("Романтика Вонг Карвая", "YouTube");
 
             ActiveCheckpoint = new WatchCheckpoint(futureMan, 1, 4, "12:45", "Треба було йти спати");

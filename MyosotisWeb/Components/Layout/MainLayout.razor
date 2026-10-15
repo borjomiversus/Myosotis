@@ -8,12 +8,12 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div class="bg-surface font-body-md text-body-md text-on-surface antialiased">
+<div class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen">
 
     <!-- БІЧНЕ МЕНЮ -->
-    <aside class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-low border-r border-surface-variant/40 z-50 flex flex-col justify-between">
+    <aside class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-low border-r border-secondary/30 z-50 flex flex-col justify-between">
         <div class="flex flex-col">
-            <div class="h-16 px-space-md flex items-center gap-space-sm border-b border-surface-variant/30">
+            <div class="h-16 px-space-md flex items-center gap-space-sm border-b border-secondary/20">
                 <img src="images/myosotis-logo.png" alt="" class="w-7 h-7 object-contain" onerror="this.style.display='none'" />
                 <span class="font-headline-md text-headline-md text-primary tracking-wide">Myosotis</span>
             </div>
@@ -23,8 +23,8 @@
                 {
                     <NavLink href="@item.Href"
                              Match="@(item.Href == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                             class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
-                             ActiveClass="bg-surface-container-high text-on-surface">
+                             class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-secondary/15 hover:text-on-surface transition-all"
+                             ActiveClass="bg-secondary/20 text-white font-medium">
                         <span class="material-symbols-outlined text-[18px]">@item.Icon</span>
                         <span>@item.Label</span>
                     </NavLink>
@@ -32,12 +32,12 @@
             </nav>
         </div>
 
-        <div class="p-space-md border-t border-surface-variant/30 bg-surface-container-lowest/40">
+        <div class="p-space-md border-t border-secondary/20 bg-surface-container-lowest/40">
             <div class="flex items-center gap-space-sm">
-                <div class="w-9 h-9 rounded-full bg-secondary text-on-primary-container flex items-center justify-center font-title-md text-title-md">@Initial</div>
+                <div class="w-9 h-9 rounded-full bg-secondary text-on-primary-container flex items-center justify-center font-title-md text-title-md font-bold">@Initial</div>
                 <div class="flex flex-col min-w-0">
                     <span class="font-title-md text-title-md text-on-surface truncate">@Me.Username</span>
-                    <span class="font-label-sm text-label-sm text-on-surface-variant truncate">@Me.WatchHistory.Count titles logged</span>
+                    <span class="font-label-sm text-label-sm text-secondary truncate">@Me.WatchHistory.Count titles logged</span>
                 </div>
             </div>
         </div>
@@ -46,15 +46,18 @@
     <div class="pl-[240px]">
 
         <!-- ШАПКА -->
-        <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-surface-variant/30 z-40 flex items-center justify-between px-margin">
-            <div class="flex items-center gap-space-sm w-80 bg-surface-container-low px-space-md py-space-xs rounded-lg border border-surface-variant/40">
-                <span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+        <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-secondary/30 z-40 flex items-center justify-between px-margin">
+            
+            <!-- Пошук у вигляді плашки -->
+            <div class="flex items-center gap-space-sm w-80 bg-surface-container-low px-space-md py-space-xs rounded-xl border border-secondary/30 focus-within:border-primary focus-within:bg-surface-container transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px] text-secondary">search</span>
                 <input @bind="searchText"
                        @bind:event="oninput"
                        @onkeydown="OnSearchKey"
                        placeholder="Search your library…"
                        class="bg-transparent outline-none w-full text-on-surface placeholder:text-on-surface-variant/60" />
             </div>
+
         </header>
 
         <!-- СТОРІНКИ -->
@@ -85,12 +88,6 @@
         Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(searchText.Trim())}");
     }
 
-    private void GoToCaptures()
-    {
-        Navigation.NavigateTo("/captures");
-    }
-
-
     private MudTheme _theme = new MudTheme
     {
         PaletteDark = new PaletteDark
@@ -99,9 +96,9 @@
             Secondary = "#5C80BC",
             Tertiary = "#D4915A",
             Background = "#1A2235",
-            Surface = "#232A47",
+            Surface = "#1A2235",
             TextPrimary = "#E2E8F0",
-            TextSecondary = "#A3ADC2"
+            TextSecondary = "#5C80BC"
         }
     };
 }

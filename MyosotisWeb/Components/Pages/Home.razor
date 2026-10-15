@@ -11,54 +11,66 @@
 
 <div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-10">
 
-    <!-- банер -->
+    <!-- БАНЕР -->
     @if (FeaturedMedia != null)
     {
-        <div class="relative w-full h-[300px] rounded-2xl overflow-hidden border border-surface-variant/20 shadow-lg flex items-center group bg-surface-container-lowest">
+        <div class="relative w-full h-[300px] rounded-lg overflow-hidden border border-secondary/30 shadow-xl flex items-center group bg-gradient-to-br from-secondary/20 via-background to-secondary/10">
 
             <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                  style="@UiHelpers.CardBackground(FeaturedMedia.PosterUrl)">
             </div>
 
-            <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/85 to-transparent"></div>
+            <div class="absolute inset-0 bg-background/40 mix-blend-overlay"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent"></div>
 
             <div class="relative z-10 w-full p-10 flex flex-col max-w-2xl">
 
-                <span class="px-2 py-1 rounded bg-primary/10 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/20 mb-3">
-                    Recommendation
+                <span class="px-2 py-1 rounded bg-primary/15 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/30 mb-3">
+                    RECOMMENDATION
                 </span>
 
                 <h1 class="font-serif text-[40px] md:text-[48px] text-white font-bold leading-tight mb-3 drop-shadow-lg">
                     @FeaturedMedia.Title
                 </h1>
 
-                <div class="flex items-center gap-2 text-[12px] text-on-surface-variant font-body-md mb-3">
-                    <span>@FeaturedMedia.ReleaseYear</span>
+                <div class="flex items-center gap-2 text-[13px] text-secondary font-body-md mb-4">
+                    <span class="text-white">@FeaturedMedia.ReleaseYear</span>
 
                     @if (FeaturedMedia.Genres.Any())
                     {
                         <span>·</span>
-                        <span>@string.Join(" · ", FeaturedMedia.Genres)</span>
+                        <span class="text-white">@string.Join(" · ", FeaturedMedia.Genres)</span>
                     }
 
                     <span>·</span>
-                    <span>@UiHelpers.FormatMinutes(FeaturedMedia.CalculateTimeDebt())</span>
+
+                    @if (FeaturedMedia is Movie movie)
+                    {
+                        <span class="text-white">@UiHelpers.FormatMinutes(movie.DurationMinutes)</span>
+                    }
+                    else if (FeaturedMedia is Series series)
+                    {
+                        int totalSeasons = series.Seasons.Count;
+                        int totalEpisodes = series.Seasons.Sum(s => s.Episodes.Count);
+
+                        <span class="text-white">@totalSeasons сезонів · @totalEpisodes епізодів</span>
+                    }
                 </div>
 
                 @if (!string.IsNullOrWhiteSpace(FeaturedMedia.Description))
                 {
-                    <p class="font-body-md text-[13px] leading-6 text-on-surface-variant max-w-xl line-clamp-3 mb-6">
+                    <p class="font-body-md text-[13px] leading-6 text-white/70 max-w-xl line-clamp-3 mb-6">
                         @FeaturedMedia.Description
                     </p>
                 }
 
                 <div class="flex items-center gap-4">
-                    <button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-title-md text-[14px] hover:bg-primary-fixed-dim transition-colors flex items-center gap-2">
+                    <button class="px-5 py-2.5 rounded-lg bg-primary text-background font-title-md font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center gap-2 shadow-md">
                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
                         Add to list
                     </button>
 
-                    <button class="px-5 py-2.5 rounded-lg border border-surface-variant/40 text-white font-title-md text-[14px] hover:bg-surface-variant/20 transition-colors flex items-center gap-2">
+                    <button class="px-5 py-2.5 rounded-lg border border-secondary text-secondary font-title-md text-[14px] hover:bg-secondary/10 transition-colors flex items-center gap-2">
                         <span class="material-symbols-outlined text-[20px]">info</span>
                         Details
                     </button>
@@ -68,16 +80,16 @@
         </div>
     }
 
-    <!-- вотчліст -->
+    <!-- ВОТЧЛІСТИ -->
     <div class="flex flex-col">
 
         <div class="flex items-center gap-4 mb-6">
             <h2 class="font-serif text-[24px] text-white">Your watchlists</h2>
 
-            <div class="flex-1 h-px bg-surface-variant/20"></div>
+            <div class="flex-1 h-px bg-secondary/30"></div>
 
             <a href="/watchlists"
-               class="text-[13px] text-on-surface-variant hover:text-white transition-colors flex items-center gap-1 group font-body-md">
+               class="text-[13px] text-secondary hover:text-primary transition-colors flex items-center gap-1 group font-body-md">
                 <span>View all</span>
                 <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">
                     arrow_forward
@@ -90,21 +102,28 @@
             @foreach (var list in Me.Watchlists)
             {
                 <div @onclick="() => OpenList(list.Name)"
-                     class="snap-start shrink-0 w-[340px] h-[200px] rounded-2xl bg-surface-container-lowest border border-surface-variant/20 shadow-lg cursor-pointer group relative overflow-hidden flex flex-col justify-end p-6">
+                     class="snap-start shrink-0 w-[340px] h-[200px] rounded-lg border border-secondary/20 shadow-lg cursor-pointer group relative overflow-hidden flex flex-col justify-end p-6 bg-gradient-to-br from-secondary/15 via-background to-secondary/5">
 
-                    <div class="absolute inset-0 flex opacity-50 group-hover:opacity-80 transition-opacity duration-500 z-0">
-                        @if (list.Entries.Any())
-                        {
-                            @foreach (var entry in list.Entries.Take(3))
+                    <div class="absolute inset-0 z-0 overflow-hidden">
+                        <div class="absolute -right-4 -top-2 flex -space-x-12 opacity-80 group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-500 pt-6 pr-6">
+                            @if (list.Entries.Any())
                             {
-                                <div class="flex-1 bg-cover bg-center border-l border-surface first:border-l-0"
-                                     style="@UiHelpers.CardBackground(entry.Item.PosterUrl)">
-                                </div>
+                                var topEntries = list.Entries.Take(3).ToList();
+                                for (int i = 0; i < topEntries.Count; i++)
+                                {
+                                    var entry = topEntries[i];
+                                    string rotation = i == 0 ? "-rotate-12 mt-4" : i == 1 ? "-rotate-3 mt-1" : "rotate-12 mt-5";
+                                    string zIndex = i == 0 ? "z-30" : i == 1 ? "z-20" : "z-10";
+
+                                    <div class="@zIndex @rotation w-[85px] h-[125px] rounded bg-cover bg-center border border-secondary/30 shadow-2xl transition-transform duration-300"
+                                         style="@UiHelpers.CardBackground(entry.Item.PosterUrl)">
+                                    </div>
+                                }
                             }
-                        }
+                        </div>
                     </div>
 
-                    <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/85 to-transparent z-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10"></div>
 
                     <div class="relative z-20 flex items-end justify-between">
 
@@ -117,19 +136,19 @@
 
                                 @if (list.IsPrivate)
                                 {
-                                    <span class="material-symbols-outlined text-[14px] text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[14px] text-secondary">
                                         lock
                                     </span>
                                 }
                             </div>
 
-                            <span class="text-[13px] text-on-surface-variant font-body-md">
+                            <span class="text-[13px] text-secondary font-body-md">
                                 @list.Entries.Count titles
                             </span>
 
                         </div>
 
-                        <div class="w-10 h-10 rounded-lg border border-white/20 flex items-center justify-center text-white backdrop-blur-sm group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-colors">
+                        <div class="w-10 h-10 rounded-lg border border-secondary/40 flex items-center justify-center text-secondary backdrop-blur-sm group-hover:bg-primary group-hover:text-background group-hover:border-primary transition-colors shadow-lg">
                             <span class="material-symbols-outlined text-[20px]">
                                 arrow_forward
                             </span>
@@ -139,174 +158,135 @@
                 </div>
             }
 
-            <div class="snap-start shrink-0 w-[200px] h-[200px] rounded-2xl bg-surface-container-lowest border border-surface-variant/20 shadow-lg cursor-pointer hover:bg-surface-container-low transition-colors flex flex-col items-center justify-center gap-4 group">
-
-                <div class="w-12 h-12 rounded-full border border-surface-variant/40 flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:border-primary/50 transition-colors">
+            <div class="snap-start shrink-0 w-[200px] h-[200px] rounded-lg bg-background border border-dashed border-secondary/40 shadow-lg cursor-pointer hover:bg-secondary/10 transition-colors flex flex-col items-center justify-center gap-4 group">
+                <div class="w-12 h-12 rounded-full border border-secondary/40 flex items-center justify-center text-secondary group-hover:text-primary group-hover:border-primary transition-colors">
                     <span class="material-symbols-outlined text-[24px]">
                         add
                     </span>
                 </div>
-
-                <span class="text-[14px] text-on-surface-variant group-hover:text-white transition-colors text-center font-body-md">
+                <span class="text-[14px] text-secondary group-hover:text-white transition-colors text-center font-body-md">
                     Create new<br />watchlist
                 </span>
-
             </div>
 
         </div>
     </div>
 
-    <!-- нижні блоки -->
+    <!-- НИЖНІ БЛОКИ ( з градієнтом та rounded-lg ) -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         <!-- вечір -->
-        <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant/20 p-6 flex flex-col">
-
+        <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-[18px] text-white">
                     For your next evening
                 </h3>
-
-                <a href="#"
-                   class="text-[12px] text-on-surface-variant hover:text-white transition-colors flex items-center font-body-md">
+                <a href="#" class="text-[12px] text-secondary hover:text-primary transition-colors flex items-center font-body-md">
                     See all
-                    <span class="material-symbols-outlined text-[14px]">
-                        arrow_forward
-                    </span>
+                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </a>
             </div>
 
-            <div class="grid grid-cols-4 gap-3">
-                @foreach (var media in SuggestedMedia)
+            <div class="grid grid-cols-2 gap-4">
+                @foreach (var media in SuggestedMedia.Take(2))
                 {
-                    <div class="aspect-[2/3] rounded-lg bg-cover bg-center shadow-sm border border-surface-variant/10 hover:border-primary/50 transition-colors"
-                         style="@UiHelpers.CardBackground(media.PosterUrl)"
-                         title="@media.Title">
+                    <div class="flex flex-col gap-2 group cursor-pointer">
+                        <div class="aspect-[2/3] rounded bg-cover bg-center shadow-md border border-secondary/20 group-hover:border-primary transition-all group-hover:scale-[1.02]"
+                             style="@UiHelpers.CardBackground(media.PosterUrl)"
+                             title="@media.Title">
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[13px] text-white font-title-md font-medium truncate group-hover:text-primary transition-colors">
+                                @media.Title
+                            </span>
+                            <span class="text-[11px] text-secondary font-body-md">
+                                @media.ReleaseYear
+                            </span>
+                        </div>
                     </div>
                 }
             </div>
-
         </div>
 
-        <!-- нотатки-->
-        <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant/20 p-6 flex flex-col">
-
+        <!-- нотатки -->
+        <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-[18px] text-white">
                     Recent captures
                 </h3>
-
-                <a href="/captures"
-                   class="text-[12px] text-on-surface-variant hover:text-white transition-colors flex items-center font-body-md">
+                <a href="/captures" class="text-[12px] text-secondary hover:text-primary transition-colors flex items-center font-body-md">
                     View all
-                    <span class="material-symbols-outlined text-[14px]">
-                        arrow_forward
-                    </span>
+                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </a>
             </div>
-
             <div class="flex flex-col gap-4">
-
                 @if (Me.Captures != null && Me.Captures.Any())
                 {
                     @foreach (var capture in Me.Captures.Take(3))
                     {
-                        <div class="flex flex-col gap-1 pb-3 border-b border-surface-variant/20 last:border-b-0">
-
+                        <div class="flex flex-col gap-1 pb-3 border-b border-secondary/20 last:border-b-0">
                             <p class="text-[13px] text-white font-title-md font-medium">
                                 "@capture.RawNote"
                             </p>
-
-                            <div class="flex items-center gap-1.5 text-[11px] text-on-surface-variant font-body-md">
-
+                            <div class="flex items-center gap-1.5 text-[11px] text-secondary font-body-md">
                                 @if (!string.IsNullOrWhiteSpace(capture.Source))
                                 {
-                                    <span class="text-secondary">@capture.Source</span>
+                                    <span class="text-primary">@capture.Source</span>
                                     <span>·</span>
                                 }
-
-                                <span>
-                                    @capture.CapturedAt.ToString("MMM d, yyyy")
-                                </span>
-
+                                <span>@capture.CapturedAt.ToString("MMM d, yyyy")</span>
                             </div>
-
                         </div>
                     }
                 }
                 else
                 {
-                    <p class="text-[13px] text-on-surface-variant font-body-md">
+                    <p class="text-[13px] text-secondary font-body-md">
                         No captures logged yet.
                     </p>
                 }
-
             </div>
         </div>
 
         <!-- дії швидкі -->
-        <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant/20 p-6 flex flex-col">
-
+        <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center mb-6">
                 <h3 class="font-serif text-[18px] text-white">
                     Quick actions
                 </h3>
             </div>
-
             <div class="flex flex-col gap-3">
 
                 <button @onclick="GoToCaptures"
-                        class="flex items-center justify-between p-4 rounded-xl border border-surface-variant/20 hover:border-primary/50 hover:bg-surface-container-low transition-all group text-left">
-
+                        class="flex items-center justify-between p-4 rounded-lg border border-secondary/20 hover:border-primary hover:bg-secondary/20 transition-all group text-left">
                     <div class="flex items-center gap-4">
-
                         <span class="material-symbols-outlined text-primary text-[24px]">
                             edit_note
                         </span>
-
                         <div class="flex flex-col">
-                            <span class="text-[14px] text-white font-title-md">
-                                Capture
-                            </span>
-
-                            <span class="text-[12px] text-on-surface-variant font-body-md">
-                                Save a thought
-                            </span>
+                            <span class="text-[14px] text-white font-title-md">Capture</span>
+                            <span class="text-[12px] text-secondary font-body-md">Save a thought</span>
                         </div>
-
                     </div>
-
-                    <span class="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:translate-x-1 transition-transform">
+                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:text-primary group-hover:translate-x-1 transition-all">
                         chevron_right
                     </span>
-
                 </button>
 
                 <button @onclick="OpenRouletteDialog"
-                        class="flex items-center justify-between p-4 rounded-xl border border-surface-variant/20 hover:border-tertiary/50 hover:bg-surface-container-low transition-all group text-left">
-
+                        class="flex items-center justify-between p-4 rounded-lg border border-secondary/20 hover:border-tertiary hover:bg-secondary/20 transition-all group text-left">
                     <div class="flex items-center gap-4">
-
                         <span class="material-symbols-outlined text-tertiary text-[24px]">
                             casino
                         </span>
-
                         <div class="flex flex-col">
-                            <span class="text-[14px] text-white font-title-md">
-                                Roulette
-                            </span>
-
-                            <span class="text-[12px] text-on-surface-variant font-body-md">
-                                Random pick
-                            </span>
+                            <span class="text-[14px] text-white font-title-md">Roulette</span>
+                            <span class="text-[12px] text-secondary font-body-md">Random pick</span>
                         </div>
-
                     </div>
-
-                    <span class="material-symbols-outlined text-on-surface-variant text-[18px] group-hover:translate-x-1 transition-transform">
+                    <span class="material-symbols-outlined text-secondary text-[18px] group-hover:text-tertiary group-hover:translate-x-1 transition-all">
                         chevron_right
                     </span>
-
                 </button>
 
             </div>
@@ -314,71 +294,62 @@
 
     </div>
 
-    <!-- історія -->
+    <!-- ІСТОРІЯ -->
     @{
         var now = DateTime.Now;
         int monthMinutes = Me.GetMonthlyStats(now.Year, now.Month);
         int monthTitles = Me.GetMonthlyWatchCount(now.Year, now.Month);
     }
 
-    <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant/20 px-8 py-5 flex items-center justify-between">
-
+    <div class="bg-gradient-to-r from-secondary/15 via-background to-secondary/10 rounded-lg border border-secondary/20 px-8 py-5 flex items-center justify-between shadow-lg">
         <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-secondary text-[24px]">
                 bar_chart
             </span>
-
             <span class="text-[15px] font-title-md text-white">
                 This month
             </span>
         </div>
 
         <div class="flex items-center gap-12">
-
             <div class="flex items-center gap-4">
-                <span class="material-symbols-outlined text-on-surface-variant text-[20px]">
+                <span class="material-symbols-outlined text-secondary text-[20px]">
                     visibility
                 </span>
-
                 <div class="flex flex-col">
                     <span class="text-[15px] text-white font-title-md font-bold leading-none">
                         @monthTitles
                     </span>
-
-                    <span class="text-[11px] text-on-surface-variant font-body-md">
+                    <span class="text-[11px] text-secondary font-body-md">
                         watched
                     </span>
                 </div>
             </div>
 
-            <div class="w-px h-8 bg-surface-variant/20"></div>
+            <div class="w-px h-8 bg-secondary/30"></div>
 
             <div class="flex items-center gap-4">
-                <span class="material-symbols-outlined text-on-surface-variant text-[20px]">
+                <span class="material-symbols-outlined text-secondary text-[20px]">
                     schedule
                 </span>
-
                 <div class="flex flex-col">
                     <span class="text-[15px] text-white font-title-md font-bold leading-none">
                         @UiHelpers.FormatMinutes(monthMinutes)
                     </span>
-
-                    <span class="text-[11px] text-on-surface-variant font-body-md">
+                    <span class="text-[11px] text-secondary font-body-md">
                         total time
                     </span>
                 </div>
             </div>
-
         </div>
 
         <a href="/history"
-           class="text-[13px] text-primary hover:text-primary-fixed-dim transition-colors flex items-center gap-1 font-body-md">
+           class="text-[13px] text-primary hover:text-white transition-colors flex items-center gap-1 font-body-md font-bold">
             <span>View history</span>
             <span class="material-symbols-outlined text-[16px]">
                 arrow_forward
             </span>
         </a>
-
     </div>
 
 </div>
