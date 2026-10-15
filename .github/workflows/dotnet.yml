@@ -22,10 +22,15 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: |
+        dotnet restore MyosotisWeb/MyosotisWeb.csproj
+        dotnet restore code/projectmovies.csproj
+        dotnet restore Myosotis.Tests/Myosotis.Tests.slnx
 
-    - name: Build Solution
-      run: dotnet build --no-restore
+    - name: Build Projects
+      run: |
+        dotnet build MyosotisWeb/MyosotisWeb.csproj --no-restore
+        dotnet build code/projectmovies.csproj --no-restore
 
     - name: Run Unit Tests
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test Myosotis.Tests/Myosotis.Tests.slnx --no-build --verbosity normal
