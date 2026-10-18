@@ -18,6 +18,6 @@ public class WatchHistoryEntry
     {
         WatchedItem = watchedItem ?? throw new ArgumentNullException(nameof(watchedItem));
         WatchDate = watchDate;
-        Action = action
+        Action = action;
     }
 }
