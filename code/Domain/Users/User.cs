@@ -37,9 +37,19 @@ public class User
         return list;
     }
 
-    public void AddCapture(string rawNote, string? source)
+    public IEnumerable<CaptureEntry> ActiveCaptures =>
+        Captures.Where(c => c.Status != CaptureStatus.Archived)
+                .OrderByDescending(c => c.CapturedAt);
+
+    public CaptureEntry AddCapture(string note, string? source, CaptureKind kind = CaptureKind.Thought, string? timecode = null)
     {
-        Captures.Add(new CaptureEntry(rawNote, source));
+        var capture = new CaptureEntry(note, source, kind);
+        if (!string.IsNullOrWhiteSpace(timecode))
+        {
+            capture.TrySetTimecode(timecode);
+        }
+        Captures.Add(capture);
+        return capture;
     }
 
     public bool MoveResolvedCaptureToWatchlist(CaptureEntry capture, string watchlistName)
