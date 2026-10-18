@@ -1,0 +1,125 @@
+@page "/search"
+@using MudBlazor
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject MediaSearch SearchService
+@inject ISnackbar Snackbar
+
+<PageTitle>Myosotis · Search</PageTitle>
+
+<div class="max-w-[1200px] mx-auto px-margin py-margin">
+
+    <div class="mb-space-xl">
+        <h1 class="font-headline-xl text-headline-xl text-on-surface">Search</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant/80 italic font-serif">
+            @(string.IsNullOrWhiteSpace(Query) ? "Type a title, genre or actor in the search bar and press Enter." : $"Results for \"{Query}\"")
+        </p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Query) && results.Count == 0)
+    {
+        <p class="font-body-md text-on-surface-variant">Nothing found. Try another word.</p>
+    }
+
+    <div class="flex flex-col gap-space-md">
+        @foreach (var m in results)
+        {
+            <div class="bg-surface-container-high rounded-2xl p-5 flex gap-5">
+                <div class="w-20 h-28 rounded-lg bg-cover bg-center shadow-md shrink-0"
+                     style="@UiHelpers.CardBackground(m.PosterUrl)"></div>
+
+                <div class="flex-1 min-w-0 flex flex-col gap-2">
+                    <div>
+                        <div class="font-headline-md text-headline-md text-on-surface font-serif">@m.Title</div>
+                        <div class="font-label-sm text-label-sm text-on-surface-variant">
+                            @m.ReleaseYear · @(m is Series ? "Series" : "Movie") · @string.Join(", ", m.Genres) · @UiHelpers.FormatMinutes(m.CalculateTimeDebt())
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(m.Description))
+                    {
+                        <p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">@m.Description</p>
+                    }
+
+                    <div class="flex flex-wrap gap-2 mt-auto">
+                        @if (Me.Watchlists.Count == 0)
+                        {
+                            <span class="text-on-surface-variant font-label-sm text-label-sm">Create a list first on the Watchlists page.</span>
+                        }
+                        else
+                        {
+                            <select @onchange="e => PickList(m, e.Value?.ToString())" class="bg-surface-container-low border border-surface-variant/40 rounded-lg px-3 py-1.5 text-on-surface outline-none focus:border-primary-container">
+                                @foreach (var list in Me.Watchlists)
+                                {
+                                    <option value="@list.Name">@list.Name</option>
+                                }
+                            </select>
+                            <button @onclick="() => AddToList(m)" class="px-4 py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors font-title-md text-title-md">Add to list</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+    private List<Media> results = new List<Media>();
+    private string? lastLogged;
+    private readonly Dictionary<Media, string> pickedLists = new Dictionary<Media, string>();
+
+    private User Me => DataService.CurrentUser;
+
+    protected override void OnParametersSet()
+    {
+        results = new List<Media>();
+        if (string.IsNullOrWhiteSpace(Query)) return;
+
+        // Три види пошуку з MediaSearch, без дублікатів.
+        AddUnique(SearchService.SearchByTitle(DataService.Library, Query));
+        AddUnique(SearchService.FilterByGenre(DataService.Library, Query));
+        AddUnique(SearchService.SearchByActor(DataService.Library, Query));
+
+        if (Query != lastLogged)
+        {
+            Me.LogSearch(Query);
+            lastLogged = Query;
+        }
+    }
+
+    private void AddUnique(List<Media> found)
+    {
+        foreach (var media in found)
+        {
+            if (!results.Contains(media))
+                results.Add(media);
+        }
+    }
+
+    private void PickList(Media media, string? listName)
+    {
+        pickedLists[media] = listName ?? "";
+    }
+
+    private void AddToList(Media media)
+    {
+        string listName;
+        if (!pickedLists.TryGetValue(media, out listName!) || string.IsNullOrEmpty(listName))
+            listName = Me.Watchlists[0].Name; // у select за замовчуванням вибрано перший
+
+        Watchlist? list = Me.Watchlists.FirstOrDefault(w => w.Name == listName);
+        if (list == null) return;
+
+        if (list.Entries.Any(e => e.Item == media))
+        {
+            Snackbar.Add($"Already in \"{listName}\"", Severity.Warning);
+            return;
+        }
+
+        list.AddEntry(media, null);
+        Snackbar.Add($"Added to \"{listName}\"", Severity.Success);
+    }
+}

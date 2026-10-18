@@ -1,0 +1,42 @@
+﻿@using MyosotisWeb.ServicesWeb
+
+<div class="flex flex-col">
+    <div class="flex items-baseline justify-between mb-5">
+        <h2 class="font-serif text-[24px] text-on-surface">@Title</h2>
+        @if (!string.IsNullOrWhiteSpace(Caption))
+        {
+            <span class="text-[11px] text-on-surface-variant uppercase tracking-wider">@Caption</span>
+        }
+    </div>
+
+    <div class="flex gap-5 overflow-x-auto pb-4 snap-x" style="scrollbar-width: none;">
+        @foreach (var media in Items)
+        {
+            <div @onclick="() => OnSelect.InvokeAsync(media)" class="snap-start shrink-0 w-[150px] flex flex-col gap-3 cursor-pointer group">
+                <div class="w-full aspect-[2/3] rounded-lg bg-cover bg-center shadow-md border border-surface-variant/20 transition-all group-hover:border-primary/50 relative overflow-hidden"
+                     style="@UiHelpers.CardBackground(media.PosterUrl)">
+                    <div class="absolute inset-0 bg-surface/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-[32px]">add</span>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-[15px] font-medium text-on-surface truncate group-hover:text-primary transition-colors">@media.Title</h4>
+                    <div class="text-[12px] text-on-surface-variant mt-0.5 truncate">@SubtitleFor(media)</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Caption { get; set; }
+    [Parameter] public IEnumerable<Media> Items { get; set; } = new List<Media>();
+    [Parameter] public EventCallback<Media> OnSelect { get; set; }
+
+    private string SubtitleFor(Media media)
+    {
+        string? genre = media.Genres.Count > 0 ? media.Genres[0] : null;
+        return genre == null ? media.ReleaseYear.ToString() : $"{media.ReleaseYear} · {genre}";
+    }
+}

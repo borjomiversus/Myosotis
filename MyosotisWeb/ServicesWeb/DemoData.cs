@@ -12,6 +12,14 @@ namespace MyosotisWeb.ServicesWeb
         // бібліотека всіх фільмів 
         public List<Media> Library { get; private set; } = new();
 
+        public IEnumerable<Media> SearchLibrary(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return Enumerable.Empty<Media>();
+
+            var q = query.ToLowerInvariant();
+            return Library.Where(m => m.Title.ToLowerInvariant().Contains(q) ||
+                                     (m.Genres != null && m.Genres.Any(g => g.ToLowerInvariant().Contains(q))));
+        }
         public DemoDataService()
         {
             CurrentUser = new User("spacedream");
@@ -40,6 +48,8 @@ namespace MyosotisWeb.ServicesWeb
             dresses.AddGenre("Comedy");
             dresses.AddGenre("Romance");
             dresses.SetPosterUrl("/images/posters/27-dresses.jpg");
+            var awesomeVibe = new VibeRating(8, 7, 10, 9, 10, 10);
+            dresses.SetVibeRating(awesomeVibe);
 
             var moodForLove = new Movie("In the Mood for Love", 2000, 98, karWai);
             moodForLove.UpdateDescription("Гонконг, 1960-ті. Двоє сусідів виявляють, що їхні подружжя зраджують їм одне з одним, і між ними виникає особливий, але стриманий зв'язок.");

@@ -1,0 +1,194 @@
+@page "/history"
+@using System.Globalization
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+
+<PageTitle>Myosotis · History</PageTitle>
+
+<div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-10">
+
+    <!-- Заголовок -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="flex flex-col">
+            <h1 class="font-headline-xl text-[48px] text-[#E2E8F0] tracking-tight leading-none mb-2">History</h1>
+            <p class="font-body-md text-[16px] text-secondary italic font-serif">Every frame, episode, and feature logged over time.</p>
+        </div>
+    </header>
+
+    <!-- Підсумок місяця -->
+    @{
+        var now = DateTime.Now;
+        int monthMinutes = Me.GetMonthlyStats(now.Year, now.Month);
+        int monthTitles = Me.GetMonthlyWatchCount(now.Year, now.Month);
+
+        // Групуємо всю активність по днях
+        var groupedEntries = Me.WatchHistory
+            .OrderByDescending(h => h.WatchDate)
+            .GroupBy(h => h.WatchDate.Date)
+            .ToList();
+    }
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
+        <div class="bg-secondary/10 border border-secondary/20 rounded-xl p-5 flex flex-col justify-between group">
+            <div class="flex items-center justify-between text-secondary mb-4">
+                <span class="font-label-caps text-[10px] uppercase tracking-wider">Titles Logged</span>
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">task_alt</span>
+            </div>
+            <div>
+                <div class="font-serif font-bold text-[32px] text-[#E2E8F0] leading-none mb-1">@monthTitles</div>
+                <span class="font-label-sm text-[11px] text-secondary">In @now.ToString("MMMM", En)</span>
+            </div>
+        </div>
+
+        <div class="bg-secondary/10 border border-secondary/20 rounded-xl p-5 flex flex-col justify-between group">
+            <div class="flex items-center justify-between text-secondary mb-4">
+                <span class="font-label-caps text-[10px] uppercase tracking-wider">Watch Time</span>
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">schedule</span>
+            </div>
+            <div>
+                <div class="font-serif font-bold text-[32px] text-[#E2E8F0] leading-none mb-1">
+                    @(monthMinutes / 60)<span class="text-[18px] text-secondary font-normal ml-1">hrs</span>
+                </div>
+                <span class="font-label-sm text-[11px] text-secondary">This month</span>
+            </div>
+        </div>
+
+        <div class="bg-secondary/10 border border-secondary/20 rounded-xl p-5 flex flex-col justify-between group">
+            <div class="flex items-center justify-between text-secondary mb-4">
+                <span class="font-label-caps text-[10px] uppercase tracking-wider">All-Time Total</span>
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">history</span>
+            </div>
+            <div>
+                <div class="font-serif font-bold text-[32px] text-[#E2E8F0] leading-none mb-1">@Me.WatchHistory.Count</div>
+                <span class="font-label-sm text-[11px] text-secondary">Total entries</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вертикальний Таймлайн Активності -->
+    @if (groupedEntries.Count == 0)
+    {
+        <div class="flex flex-col items-center justify-center py-20 opacity-50">
+            <span class="material-symbols-outlined text-[48px] text-secondary mb-4">history_toggle_off</span>
+            <p class="font-body-md text-[#E2E8F0]">Nothing here yet. Search for a title or add to a watchlist.</p>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col gap-10">
+            @foreach (var group in groupedEntries)
+            {
+                <div class="flex flex-col gap-4">
+                    <!-- Заголовок дати -->
+                    <div class="flex items-center gap-3">
+                        <span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(132,220,198,0.5)]"></span>
+                        <span class="font-label-caps text-[10px] text-secondary tracking-widest uppercase">
+                            @group.Key.ToString("dddd, MMMM d, yyyy", En)
+                        </span>
+                    </div>
+
+                    <!-- Картки записів за цей день -->
+                    <div class="flex flex-col gap-3">
+                        @foreach (var h in group)
+                        {
+                            var item = h.WatchedItem;
+
+                            // Динамічний текст залежно від типу дії
+                            string actionText = h.Action switch
+                            {
+                                ActivityAction.Watched => "Watched at",
+                                ActivityAction.ViewedDetails => "Viewed details at",
+                                ActivityAction.AddedToList => "Added to list at",
+                                _ => "Accessed at"
+                            };
+
+                            <div class="bg-secondary/10 hover:bg-secondary/15 rounded-xl p-4 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 border border-secondary/20 group">
+
+                                <!-- Ліва частина: Постер та інформація -->
+                                <div class="flex items-start md:items-center gap-5 min-w-0">
+                                    @if (!string.IsNullOrEmpty(item.PosterUrl))
+                                    {
+                                        <div class="w-24 h-16 sm:w-28 sm:h-16 flex-shrink-0 rounded-lg bg-cover bg-center border border-secondary/30 shadow-md group-hover:scale-105 transition-transform duration-300"
+                                             style="@UiHelpers.CardBackground(item.PosterUrl)">
+                                        </div>
+                                    }
+
+                                    <div class="flex flex-col min-w-0 gap-1.5">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-serif font-bold text-[18px] text-[#E2E8F0] group-hover:text-primary transition-colors truncate">@item.Title</span>
+                                            <span class="font-body-md text-[13px] text-secondary">(@item.ReleaseYear)</span>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 text-secondary font-label-sm text-[11px] flex-wrap">
+                                            <span class="bg-background border border-secondary/30 px-2 py-0.5 rounded text-secondary">
+                                                @(item is Series ? "Series" : "Movie")
+                                            </span>
+                                            <span>·</span>
+                                            <span>@UiHelpers.FormatMinutes(item.CalculateTimeDebt())</span>
+                                            <span>·</span>
+                                            <span class="text-secondary/60">@actionText @h.WatchDate.ToString("HH:mm")</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Права частина: Вайб-рейтинг (жовтий акцент) та нотатки -->
+                                <div class="flex items-center justify-between md:justify-end gap-6 flex-shrink-0 pt-2 md:pt-0">
+
+                                    <!-- Vibe Rating із жовтою зірочкою -->
+                                    @if (item.Vibe != null)
+                                    {
+                                        <div class="flex items-center gap-1.5 bg-background/50 border border-secondary/20 px-2.5 py-1 rounded-lg"
+                                             title="Characters: @item.Vibe.Characters, Plot: @item.Vibe.Plot, Visuals: @item.Vibe.Visuals, Pacing: @item.Vibe.Pacing, Vibe: @item.Vibe.Vibe, OST: @item.Vibe.Soundtrack">
+                                            <span class="material-symbols-outlined text-[16px] text-[#F5C518]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                            <div class="font-title-md text-[14px] text-[#E2E8F0]">
+                                                @item.Vibe.CalculateAverage().ToString("0.0")
+                                                <span class="text-secondary text-[11px] font-normal">/ 10</span>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Кнопка нотаток -->
+                                    <div class="flex items-center">
+                                        <span class="inline-flex items-center gap-1.5 bg-background border border-secondary/30 text-secondary px-3 py-1.5 rounded-lg font-label-sm text-[11px] group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-colors cursor-pointer">
+                                            <span class="material-symbols-outlined text-[14px]">edit_note</span>
+                                            Notes
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Кінцевий маркер -->
+        <div class="flex flex-col items-center justify-center py-10 gap-2 text-secondary/60 mt-4">
+            <div class="w-1.5 h-1.5 rounded-full bg-secondary/40"></div>
+            <span class="font-label-caps text-[10px] tracking-widest uppercase">Beginning of journal</span>
+        </div>
+    }
+
+    <!-- Недавні пошуки -->
+    @if (Me.RecentSearches.Count > 0)
+    {
+        <div class="mt-8 pt-8 border-t border-secondary/20">
+            <h2 class="font-serif text-[20px] text-[#E2E8F0] mb-4">Recent searches</h2>
+            <div class="flex flex-wrap gap-2">
+                @foreach (var query in Me.RecentSearches)
+                {
+                    <a href="@($"/search?q={Uri.EscapeDataString(query)}")" class="px-4 py-2 rounded-lg bg-secondary/10 border border-secondary/30 text-secondary hover:text-primary hover:border-primary transition-colors font-body-md text-[13px]">
+                        @query
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private static readonly CultureInfo En = new CultureInfo("en-US");
+
+    private User Me => DataService.CurrentUser;
+}

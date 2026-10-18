@@ -25,45 +25,49 @@
 
             <div class="relative z-10 w-full p-10 flex flex-col max-w-2xl">
 
-                <span class="px-2 py-1 rounded bg-primary/15 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/30 mb-3">
+                <span class="px-2 py-1 rounded bg-primary/15 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/30 mb-4 backdrop-blur-sm">
                     RECOMMENDATION
                 </span>
 
-                <h1 class="font-serif text-[40px] md:text-[48px] text-white font-bold leading-tight mb-3 drop-shadow-lg">
+                <!-- Заголовок банера у єдиному стилі -->
+                <h1 class="font-headline-xl text-headline-xl text-[#E2E8F0] drop-shadow-lg mb-3">
                     @FeaturedMedia.Title
                 </h1>
 
-                <div class="flex items-center gap-2 text-[13px] text-secondary font-body-md mb-4">
-                    <span class="text-white">@FeaturedMedia.ReleaseYear</span>
+                <!-- Метадані -->
+                <div class="flex items-center gap-2 font-body-md text-[13px] text-secondary mb-4 drop-shadow-md">
+                    <span>@FeaturedMedia.ReleaseYear</span>
 
                     @if (FeaturedMedia.Genres.Any())
                     {
                         <span>·</span>
-                        <span class="text-white">@string.Join(" · ", FeaturedMedia.Genres)</span>
+                        <span>@string.Join(" · ", FeaturedMedia.Genres)</span>
                     }
 
                     <span>·</span>
 
                     @if (FeaturedMedia is Movie movie)
                     {
-                        <span class="text-white">@UiHelpers.FormatMinutes(movie.DurationMinutes)</span>
+                        <span>@UiHelpers.FormatMinutes(movie.DurationMinutes)</span>
                     }
                     else if (FeaturedMedia is Series series)
                     {
                         int totalSeasons = series.Seasons.Count;
                         int totalEpisodes = series.Seasons.Sum(s => s.Episodes.Count);
 
-                        <span class="text-white">@totalSeasons сезонів · @totalEpisodes епізодів</span>
+                        <span>@totalSeasons сезонів · @totalEpisodes епізодів</span>
                     }
                 </div>
 
                 @if (!string.IsNullOrWhiteSpace(FeaturedMedia.Description))
                 {
-                    <p class="font-body-md text-[13px] leading-6 text-white/70 max-w-xl line-clamp-3 mb-6">
+                    <!-- Опис фільму у стилі підзаголовків -->
+                    <p class="font-body-lg text-body-lg text-[#E2E8F0]/80 italic font-serif max-w-xl line-clamp-3 mb-8 drop-shadow-md">
                         @FeaturedMedia.Description
                     </p>
                 }
 
+                <!-- Кнопки -->
                 <div class="flex items-center gap-4">
                     <button class="px-5 py-2.5 rounded-lg bg-primary text-background font-title-md font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center gap-2 shadow-md">
                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
@@ -75,7 +79,6 @@
                         Details
                     </button>
                 </div>
-
             </div>
         </div>
     }
@@ -172,7 +175,7 @@
         </div>
     </div>
 
-    <!-- НИЖНІ БЛОКИ ( з градієнтом та rounded-lg ) -->
+    <!-- НИЖНІ БЛОКИ -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         <!-- вечір -->
