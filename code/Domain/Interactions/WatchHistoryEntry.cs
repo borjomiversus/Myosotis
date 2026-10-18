@@ -14,9 +14,10 @@ public class WatchHistoryEntry
     public DateTime WatchDate { get; private set; }
     public ActivityAction Action { get; set; }
 
-    public WatchHistoryEntry(Media watchedItem, DateTime watchDate)
+    public WatchHistoryEntry(Media watchedItem, DateTime watchDate, ActivityAction action = ActivityAction.Watched)
     {
         WatchedItem = watchedItem ?? throw new ArgumentNullException(nameof(watchedItem));
         WatchDate = watchDate;
+        Action = action
     }
 }
