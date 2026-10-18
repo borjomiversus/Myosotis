@@ -135,6 +135,17 @@ public class User
         MarkAsWatched(item);
     }
 
+    public void RecordDetailsView(Media item)
+    {
+        RecordView(item); 
+        WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.ViewedDetails));
+    }
+
+    public void RecordAddedToList(Media item)
+    {
+        WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.AddedToList));
+    }
+
     // для статистики та рулетки
     public List<Media> GetPlannedMedia()
     {
