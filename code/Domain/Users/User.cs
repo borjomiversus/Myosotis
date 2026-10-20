@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System;
-using System.Collections.Generic;
-
+using System.Linq;
 public class User
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
@@ -72,6 +70,13 @@ public class User
         capture.Archive();
 
         return true;
+    }
+
+    public void AddMediaToWatchlist(Watchlist watchlist, Media item, string? personalNote = null)
+    {
+        if (watchlist == null || item == null) return;
+        watchlist.AddEntry(item, personalNote);
+        RecordAddedToList(item);
     }
 
     public void LogSearch(string query)
