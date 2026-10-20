@@ -1,87 +1,324 @@
 @page "/search"
+@using System.Globalization
 @using MudBlazor
 @using MyosotisWeb.ServicesWeb
 @inject DemoDataService DataService
 @inject MediaSearch SearchService
+@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
-<PageTitle>Myosotis · Search</PageTitle>
+<PageTitle>Myosotis · Search Archive</PageTitle>
 
-<div class="max-w-[1200px] mx-auto px-margin py-margin">
+<div class="relative w-full overflow-hidden px-margin py-space-xl">
+    <!-- Ambient Canvas Glow -->
+    <div class="absolute -top-32 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-48 right-10 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="mb-space-xl">
-        <h1 class="font-headline-xl text-headline-xl text-on-surface">Search</h1>
-        <p class="font-body-lg text-body-lg text-on-surface-variant/80 italic font-serif">
-            @(string.IsNullOrWhiteSpace(Query) ? "Type a title, genre or actor in the search bar and press Enter." : $"Results for \"{Query}\"")
-        </p>
-    </div>
+    <!-- Header & Search Command Zone -->
+    <section class="relative z-10 flex flex-col gap-space-lg mb-space-xl">
+        <!-- Eyebrow & Archival Registry Marker -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-space-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Archive Exploration & Catalog</span>
+                <span class="text-on-surface-variant/40 text-body-md font-body-md">•</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">INDEX REF: #FLM-8092-X</span>
+            </div>
+            <div class="hidden sm:flex items-center gap-space-sm text-on-surface-variant/60 font-label-caps text-label-caps">
+                <span>SORT: RELEVANCE CHRONO</span>
+                <span class="material-symbols-outlined text-[14px]">tune</span>
+            </div>
+        </div>
 
-    @if (!string.IsNullOrWhiteSpace(Query) && results.Count == 0)
-    {
-        <p class="font-body-md text-on-surface-variant">Nothing found. Try another word.</p>
-    }
-
-    <div class="flex flex-col gap-space-md">
-        @foreach (var m in results)
-        {
-            <div class="bg-surface-container-high rounded-2xl p-5 flex gap-5">
-                <div class="w-20 h-28 rounded-lg bg-cover bg-center shadow-md shrink-0"
-                     style="@UiHelpers.CardBackground(m.PosterUrl)"></div>
-
-                <div class="flex-1 min-w-0 flex flex-col gap-2">
-                    <div>
-                        <div class="font-headline-md text-headline-md text-on-surface font-serif">@m.Title</div>
-                        <div class="font-label-sm text-label-sm text-on-surface-variant">
-                            @m.ReleaseYear · @(m is Series ? "Series" : "Movie") · @string.Join(", ", m.Genres) · @UiHelpers.FormatMinutes(m.CalculateTimeDebt())
-                        </div>
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(m.Description))
-                    {
-                        <p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">@m.Description</p>
-                    }
-
-                    <div class="flex flex-wrap gap-2 mt-auto">
-                        @if (Me.Watchlists.Count == 0)
-                        {
-                            <span class="text-on-surface-variant font-label-sm text-label-sm">Create a list first on the Watchlists page.</span>
-                        }
-                        else
-                        {
-                            <select @onchange="e => PickList(m, e.Value?.ToString())" class="bg-surface-container-low border border-surface-variant/40 rounded-lg px-3 py-1.5 text-on-surface outline-none focus:border-primary-container">
-                                @foreach (var list in Me.Watchlists)
-                                {
-                                    <option value="@list.Name">@list.Name</option>
-                                }
-                            </select>
-                            <button @onclick="() => AddToList(m)" class="px-4 py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors font-title-md text-title-md">Add to list</button>
-                        }
-                    </div>
+        <!-- Main Input Bar Component (Темна стилізація) -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
+            <div class="relative flex-1 group">
+                <div class="absolute inset-y-0 left-0 pl-space-md flex items-center pointer-events-none text-on-surface-variant group-focus-within:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
                 </div>
+                <input class="w-full pl-12 pr-12 py-space-md bg-surface-container-low border border-surface-variant/40 rounded-lg text-body-lg font-body-lg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:bg-surface-container-high shadow-sm transition-all"
+                       placeholder="Search films, directors, genres, actors..."
+                       type="text"
+                       @bind="searchInput"
+                       @bind:event="oninput"
+                       @keyup.enter="ExecuteSearch" />
+                @if (!string.IsNullOrEmpty(searchInput))
+                {
+                    <button @onclick="ClearSearch" aria-label="Clear active query" class="absolute inset-y-0 right-0 pr-space-md flex items-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                }
+            </div>
+            <div class="flex items-center gap-space-sm">
+                <button @onclick="ExecuteSearch" class="flex items-center gap-space-xs px-space-lg py-space-md rounded-lg bg-primary text-on-primary font-title-md hover:bg-primary-fixed transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">search</span>
+                    <span>Search</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Metadata Count & Subtitle -->
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-space-xs">
+            <h1 class="font-headline-lg text-headline-lg text-on-surface">
+                @(string.IsNullOrWhiteSpace(Query) ? "Catalog Archive" : "Results for ")
+                @if (!string.IsNullOrWhiteSpace(Query))
+                {
+                    <span class="italic text-primary">“@Query”</span>
+                }
+            </h1>
+            <p class="font-body-md text-body-md text-on-surface-variant">
+                <span class="text-on-surface font-title-md">@GetFilteredResults().Count</span> titles & entities discovered
+            </p>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        @if (results.Count > 0)
+        {
+            <div class="flex items-center gap-space-xs overflow-x-auto pb-space-xs">
+                <button @onclick='() => selectedFilter = "All"' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all shadow-sm flex items-center gap-1.5 @(selectedFilter == "All" ? "bg-primary-container text-on-primary-container" : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high")">
+                    <span>All</span>
+                    <span class="text-[11px] opacity-75 font-label-sm">(@results.Count)</span>
+                </button>
+                <button @onclick='() => selectedFilter = "Movies"' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "Movies" ? "bg-primary-container text-on-primary-container" : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high")">
+                    <span>Movies</span>
+                    <span class="text-[11px] opacity-60 font-label-sm">(@CountMovies())</span>
+                </button>
+                <button @onclick='() => selectedFilter = "Series"' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "Series" ? "bg-primary-container text-on-primary-container" : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high")">
+                    <span>TV Series</span>
+                    <span class="text-[11px] opacity-60 font-label-sm">(@CountSeries())</span>
+                </button>
+                <button @onclick='() => selectedFilter = "Watchlist"' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "Watchlist" ? "bg-primary-container text-on-primary-container" : "bg-surface-container text-secondary hover:bg-surface-container-high")">
+                    <span class="material-symbols-outlined text-[14px]">bookmark</span>
+                    <span>In Watchlists</span>
+                    <span class="text-[11px] opacity-60 font-label-sm">(@CountInWatchlist())</span>
+                </button>
             </div>
         }
-    </div>
+    </section>
+
+    <!-- ACTIVE RESULTS VIEW CONTAINER -->
+    @if (GetFilteredResults().Count > 0)
+    {
+        <div class="flex flex-col gap-space-lg transition-all duration-300">
+            @foreach (var m in GetFilteredResults())
+            {
+                var containingList = GetContainingWatchlist(m);
+                bool isWatched = Me.IsWatched(m);
+
+                <article class="group relative bg-surface-container-low rounded-xl p-space-lg sm:p-space-xl hover:bg-surface-container transition-all duration-300 shadow-md">
+                    <div class="flex flex-col lg:flex-row gap-space-lg items-start">
+                        <!-- Poster Thumbnail -->
+                        <a href="/media/@m.Id" class="relative w-full lg:w-48 shrink-0 aspect-[2/3] rounded-lg overflow-hidden bg-surface-container-highest shadow-sm block">
+                            @if (!string.IsNullOrEmpty(m.PosterUrl))
+                            {
+                                <img src="@m.PosterUrl" alt="@m.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
+                            }
+                            else
+                            {
+                                <div class="w-full h-full flex items-center justify-center text-secondary">
+                                    <span class="material-symbols-outlined text-[48px]">movie</span>
+                                </div>
+                            }
+                            <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-transparent to-transparent"></div>
+                            @if (m.TmdbRating.HasValue)
+                            {
+                                <div class="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-lowest/80 backdrop-blur-sm text-primary font-label-caps text-label-caps">
+                                    <span class="material-symbols-outlined text-[12px]">star</span>
+                                    <span>@m.TmdbRating.Value.ToString("0.0", En)</span>
+                                </div>
+                            }
+                        </a>
+
+                        <!-- Narrative Content Column -->
+                        <div class="flex flex-col flex-1 min-w-0 justify-between gap-space-md">
+                            <div class="flex flex-col gap-space-xs">
+                                <!-- Badges Row -->
+                                <div class="flex flex-wrap items-center gap-space-xs">
+                                    <span class="px-space-sm py-0.5 rounded bg-surface-container-high font-label-caps text-label-caps text-primary tracking-wider uppercase">
+                                        @(m is Series ? "TV Series" : "Feature Film")
+                                    </span>
+                                    <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">@m.ReleaseYear</span>
+                                    <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">
+                                        @UiHelpers.FormatMinutes(m.CalculateTimeDebt())
+                                    </span>
+                                    @if (m.Genres != null && m.Genres.Count > 0)
+                                    {
+                                        <span class="text-on-surface-variant/40 font-body-md">•</span>
+                                        <span class="font-label-sm text-label-sm text-secondary tracking-wide">@string.Join(" • ", m.Genres)</span>
+                                    }
+                                </div>
+
+                                <!-- Title & Director -->
+                                <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-space-xs mt-1">
+                                    <a href="/media/@m.Id" class="font-headline-lg text-headline-lg text-on-surface group-hover:text-primary transition-colors">
+                                        @m.Title
+                                    </a>
+                                    @if (m.MediaDirector != null)
+                                    {
+                                        <span class="font-body-md text-body-md text-on-surface-variant italic">Dir. @m.MediaDirector.FullName</span>
+                                    }
+                                </div>
+
+                                <!-- Synopsis -->
+                                @if (!string.IsNullOrWhiteSpace(m.Description))
+                                {
+                                    <p class="font-body-lg text-body-lg text-on-surface-variant/90 line-clamp-2 max-w-3xl mt-1">
+                                        @m.Description
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Vibe consensus preview & Personal Status Badges -->
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm p-space-md rounded-lg bg-surface-container-lowest/60">
+                                <div class="flex items-center gap-space-md">
+                                    @if (m.Vibe != null)
+                                    {
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-stat-metric text-stat-metric text-primary leading-none">
+                                                @m.Vibe.CalculateAverage().ToString("0.0", En)
+                                            </span>
+                                            <div class="flex flex-col">
+                                                <span class="font-label-caps text-label-caps text-primary tracking-wider uppercase">Vibe Consensus</span>
+                                                <span class="font-label-sm text-label-sm text-on-surface-variant">6-dimensional aesthetic match</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="font-label-sm text-label-sm text-on-surface-variant italic">No vibe consensus recorded yet</span>
+                                    }
+                                </div>
+
+                                <!-- Personal Sanctuary State Badges -->
+                                <div class="flex flex-wrap items-center gap-space-xs">
+                                    @if (containingList != null)
+                                    {
+                                        <span class="flex items-center gap-1 px-space-sm py-1 rounded bg-secondary-container/40 text-secondary text-label-sm font-label-sm">
+                                            <span class="material-symbols-outlined text-[14px]">collections_bookmark</span>
+                                            <span>In Watchlist: @containingList.Name</span>
+                                        </span>
+                                    }
+                                    @if (isWatched)
+                                    {
+                                        <span class="flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container-highest/60 text-on-surface-variant text-label-sm font-label-sm">
+                                            <span class="material-symbols-outlined text-[14px] text-primary">check_circle</span>
+                                            <span>Watched</span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Editorial Actions Row (Темна стилізація випадаючого списку списків) -->
+                            <div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs border-t border-surface-variant/20">
+                                <div class="flex flex-wrap items-center gap-space-sm">
+                                    <a href="/media/@m.Id" class="px-space-md py-space-xs rounded-full bg-primary text-on-primary font-title-md text-title-md hover:bg-primary-fixed transition-all flex items-center gap-1.5 shadow-sm">
+                                        <span>View Details</span>
+                                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                    </a>
+
+                                    @if (Me.Watchlists.Count > 0)
+                                    {
+                                        <div class="flex items-center gap-2">
+                                            <select @onchange="e => PickList(m, e.Value?.ToString())"
+                                                    class="bg-surface-container-high border border-surface-variant/50 rounded-lg px-3 py-1.5 text-primary font-title-md text-title-md outline-none focus:border-primary cursor-pointer transition-colors">
+                                                @foreach (var list in Me.Watchlists)
+                                                {
+                                                    <option value="@list.Name" class="bg-surface-container text-on-surface">@list.Name</option>
+                                                }
+                                            </select>
+                                            <button @onclick="() => AddToList(m)" class="px-space-md py-space-xs rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface hover:text-primary font-title-md text-title-md transition-colors flex items-center gap-1.5 border border-surface-variant/40">
+                                                <span class="material-symbols-outlined text-[16px] text-primary">bookmark_add</span>
+                                                <span>+ Add</span>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Query))
+    {
+        <!-- POETIC SILENT CATALOG STATE (EMPTY STATE VIEW) -->
+        <div class="flex flex-col items-center justify-center py-space-xl px-space-md text-center bg-surface-container-low rounded-2xl border-dashed border-2 border-surface-variant/40 transition-all duration-300 my-space-md">
+            <div class="relative w-24 h-24 mb-space-md flex items-center justify-center">
+                <div class="absolute inset-0 bg-primary/10 rounded-full blur-xl"></div>
+                <div class="relative w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/50">
+                    <span class="material-symbols-outlined text-[36px] text-primary/70">hourglass_empty</span>
+                </div>
+            </div>
+            <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase mb-space-xs">NO CANONICAL TRACES</span>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface max-w-xl">
+                The archive is silent.
+            </h2>
+            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mt-space-sm mb-space-lg">
+                No traces found for “<span class="text-on-surface font-semibold">@Query</span>” in your personal journal or the global film catalog.
+            </p>
+
+            <!-- Poetic Discovery Hints Box -->
+            <div class="w-full max-w-lg p-space-md bg-surface-container rounded-lg text-left mb-space-lg flex flex-col gap-space-xs">
+                <div class="flex items-center gap-space-xs text-secondary font-title-md text-title-md">
+                    <span class="material-symbols-outlined text-[16px]">lightbulb</span>
+                    <span>Archival Exploration Hints</span>
+                </div>
+                <ul class="font-body-md text-body-md text-on-surface-variant flex flex-col gap-1 pl-5 list-disc">
+                    <li>Search by atmospheric mood: <span class="text-primary italic">“Sci-Fi”</span>, <span class="text-primary italic">“Drama”</span>, or <span class="text-primary italic">“Mystery”</span></li>
+                    <li>Query a specific auteur or actor: <span class="text-on-surface">“Christopher Nolan”</span>, <span class="text-on-surface">“DiCaprio”</span></li>
+                    <li>Narrow by chronological eras or production year: <span class="text-on-surface">“2010”</span>, <span class="text-on-surface">“2024”</span></li>
+                </ul>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-space-sm">
+                <button @onclick="ClearSearch" class="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary-container font-title-md text-title-md hover:bg-primary transition-colors flex items-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                    <span>Reset Search</span>
+                </button>
+                <a href="/watchlists" class="px-space-lg py-space-xs rounded-lg bg-surface-container-high text-on-surface font-title-md text-title-md hover:bg-surface-bright transition-colors">
+                    Browse Curated Shelves
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Editorial Footer Ribbon -->
+    <footer class="mt-space-xl pt-space-md border-t border-surface-variant/20 flex flex-col sm:flex-row items-center justify-between gap-space-sm text-on-surface-variant/60 font-label-sm text-label-sm">
+        <div class="flex items-center gap-space-xs">
+            <span class="w-1 h-1 rounded-full bg-primary/70"></span>
+            <span>Myosotis Archival Indexing • @DataService.GetAllMedia().Count Total Canon Entries</span>
+        </div>
+        <div>
+            <span>Personal Sanctuary Journal</span>
+        </div>
+    </footer>
 </div>
 
 @code {
     [SupplyParameterFromQuery(Name = "q")]
     public string? Query { get; set; }
 
+    private string searchInput = "";
+    private string selectedFilter = "All"; // "All", "Movies", "Series", "Watchlist"
     private List<Media> results = new List<Media>();
     private string? lastLogged;
     private readonly Dictionary<Media, string> pickedLists = new Dictionary<Media, string>();
+    private static readonly CultureInfo En = new CultureInfo("en-US");
 
     private User Me => DataService.CurrentUser;
 
     protected override void OnParametersSet()
     {
         results = new List<Media>();
+        searchInput = Query ?? "";
+
         if (string.IsNullOrWhiteSpace(Query)) return;
 
-        // Три види пошуку з MediaSearch, без дублікатів.
-        AddUnique(SearchService.SearchByTitle(DataService.Library, Query));
-        AddUnique(SearchService.FilterByGenre(DataService.Library, Query));
-        AddUnique(SearchService.SearchByActor(DataService.Library, Query));
+        var allMedia = DataService.GetAllMedia();
+        AddUnique(SearchService.SearchByTitle(allMedia, Query));
+        AddUnique(SearchService.FilterByGenre(allMedia, Query));
+        AddUnique(SearchService.SearchByActor(allMedia, Query));
 
         if (Query != lastLogged)
         {
@@ -90,13 +327,119 @@
         }
     }
 
+    private void ExecuteSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchInput))
+        {
+            Navigation.NavigateTo("/search");
+        }
+        else
+        {
+            Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(searchInput)}");
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchInput = "";
+        Navigation.NavigateTo("/search");
+    }
+
     private void AddUnique(List<Media> found)
     {
         foreach (var media in found)
         {
-            if (!results.Contains(media))
+            bool exists = false;
+            foreach (var existing in results)
+            {
+                if (existing.Id == media.Id)
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists)
+            {
                 results.Add(media);
+            }
         }
+    }
+
+    private List<Media> GetFilteredResults()
+    {
+        if (selectedFilter == "All") return results;
+
+        var filtered = new List<Media>();
+        foreach (var m in results)
+        {
+            if (selectedFilter == "Movies" && m is Movie)
+            {
+                filtered.Add(m);
+            }
+            else if (selectedFilter == "Series" && m is Series)
+            {
+                filtered.Add(m);
+            }
+            else if (selectedFilter == "Watchlist" && IsInAnyWatchlist(m))
+            {
+                filtered.Add(m);
+            }
+        }
+        return filtered;
+    }
+
+    private int CountMovies()
+    {
+        int count = 0;
+        foreach (var m in results)
+        {
+            if (m is Movie) count++;
+        }
+        return count;
+    }
+
+    private int CountSeries()
+    {
+        int count = 0;
+        foreach (var m in results)
+        {
+            if (m is Series) count++;
+        }
+        return count;
+    }
+
+    private int CountInWatchlist()
+    {
+        int count = 0;
+        foreach (var m in results)
+        {
+            if (IsInAnyWatchlist(m)) count++;
+        }
+        return count;
+    }
+
+    private bool IsInAnyWatchlist(Media m)
+    {
+        foreach (var w in Me.Watchlists)
+        {
+            foreach (var entry in w.Entries)
+            {
+                if (entry.Item.Id == m.Id) return true;
+            }
+        }
+        return false;
+    }
+
+    private Watchlist? GetContainingWatchlist(Media m)
+    {
+        foreach (var w in Me.Watchlists)
+        {
+            foreach (var entry in w.Entries)
+            {
+                if (entry.Item.Id == m.Id) return w;
+            }
+        }
+        return null;
     }
 
     private void PickList(Media media, string? listName)
@@ -108,18 +451,41 @@
     {
         string listName;
         if (!pickedLists.TryGetValue(media, out listName!) || string.IsNullOrEmpty(listName))
-            listName = Me.Watchlists[0].Name; // у select за замовчуванням вибрано перший
+        {
+            if (Me.Watchlists.Count > 0)
+                listName = Me.Watchlists[0].Name;
+            else return;
+        }
 
-        Watchlist? list = Me.Watchlists.FirstOrDefault(w => w.Name == listName);
-        if (list == null) return;
+        Watchlist? targetList = null;
+        foreach (var w in Me.Watchlists)
+        {
+            if (w.Name == listName)
+            {
+                targetList = w;
+                break;
+            }
+        }
 
-        if (list.Entries.Any(e => e.Item == media))
+        if (targetList == null) return;
+
+        bool alreadyIn = false;
+        foreach (var entry in targetList.Entries)
+        {
+            if (entry.Item.Id == media.Id)
+            {
+                alreadyIn = true;
+                break;
+            }
+        }
+
+        if (alreadyIn)
         {
             Snackbar.Add($"Already in \"{listName}\"", Severity.Warning);
             return;
         }
 
-        list.AddEntry(media, null);
+        Me.AddMediaToWatchlist(targetList, media, null);
         Snackbar.Add($"Added to \"{listName}\"", Severity.Success);
     }
 }

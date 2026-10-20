@@ -29,16 +29,18 @@
                     RECOMMENDATION
                 </span>
 
-                <!-- Заголовок банера у єдиному стилі -->
-                <h1 class="font-headline-xl text-headline-xl text-[#E2E8F0] drop-shadow-lg mb-3">
-                    @FeaturedMedia.Title
-                </h1>
+                <!-- Заголовок банера з посиланням -->
+                <a href="/media/@FeaturedMedia.Id" class="hover:text-primary transition-colors">
+                    <h1 class="font-headline-xl text-headline-xl text-[#E2E8F0] drop-shadow-lg mb-3">
+                        @FeaturedMedia.Title
+                    </h1>
+                </a>
 
                 <!-- Метадані -->
                 <div class="flex items-center gap-2 font-body-md text-[13px] text-secondary mb-4 drop-shadow-md">
                     <span>@FeaturedMedia.ReleaseYear</span>
 
-                    @if (FeaturedMedia.Genres.Any())
+                    @if (FeaturedMedia.Genres != null && FeaturedMedia.Genres.Count > 0)
                     {
                         <span>·</span>
                         <span>@string.Join(" · ", FeaturedMedia.Genres)</span>
@@ -53,7 +55,11 @@
                     else if (FeaturedMedia is Series series)
                     {
                         int totalSeasons = series.Seasons.Count;
-                        int totalEpisodes = series.Seasons.Sum(s => s.Episodes.Count);
+                        int totalEpisodes = 0;
+                        foreach (var s in series.Seasons)
+                        {
+                            totalEpisodes += s.Episodes.Count;
+                        }
 
                         <span>@totalSeasons сезонів · @totalEpisodes епізодів</span>
                     }
@@ -61,7 +67,6 @@
 
                 @if (!string.IsNullOrWhiteSpace(FeaturedMedia.Description))
                 {
-                    <!-- Опис фільму у стилі підзаголовків -->
                     <p class="font-body-lg text-body-lg text-[#E2E8F0]/80 italic font-serif max-w-xl line-clamp-3 mb-8 drop-shadow-md">
                         @FeaturedMedia.Description
                     </p>
@@ -74,10 +79,11 @@
                         Add to list
                     </button>
 
-                    <button class="px-5 py-2.5 rounded-lg border border-secondary text-secondary font-title-md text-[14px] hover:bg-secondary/10 transition-colors flex items-center gap-2">
+                    <!-- Посилання на деталі медіа -->
+                    <a href="/media/@FeaturedMedia.Id" class="px-5 py-2.5 rounded-lg border border-secondary text-secondary font-title-md text-[14px] hover:bg-secondary/10 transition-colors flex items-center gap-2">
                         <span class="material-symbols-outlined text-[20px]">info</span>
                         Details
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -109,12 +115,12 @@
 
                     <div class="absolute inset-0 z-0 overflow-hidden">
                         <div class="absolute -right-4 -top-2 flex -space-x-12 opacity-80 group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-500 pt-6 pr-6">
-                            @if (list.Entries.Any())
+                            @if (list.Entries.Count > 0)
                             {
-                                var topEntries = list.Entries.Take(3).ToList();
-                                for (int i = 0; i < topEntries.Count; i++)
+                                int maxCount = list.Entries.Count < 3 ? list.Entries.Count : 3;
+                                for (int i = 0; i < maxCount; i++)
                                 {
-                                    var entry = topEntries[i];
+                                    var entry = list.Entries[i];
                                     string rotation = i == 0 ? "-rotate-12 mt-4" : i == 1 ? "-rotate-3 mt-1" : "rotate-12 mt-5";
                                     string zIndex = i == 0 ? "z-30" : i == 1 ? "z-20" : "z-10";
 
@@ -178,22 +184,22 @@
     <!-- НИЖНІ БЛОКИ -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-        <!-- вечір -->
+        <!-- Вечір (Рекомендації з посиланнями на деталі) -->
         <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-[18px] text-white">
                     For your next evening
                 </h3>
-                <a href="#" class="text-[12px] text-secondary hover:text-primary transition-colors flex items-center font-body-md">
+                <a href="/search" class="text-[12px] text-secondary hover:text-primary transition-colors flex items-center font-body-md">
                     See all
                     <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </a>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                @foreach (var media in SuggestedMedia.Take(2))
+                @foreach (var media in SuggestedMedia)
                 {
-                    <div class="flex flex-col gap-2 group cursor-pointer">
+                    <a href="/media/@media.Id" class="flex flex-col gap-2 group cursor-pointer block">
                         <div class="aspect-[2/3] rounded bg-cover bg-center shadow-md border border-secondary/20 group-hover:border-primary transition-all group-hover:scale-[1.02]"
                              style="@UiHelpers.CardBackground(media.PosterUrl)"
                              title="@media.Title">
@@ -206,12 +212,12 @@
                                 @media.ReleaseYear
                             </span>
                         </div>
-                    </div>
+                    </a>
                 }
             </div>
         </div>
 
-        <!-- нотатки -->
+        <!-- Нотатки -->
         <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-[18px] text-white">
@@ -223,9 +229,9 @@
                 </a>
             </div>
             <div class="flex flex-col gap-4">
-                @if (Me.Captures != null && Me.Captures.Any())
+                @if (RecentCaptures.Count > 0)
                 {
-                    @foreach (var capture in Me.Captures.Take(3))
+                    @foreach (var capture in RecentCaptures)
                     {
                         <div class="flex flex-col gap-1 pb-3 border-b border-secondary/20 last:border-b-0">
                             <p class="text-[13px] text-white font-title-md font-medium">
@@ -251,7 +257,7 @@
             </div>
         </div>
 
-        <!-- дії швидкі -->
+        <!-- Швидкі дії -->
         <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center mb-6">
                 <h3 class="font-serif text-[18px] text-white">
@@ -360,10 +366,39 @@
 @code {
     private User Me => DataService.CurrentUser;
 
-    private Media? FeaturedMedia => DataService.Library.FirstOrDefault();
+    // Без LINQ (індексація за списком)
+    private Media? FeaturedMedia => DataService.Library.Count > 0 ? DataService.Library[0] : null;
 
-    private IEnumerable<Media> SuggestedMedia =>
-        DataService.Library.Skip(1).Take(4);
+    // Без LINQ (звичайний цикл for)
+    private List<Media> SuggestedMedia
+    {
+        get
+        {
+            var result = new List<Media>();
+            for (int i = 1; i < DataService.Library.Count && result.Count < 2; i++)
+            {
+                result.Add(DataService.Library[i]);
+            }
+            return result;
+        }
+    }
+
+    // Без LINQ для нотаток
+    private List<CaptureEntry> RecentCaptures
+    {
+        get
+        {
+            var result = new List<CaptureEntry>();
+            if (Me.Captures != null)
+            {
+                for (int i = 0; i < Me.Captures.Count && result.Count < 3; i++)
+                {
+                    result.Add(Me.Captures[i]);
+                }
+            }
+            return result;
+        }
+    }
 
     private void OpenList(string listName) =>
         Navigation.NavigateTo($"/watchlists/{Uri.EscapeDataString(listName)}");

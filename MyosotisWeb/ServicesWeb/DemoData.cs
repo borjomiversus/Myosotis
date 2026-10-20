@@ -9,8 +9,14 @@ namespace MyosotisWeb.ServicesWeb
         public User CurrentUser { get; private set; }
         public WatchCheckpoint ActiveCheckpoint { get; private set; }
 
-        // бібліотека всіх фільмів 
+        // Бібліотека всіх фільмів 
         public List<Media> Library { get; private set; } = new();
+        public List<Media> GetAllMedia() => Library;
+
+        public Media? GetById(Guid id)
+        {
+            return Library.FirstOrDefault(m => m.Id == id);
+        }
 
         public IEnumerable<Media> SearchLibrary(string query)
         {
@@ -20,6 +26,7 @@ namespace MyosotisWeb.ServicesWeb
             return Library.Where(m => m.Title.ToLowerInvariant().Contains(q) ||
                                      (m.Genres != null && m.Genres.Any(g => g.ToLowerInvariant().Contains(q))));
         }
+
         public DemoDataService()
         {
             CurrentUser = new User("spacedream");
@@ -88,14 +95,16 @@ namespace MyosotisWeb.ServicesWeb
             crazyList.AddEntry(oldboy, "Обов'язково додивитись");
             crazyList.AddEntry(futureMan, "Просто цікаво");
 
-            // історія
+            // Історія
             CurrentUser.MarkAsWatched(moodForLove);
             CurrentUser.MarkAsWatched(dresses);
 
             CurrentUser.AddCapture("Той фільм корейський", "TikTok");
             CurrentUser.AddCapture("Романтика Вонг Карвая", "YouTube");
 
+            // Чекпоінт перегляду
             ActiveCheckpoint = new WatchCheckpoint(futureMan, 1, 4, "12:45", "Треба було йти спати");
+            CurrentUser.SetCheckpoint(ActiveCheckpoint);
 
             CurrentUser.MediaStates.Add(new UserMediaState(moodForLove, WatchStatus.Watched));
             CurrentUser.MediaStates.Add(new UserMediaState(dresses, WatchStatus.Watched));

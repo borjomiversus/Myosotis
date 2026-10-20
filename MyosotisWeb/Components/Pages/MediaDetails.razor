@@ -1,0 +1,776 @@
+﻿@page "/media/{Id:guid}"
+@using System.Globalization
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+
+<PageTitle>Myosotis · @(MediaItem?.Title ?? "Media Details")</PageTitle>
+
+@if (MediaItem == null)
+{
+    <div class="max-w-7xl mx-auto px-margin py-20 text-center text-secondary">
+        <span class="material-symbols-outlined text-[48px] mb-2">find_in_page</span>
+        <p class="font-headline-md">Media item not found in the sanctuary archive.</p>
+    </div>
+}
+else
+{
+    <div class="flex flex-col w-full">
+        <!-- 1. HERO HEADER WITH BACKDROP -->
+        <div class="relative w-full -mt-16 pt-16 bg-surface-container-lowest overflow-hidden">
+            <!-- Background Backdrop -->
+            @if (!string.IsNullOrEmpty(MediaItem.PosterUrl))
+            {
+                <div class="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity scale-105 filter blur-sm"
+                     style="background-image: url('@MediaItem.PosterUrl')"></div>
+            }
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/60 to-transparent"></div>
+
+            <!-- Inner Content -->
+            <div class="relative max-w-7xl mx-auto px-margin pt-10 pb-12 flex flex-col md:flex-row gap-8 items-start">
+
+                <!-- Poster Column -->
+                <div class="w-full md:w-72 shrink-0 flex flex-col gap-3 group">
+                    <div class="relative rounded-xl overflow-hidden shadow-2xl bg-surface-container-high transition-transform duration-500 group-hover:-translate-y-1">
+                        <div class="aspect-[2/3] w-full relative">
+                            @if (!string.IsNullOrEmpty(MediaItem.PosterUrl))
+                            {
+                                <img src="@MediaItem.PosterUrl" alt="@MediaItem.Title" class="w-full h-full object-cover" />
+                            }
+                            else
+                            {
+                                <div class="w-full h-full flex items-center justify-center bg-surface-container-highest text-secondary">
+                                    <span class="material-symbols-outlined text-[48px]">movie</span>
+                                </div>
+                            }
+                            <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent"></div>
+                            <div class="absolute top-3 left-3 bg-surface-container-lowest/80 backdrop-blur-md px-2.5 py-1 rounded-full">
+                                <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">ID: #@MediaItem.Id.ToString().Substring(0, 8)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details under Poster -->
+                    <div class="flex items-center justify-between px-1 text-on-surface-variant font-label-sm text-label-sm">
+                        <span>Studio: <strong class="text-on-surface">@(MediaItem.ProductionStudio ?? "N/A")</strong></span>
+                        <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                        <span>Country: <strong class="text-on-surface">@(MediaItem.Country ?? "N/A")</strong></span>
+                    </div>
+                </div>
+
+                <!-- Meta & Action Column -->
+                <div class="flex-1 min-w-0 flex flex-col gap-5">
+
+                    <!-- Breadcrumbs -->
+                    <nav class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+                        <a href="/watchlists" class="hover:text-primary transition-colors">Watchlists</a>
+                        <span class="material-symbols-outlined text-[12px] opacity-40">chevron_right</span>
+                        <span class="text-primary font-medium">@MediaItem.Title</span>
+                    </nav>
+
+                    <!-- Main Title & Badges -->
+                    <div class="flex flex-col gap-2">
+                        <div class="flex flex-wrap items-baseline gap-4">
+                            <h1 class="font-headline-xl text-headline-xl text-on-surface font-semibold tracking-tight">@MediaItem.Title</h1>
+                            <span class="font-headline-md text-headline-md text-secondary italic">(@MediaItem.ReleaseYear)</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 pt-1 text-on-surface-variant">
+                            <span class="px-2.5 py-0.5 rounded-full bg-surface-container-high font-label-caps text-label-caps text-secondary uppercase">
+                                @(MediaItem is Series ? "TV Series" : "Feature Film")
+                            </span>
+
+                            @if (MediaItem is Series series)
+                            {
+                                <span class="font-body-md text-body-md text-on-surface">@series.TotalSeasons Seasons • @series.CalculateTimeDebt() mins</span>
+                            }
+                            else if (MediaItem is Movie movie)
+                            {
+                                <span class="font-body-md text-body-md text-on-surface">@movie.DurationMinutes mins</span>
+                            }
+
+                            @if (MediaItem.Genres != null && MediaItem.Genres.Count > 0)
+                            {
+                                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                <span class="font-body-md text-body-md text-on-surface">@string.Join(" • ", MediaItem.Genres)</span>
+                            }
+
+                            @if (MediaItem.TmdbRating.HasValue)
+                            {
+                                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                <div class="flex items-center gap-1 font-body-md text-body-md text-primary">
+                                    <span class="font-label-caps text-[10px] bg-primary/10 border border-primary/30 px-1.5 py-0.5 rounded">TMDB</span>
+                                    <span class="font-bold">@MediaItem.TmdbRating.Value.ToString("0.0", En)</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Logline / Description -->
+                    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl leading-relaxed">
+                        @(string.IsNullOrWhiteSpace(MediaItem.Description) ? "No editorial logline provided for this entry." : MediaItem.Description)
+                    </p>
+
+                    <!-- Action Bar -->
+                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                        <!-- Watchlist Status -->
+                        @if (ContainingWatchlist != null)
+                        {
+                            <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container font-title-md shadow-md">
+                                <span class="material-symbols-outlined text-[18px]">bookmark_added</span>
+                                <span>In Watchlist: @ContainingWatchlist.Name</span>
+                            </span>
+                        }
+
+                        <!-- Checkpoint Button (If no active checkpoint) -->
+                        @if (ActiveCheckpoint == null)
+                        {
+                            <button @onclick="OpenCheckpointModal" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-high text-on-surface font-title-md hover:bg-surface-container-highest transition-colors">
+                                <span class="material-symbols-outlined text-[18px] text-primary">pause_circle</span>
+                                <span>Set Watch Checkpoint</span>
+                            </button>
+                        }
+
+                        <!-- Mark Watched Button -->
+                        <button @onclick="ToggleWatched" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg @(IsWatched ? "bg-primary text-on-primary" : "bg-secondary-container text-on-secondary-container") font-title-md hover:opacity-90 transition-all">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            <span>@(IsWatched ? "Watched" : "Mark Watched")</span>
+                        </button>
+                    </div>
+
+                    <!-- Director & Cast -->
+                    <div class="pt-2 flex flex-wrap items-center gap-y-2 gap-x-6 text-on-surface-variant font-label-sm text-label-sm">
+                        @if (MediaItem.MediaDirector != null)
+                        {
+                            <div>
+                                <span class="text-outline">Director: </span>
+                                <span class="text-on-surface font-medium">@MediaItem.MediaDirector.FullName</span>
+                            </div>
+                        }
+                        @if (MediaItem.Cast != null && MediaItem.Cast.Count > 0)
+                        {
+                            <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                            <div>
+                                <span class="text-outline">Starring: </span>
+                                <span class="text-on-surface font-medium">@FormattedCastNames</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. MAIN BODY CONTENT -->
+        <div class="max-w-7xl mx-auto w-full px-margin py-8 flex flex-col gap-10">
+
+            <!-- SECTION 1: WATCH CHECKPOINT NOTIFICATION (If active) -->
+            @if (ActiveCheckpoint != null)
+            {
+                <div class="relative w-full rounded-xl bg-surface-container-low p-6 overflow-hidden shadow-lg border-l-4 border-primary">
+                    <div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+                                <span class="material-symbols-outlined text-[26px]">play_circle</span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Continue Watching — Active Checkpoint</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                </div>
+                                <h2 class="font-headline-md text-headline-md text-on-surface">
+                                    @if (MediaItem is Series && ActiveCheckpoint.Season.HasValue)
+                                    {
+                                        <span>Season @ActiveCheckpoint.Season · Episode @ActiveCheckpoint.Episode</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@MediaItem.Title</span>
+                                    }
+                                </h2>
+                                <div class="flex items-center gap-3 text-on-surface-variant font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-semibold">Timecode: @ActiveCheckpoint.Timecode</span>
+                                    @if (!string.IsNullOrEmpty(ActiveCheckpoint.Reason))
+                                    {
+                                        <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                        <span class="italic text-secondary">"@ActiveCheckpoint.Reason"</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar & Actions -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 min-w-[320px]">
+                            <div class="flex-1 flex flex-col gap-1.5">
+                                <div class="flex justify-between items-center font-label-caps text-label-caps text-on-surface-variant">
+                                    <span>PROGRESS</span>
+                                    <span class="text-primary font-semibold">@ActiveCheckpoint.GetProgressPercent()%</span>
+                                </div>
+                                <div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
+                                    <div class="h-full bg-primary-container rounded-full" style="width: @(ActiveCheckpoint.GetProgressPercent())%;"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button @onclick="ClearCheckpoint" class="px-5 py-2.5 rounded-full bg-primary text-on-primary font-title-md hover:bg-primary-fixed-dim transition-colors flex items-center gap-1.5 shadow-sm">
+                                    <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                                    <span>Resume (@ActiveCheckpoint.GetProgressPercent()%)</span>
+                                </button>
+                                <button @onclick="OpenCheckpointModal" class="p-2.5 rounded-lg bg-surface-container-high text-on-surface hover:text-primary transition-colors" title="Update Checkpoint">
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- SECTION 2: DIARY & MY RATING (Bento Grid) -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="font-headline-lg text-headline-lg text-on-surface">Diary</span>
+                        <!-- Аквамариновий бейдж PRIVATE -->
+                        <span class="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/30 text-primary font-label-caps text-label-caps">PRIVATE</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+
+                    <!-- Card 1: Status (4 Cols) -->
+                    <div class="md:col-span-4 rounded-xl bg-surface-container p-6 flex flex-col justify-between shadow-sm">
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Status</span>
+                                <span class="material-symbols-outlined text-secondary text-[20px]">history_edu</span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <span class="font-headline-md text-headline-md text-on-surface font-medium">
+                                    @(IsWatched ? "Completed" : "In Library")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="pt-6 flex flex-col gap-3">
+                            <div class="flex items-center justify-between py-2 border-b border-surface-container-highest">
+                                <span class="font-body-md text-body-md text-on-surface-variant">Runtime</span>
+
+                                <span class="font-title-md text-title-md text-primary font-bold">@MediaItem.CalculateTimeDebt() mins</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: 6-Dimension Vibe -->
+                    <div class="md:col-span-4 rounded-xl bg-surface-container p-6 flex flex-col justify-between shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex flex-col">
+                                <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">MY RATING</span>
+
+                            </div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="font-serif text-3xl md:text-4xl text-primary font-normal">
+                                    @CurrentVibeAverage.ToString("0.0", En)
+                                </span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">/10</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <!-- Characters -->
+                            <div class="flex flex-col gap-1">
+                                <div class="flex justify-between font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-medium">Characters</span>
+                                    <span class="text-on-surface font-bold">@vibeCharacters / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" @bind="vibeCharacters" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                       style="background: linear-gradient(90deg, #4eecd5 @(vibeCharacters * 10)%, rgba(255, 255, 255, 0.12) @(vibeCharacters * 10)%);"
+                                       class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
+                            </div>
+
+                            <!-- Plot -->
+                            <div class="flex flex-col gap-1">
+                                <div class="flex justify-between font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-medium">Plot</span>
+                                    <span class="text-on-surface font-bold">@vibePlot / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" @bind="vibePlot" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                       style="background: linear-gradient(90deg, #4eecd5 @(vibePlot * 10)%, rgba(255, 255, 255, 0.12) @(vibePlot * 10)%);"
+                                       class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
+                            </div>
+
+                            <!-- Visuals -->
+                            <div class="flex flex-col gap-1">
+                                <div class="flex justify-between font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-medium">Visuals</span>
+                                    <span class="text-on-surface font-bold">@vibeVisuals / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" @bind="vibeVisuals" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                       style="background: linear-gradient(90deg, #4eecd5 @(vibeVisuals * 10)%, rgba(255, 255, 255, 0.12) @(vibeVisuals * 10)%);"
+                                       class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
+                            </div>
+
+                            <!-- Pacing -->
+                            <div class="flex flex-col gap-1">
+                                <div class="flex justify-between font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-medium">Pacing</span>
+                                    <span class="text-on-surface font-bold">@vibePacing / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" @bind="vibePacing" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                       style="background: linear-gradient(90deg, #5c80bc @(vibePacing * 10)%, rgba(255, 255, 255, 0.12) @(vibePacing * 10)%);"
+                                       class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
+                            </div>
+
+                            <!-- Vibe -->
+                            <div class="flex flex-col gap-1">
+                                <div class="flex justify-between font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-medium">Vibe</span>
+                                    <span class="text-on-surface font-bold">@vibeVibe / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" @bind="vibeVibe" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                       style="background: linear-gradient(90deg, #5c80bc @(vibeVibe * 10)%, rgba(255, 255, 255, 0.12) @(vibeVibe * 10)%);"
+                                       class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
+                            </div>
+
+                            <!-- Soundtrack -->
+                            <div class="flex flex-col gap-1">
+                                <div class="flex justify-between font-label-sm text-label-sm">
+                                    <span class="text-on-surface font-medium">Soundtrack</span>
+                                    <span class="text-on-surface font-bold">@vibeSoundtrack / 10</span>
+                                </div>
+                                <input type="range" min="1" max="10" @bind="vibeSoundtrack" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                       style="background: linear-gradient(90deg, #5c80bc @(vibeSoundtrack * 10)%, rgba(255, 255, 255, 0.12) @(vibeSoundtrack * 10)%);"
+                                       class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Watchlists (4 Cols) -->
+                    <div class="md:col-span-4 rounded-xl bg-surface-container p-6 flex flex-col justify-between shadow-sm">
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Watchlists</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                @foreach (var list in Me.Watchlists)
+                                {
+                                    bool inList = false;
+                                    foreach (var entry in list.Entries)
+                                    {
+                                        if (entry.Item.Id == MediaItem.Id)
+                                        {
+                                            inList = true;
+                                            break;
+                                        }
+                                    }
+
+                                    <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-high">
+                                        <span class="font-title-md text-title-md text-on-surface">@list.Name</span>
+                                        @if (inList)
+                                        {
+                                            <!-- Аквамаринова галочка -->
+                                            <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+                                        }
+                                        else
+                                        {
+                                            <!-- Аквамаринова кнопка додавання -->
+                                            <button @onclick="() => AddToList(list)" class="text-label-sm text-secondary hover:text-primary transition-colors">+ Add</button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SECTION 3: SEASONS & EPISODES SYSTEM (Series Only) -->
+            @if (MediaItem is Series currentSeries && currentSeries.Seasons.Count > 0)
+            {
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-container-highest pb-3">
+                        <div class="flex items-center gap-4">
+                            <span class="font-headline-lg text-headline-lg text-on-surface">Seasons & Catalog</span>
+                            <div class="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg">
+                                @for (int i = 0; i < currentSeries.Seasons.Count; i++)
+                                {
+                                    int seasonIdx = i;
+                                    var season = currentSeries.Seasons[i];
+                                    <button @onclick="() => activeSeasonIndex = seasonIdx"
+                                            class="px-4 py-1.5 rounded font-title-md text-title-md transition-colors @(activeSeasonIndex == seasonIdx ? "bg-surface text-primary shadow-xs" : "text-on-surface-variant hover:text-on-surface")">
+                                        Season @season.Number (@season.Episodes.Count Ep)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Episode List -->
+                    @if (activeSeasonIndex < currentSeries.Seasons.Count)
+                    {
+                        var selectedSeason = currentSeries.Seasons[activeSeasonIndex];
+                        <div class="flex flex-col gap-3">
+                            @foreach (var ep in selectedSeason.Episodes)
+                            {
+                                bool isCheckpointEp = ActiveCheckpoint != null && ActiveCheckpoint.Season == selectedSeason.Number && ActiveCheckpoint.Episode == ep.Number;
+
+                                <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl transition-colors gap-4 @(isCheckpointEp ? "bg-surface-container-high border-l-4 border-primary" : "bg-surface-container hover:bg-surface-container-high")">
+                                    <div class="flex items-center gap-4 min-w-0">
+                                        <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 @(isCheckpointEp ? "bg-primary-container text-on-primary-container" : "bg-surface-container-high text-primary")">
+                                            <span class="material-symbols-outlined text-[20px]">@(isCheckpointEp ? "pause" : "play_arrow")</span>
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-label-caps text-label-caps uppercase @(isCheckpointEp ? "text-primary font-bold" : "text-outline")">
+                                                    Episode @ep.Number.ToString("D2") @(isCheckpointEp ? "— Active Checkpoint" : "")
+                                                </span>
+                                                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                                <span class="font-label-sm text-label-sm text-on-surface-variant">@ep.RuntimeMinutes mins</span>
+                                            </div>
+                                            <span class="font-title-lg text-title-lg text-on-surface truncate">@ep.Title</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- SECTION 4: SOUNDTRACK CURATION -->
+            @if (MediaItem.Soundtracks != null && MediaItem.Soundtracks.Count > 0)
+            {
+                <div class="flex flex-col gap-4 bg-surface-container p-6 rounded-xl shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Auditory Palette</span>
+                            <h3 class="font-headline-md text-headline-md text-on-surface">Curated Soundtrack</h3>
+                        </div>
+                        <span class="material-symbols-outlined text-primary text-[20px]">music_note</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 my-2">
+                        @foreach (var song in MediaItem.Soundtracks)
+                        {
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-high hover:bg-surface-container-highest transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-title-md text-title-md text-on-surface">@song.Title</span>
+                                        <span class="font-label-sm text-label-sm text-on-surface-variant">@song.Artist</span>
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(song.SpotifyUrl))
+                                {
+                                    <a href="@song.SpotifyUrl" target="_blank" class="text-on-surface-variant hover:text-primary">
+                                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- SECTION 5: REVIEWS & DISPATCHES -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="font-headline-lg text-headline-lg text-on-surface">Community Dispatches & Reviews</span>
+                        <span class="font-label-caps text-label-caps px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">@MediaItem.Reviews.Count REVIEWS</span>
+                    </div>
+                </div>
+
+                @if (MediaItem.Reviews != null && MediaItem.Reviews.Count > 0)
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        @foreach (var rev in MediaItem.Reviews)
+                        {
+                            bool reveal = revealedSpoilers.Contains(rev.Id);
+
+                            <div class="rounded-xl bg-surface-container p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+                                <div class="flex flex-col gap-3">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-xs">
+                                                @rev.Author.Username.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <span class="font-title-md text-title-md text-on-surface">@rev.Author.Username</span>
+                                        </div>
+                                        @if (rev.IsSpoiler)
+                                        {
+                                            <span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-caps text-label-caps uppercase">SPOILER</span>
+                                        }
+                                    </div>
+
+                                    <div class="relative">
+                                        @if (rev.IsSpoiler && !reveal)
+                                        {
+                                            <p class="font-body-md text-body-md text-on-surface-variant filter blur-sm select-none">
+                                                @rev.Text
+                                            </p>
+                                            <div class="absolute inset-0 bg-surface-container/80 backdrop-blur-md rounded flex flex-col items-center justify-center gap-2 p-3 text-center">
+                                                <span class="font-label-sm text-on-surface">Contains Spoilers</span>
+                                                <button @onclick="() => revealedSpoilers.Add(rev.Id)" class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-caps text-label-caps hover:bg-primary transition-colors">
+                                                    Reveal Content
+                                                </button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                                @rev.Text
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="pt-4 text-right font-label-sm text-label-sm text-on-surface-variant/60">
+                                    @rev.CreatedAt.ToString("MMM d, yyyy", En)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-secondary font-body-md italic">No dispatches written for this title yet.</div>
+                }
+            </div>
+
+            <!-- SECTION 6: SIMILAR RECOMMENDATIONS -->
+            @if (SimilarTitles.Count > 0)
+            {
+                <div class="flex flex-col gap-4 pb-12">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-headline-md text-headline-md text-on-surface">Thematic Resonances & Similar Titles</h3>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        @foreach (var sim in SimilarTitles)
+                        {
+                            <a href="/media/@sim.Id" class="rounded-xl bg-surface-container overflow-hidden group hover:bg-surface-container-high transition-all">
+                                <div class="aspect-[16/10] w-full overflow-hidden relative bg-surface-container-highest">
+                                    @if (!string.IsNullOrEmpty(sim.PosterUrl))
+                                    {
+                                        <img src="@sim.PosterUrl" alt="@sim.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    }
+                                </div>
+                                <div class="p-3 flex flex-col gap-1">
+                                    <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors truncate">@sim.Title</span>
+                                    <span class="font-label-sm text-label-sm text-on-surface-variant">@sim.ReleaseYear</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+}
+
+<!-- MODAL FOR WATCH CHECKPOINT -->
+@if (showCheckpointModal)
+{
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-surface-container-low border border-surface-variant/40 rounded-2xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-5">
+            <div class="flex items-center justify-between border-b border-surface-variant/30 pb-3">
+                <h3 class="font-headline-md text-headline-md text-on-surface">Set Watch Checkpoint</h3>
+                <button @onclick="() => showCheckpointModal = false" class="text-on-surface-variant hover:text-on-surface">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                @if (MediaItem is Series)
+                {
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="font-label-sm text-on-surface-variant mb-1 block">Season</label>
+                            <input type="number" min="1" @bind="inputSeason" class="w-full bg-surface-container p-2.5 rounded-lg text-on-surface border border-surface-variant/40 focus:outline-none focus:border-primary" />
+                        </div>
+                        <div>
+                            <label class="font-label-sm text-on-surface-variant mb-1 block">Episode</label>
+                            <input type="number" min="1" @bind="inputEpisode" class="w-full bg-surface-container p-2.5 rounded-lg text-on-surface border border-surface-variant/40 focus:outline-none focus:border-primary" />
+                        </div>
+                    </div>
+                }
+
+                <div>
+                    <label class="font-label-sm text-on-surface-variant mb-1 block">Timecode (e.g. 32:14)</label>
+                    <input type="text" placeholder="32:14" @bind="inputTimecode" class="w-full bg-surface-container p-2.5 rounded-lg text-on-surface border border-surface-variant/40 focus:outline-none focus:border-primary" />
+                </div>
+
+                <div>
+                    <label class="font-label-sm text-on-surface-variant mb-1 block">Reason / Note (optional)</label>
+                    <input type="text" placeholder="Late night session..." @bind="inputReason" class="w-full bg-surface-container p-2.5 rounded-lg text-on-surface border border-surface-variant/40 focus:outline-none focus:border-primary" />
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button @onclick="() => showCheckpointModal = false" class="px-4 py-2 rounded-lg bg-surface-container-high text-on-surface font-title-md hover:bg-surface-bright transition-colors">Cancel</button>
+                <button @onclick="SaveCheckpoint" class="px-5 py-2 rounded-lg bg-primary text-on-primary font-title-md hover:bg-primary-fixed transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private static readonly CultureInfo En = new CultureInfo("en-US");
+
+    private Media? MediaItem { get; set; }
+    private User Me => DataService.CurrentUser;
+
+    private Watchlist? ContainingWatchlist
+    {
+        get
+        {
+            if (MediaItem == null) return null;
+            foreach (var w in Me.Watchlists)
+            {
+                foreach (var e in w.Entries)
+                {
+                    if (e.Item.Id == MediaItem.Id) return w;
+                }
+            }
+            return null;
+        }
+    }
+
+    private WatchCheckpoint? ActiveCheckpoint => MediaItem != null ? Me.GetActiveCheckpoint(MediaItem) : null;
+    private bool IsWatched => MediaItem != null && Me.IsWatched(MediaItem);
+
+    private List<Media> SimilarTitles = new();
+    private HashSet<Guid> revealedSpoilers = new();
+    private int activeSeasonIndex = 0;
+
+    // Значення для вайб-рейтингу
+    private int vibeCharacters = 8;
+    private int vibePlot = 8;
+    private int vibeVisuals = 8;
+    private int vibePacing = 8;
+    private int vibeVibe = 8;
+    private int vibeSoundtrack = 8;
+
+    private double CurrentVibeAverage => (vibeCharacters + vibePlot + vibeVisuals + vibePacing + vibeVibe + vibeSoundtrack) / 6.0;
+
+    private string FormattedCastNames
+    {
+        get
+        {
+            if (MediaItem?.Cast == null || MediaItem.Cast.Count == 0) return "";
+            var names = new List<string>();
+            for (int i = 0; i < MediaItem.Cast.Count && i < 4; i++)
+            {
+                names.Add(MediaItem.Cast[i].FullName);
+            }
+            return string.Join(", ", names);
+        }
+    }
+
+    // Modal state
+    private bool showCheckpointModal = false;
+    private string inputTimecode = "";
+    private string? inputReason = "";
+    private int inputSeason = 1;
+    private int inputEpisode = 1;
+
+    protected override void OnParametersSet()
+    {
+        MediaItem = DataService.GetById(Id);
+
+        if (MediaItem != null)
+        {
+            Me.RecordDetailsView(MediaItem);
+
+            var recEngine = new MediaRecommendation();
+            SimilarTitles = recEngine.FindSimilar(DataService.GetAllMedia(), MediaItem, 4);
+
+            if (MediaItem.Vibe != null)
+            {
+                vibeCharacters = MediaItem.Vibe.Characters;
+                vibePlot = MediaItem.Vibe.Plot;
+                vibeVisuals = MediaItem.Vibe.Visuals;
+                vibePacing = MediaItem.Vibe.Pacing;
+                vibeVibe = MediaItem.Vibe.Vibe;
+                vibeSoundtrack = MediaItem.Vibe.Soundtrack;
+            }
+            else
+            {
+                vibeCharacters = 8;
+                vibePlot = 8;
+                vibeVisuals = 8;
+                vibePacing = 8;
+                vibeVibe = 8;
+                vibeSoundtrack = 8;
+            }
+        }
+    }
+
+    private void SaveVibeRating()
+    {
+        if (MediaItem == null) return;
+        var newVibe = new VibeRating(vibeCharacters, vibePlot, vibeVisuals, vibePacing, vibeVibe, vibeSoundtrack);
+        MediaItem.SetVibeRating(newVibe);
+    }
+
+    private void ToggleWatched()
+    {
+        if (MediaItem == null) return;
+        if (!IsWatched)
+        {
+            Me.CompleteWatching(MediaItem);
+        }
+    }
+
+    private void AddToList(Watchlist watchlist)
+    {
+        if (MediaItem == null) return;
+        Me.AddMediaToWatchlist(watchlist, MediaItem, "Added from details page");
+    }
+
+    private void OpenCheckpointModal()
+    {
+        if (ActiveCheckpoint != null)
+        {
+            inputTimecode = ActiveCheckpoint.Timecode;
+            inputReason = ActiveCheckpoint.Reason;
+            inputSeason = ActiveCheckpoint.Season ?? 1;
+            inputEpisode = ActiveCheckpoint.Episode ?? 1;
+        }
+        else
+        {
+            inputTimecode = "";
+            inputReason = "";
+            inputSeason = 1;
+            inputEpisode = 1;
+        }
+        showCheckpointModal = true;
+    }
+
+    private void SaveCheckpoint()
+    {
+        if (MediaItem == null || string.IsNullOrWhiteSpace(inputTimecode)) return;
+
+        WatchCheckpoint cp;
+        if (MediaItem is Series series)
+        {
+            cp = new WatchCheckpoint(series, inputSeason, inputEpisode, inputTimecode, inputReason);
+        }
+        else if (MediaItem is Movie movie)
+        {
+            cp = new WatchCheckpoint(movie, inputTimecode, inputReason);
+        }
+        else return;
+
+        Me.SetCheckpoint(cp);
+        showCheckpointModal = false;
+    }
+
+    private void ClearCheckpoint()
+    {
+        if (MediaItem == null) return;
+        Me.ClearCheckpoint(MediaItem);
+    }
+}
