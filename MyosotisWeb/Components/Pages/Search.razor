@@ -1,4 +1,5 @@
 @page "/search"
+@inject MyosotisWeb.ServicesWeb.TmdbApiService TmdbService
 @using System.Globalization
 @using MudBlazor
 @using MyosotisWeb.ServicesWeb
@@ -30,14 +31,14 @@
             </div>
         </div>
 
-        <!-- Main Input Bar Component (Темна стилізація) -->
+        <!-- Main Input Bar Component -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
             <div class="relative flex-1 group">
                 <div class="absolute inset-y-0 left-0 pl-space-md flex items-center pointer-events-none text-on-surface-variant group-focus-within:text-primary transition-colors">
                     <span class="material-symbols-outlined text-[20px]">search</span>
                 </div>
                 <input class="w-full pl-12 pr-12 py-space-md bg-surface-container-low border border-surface-variant/40 rounded-lg text-body-lg font-body-lg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:bg-surface-container-high shadow-sm transition-all"
-                       placeholder="Search films, directors, genres, actors..."
+                       placeholder="Search films, directors, genres, TMDB database..."
                        type="text"
                        @bind="searchInput"
                        @bind:event="oninput"
@@ -67,7 +68,7 @@
                 }
             </h1>
             <p class="font-body-md text-body-md text-on-surface-variant">
-                <span class="text-on-surface font-title-md">@GetFilteredResults().Count</span> titles & entities discovered
+                <span class="text-on-surface font-title-md">@GetFilteredResults().Count</span> titles discovered
             </p>
         </div>
 
@@ -96,9 +97,17 @@
         }
     </section>
 
-    <!-- ACTIVE RESULTS VIEW CONTAINER -->
-    @if (GetFilteredResults().Count > 0)
+    <!-- LOADING STATE DURING TMDB FETCH -->
+    @if (isSearching)
     {
+        <div class="flex flex-col items-center justify-center py-space-xl gap-3">
+            <span class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+            <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Querying TMDB Global Archive...</span>
+        </div>
+    }
+    else if (GetFilteredResults().Count > 0)
+    {
+        <!-- ACTIVE RESULTS VIEW CONTAINER -->
         <div class="flex flex-col gap-space-lg transition-all duration-300">
             @foreach (var m in GetFilteredResults())
             {
@@ -137,6 +146,13 @@
                                     <span class="px-space-sm py-0.5 rounded bg-surface-container-high font-label-caps text-label-caps text-primary tracking-wider uppercase">
                                         @(m is Series ? "TV Series" : "Feature Film")
                                     </span>
+                                    
+                                    <!-- МІТКА ДАНІ З TMDB -->
+                                    <span class="px-space-sm py-0.5 rounded bg-primary/10 border border-primary/20 font-label-caps text-label-caps text-primary tracking-wider uppercase flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[12px]">database</span>
+                                        <span>TMDB Canon</span>
+                                    </span>
+
                                     <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">@m.ReleaseYear</span>
                                     <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">
                                         @UiHelpers.FormatMinutes(m.CalculateTimeDebt())
@@ -208,7 +224,7 @@
                                 </div>
                             </div>
 
-                            <!-- Editorial Actions Row (Темна стилізація випадаючого списку списків) -->
+                            <!-- Editorial Actions Row -->
                             <div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs border-t border-surface-variant/20">
                                 <div class="flex flex-wrap items-center gap-space-sm">
                                     <a href="/media/@m.Id" class="px-space-md py-space-xs rounded-full bg-primary text-on-primary font-title-md text-title-md hover:bg-primary-fixed transition-all flex items-center gap-1.5 shadow-sm">
@@ -255,10 +271,9 @@
                 The archive is silent.
             </h2>
             <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mt-space-sm mb-space-lg">
-                No traces found for “<span class="text-on-surface font-semibold">@Query</span>” in your personal journal or the global film catalog.
+                No traces found for “<span class="text-on-surface font-semibold">@Query</span>” in your personal journal or the global TMDB film catalog.
             </p>
 
-            <!-- Poetic Discovery Hints Box -->
             <div class="w-full max-w-lg p-space-md bg-surface-container rounded-lg text-left mb-space-lg flex flex-col gap-space-xs">
                 <div class="flex items-center gap-space-xs text-secondary font-title-md text-title-md">
                     <span class="material-symbols-outlined text-[16px]">lightbulb</span>
@@ -287,7 +302,7 @@
     <footer class="mt-space-xl pt-space-md border-t border-surface-variant/20 flex flex-col sm:flex-row items-center justify-between gap-space-sm text-on-surface-variant/60 font-label-sm text-label-sm">
         <div class="flex items-center gap-space-xs">
             <span class="w-1 h-1 rounded-full bg-primary/70"></span>
-            <span>Myosotis Archival Indexing • @DataService.GetAllMedia().Count Total Canon Entries</span>
+            <span>Myosotis Archival Indexing • @results.Count Active Query Matches</span>
         </div>
         <div>
             <span>Personal Sanctuary Journal</span>
@@ -302,23 +317,56 @@
     private string searchInput = "";
     private string selectedFilter = "All"; // "All", "Movies", "Series", "Watchlist"
     private List<Media> results = new List<Media>();
+    private bool isSearching = false;
     private string? lastLogged;
     private readonly Dictionary<Media, string> pickedLists = new Dictionary<Media, string>();
     private static readonly CultureInfo En = new CultureInfo("en-US");
 
     private User Me => DataService.CurrentUser;
 
-    protected override void OnParametersSet()
+    // АСИНХРОННИЙ ПОШУК (ЛОКАЛЬНА БАЗА + TMDB API)
+    protected override async Task OnParametersSetAsync()
     {
         results = new List<Media>();
         searchInput = Query ?? "";
 
         if (string.IsNullOrWhiteSpace(Query)) return;
 
+        isSearching = true;
+
+        // 1. Пошук у локальній базі даних
         var allMedia = DataService.GetAllMedia();
         AddUnique(SearchService.SearchByTitle(allMedia, Query));
         AddUnique(SearchService.FilterByGenre(allMedia, Query));
         AddUnique(SearchService.SearchByActor(allMedia, Query));
+
+        // 2. Якщо в інтернеті є відповідь з TMDB — підтягуємо її
+        try
+        {
+            var tmdbResults = await TmdbService.SearchMediaAsync(Query);
+            foreach (var item in tmdbResults)
+            {
+                AddUnique(new List<Media> { item });
+
+                // Додаємо в локальну бібліотеку, щоб працювала сторінка детального перегляду /media/{id}
+                var existingLibrary = DataService.GetAllMedia();
+                bool exists = false;
+                foreach (var libItem in existingLibrary)
+                {
+                    if (libItem.Id == item.Id) { exists = true; break; }
+                }
+                if (!exists)
+                {
+                    DataService.Library.Add(item);
+                }
+            }
+        }
+        catch
+        {
+            // Якщо інтернет відсутній — просто залишаємо локальні результати
+        }
+
+        isSearching = false;
 
         if (Query != lastLogged)
         {
