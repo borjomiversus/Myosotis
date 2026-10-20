@@ -146,6 +146,28 @@ public class User
         WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.AddedToList));
     }
 
+    public WatchCheckpoint? GetActiveCheckpoint(Media media)
+    {
+        return Checkpoints.FirstOrDefault(c => c.PausedMedia.Id == media.Id && c.IsActive);
+    }
+
+    public void SetCheckpoint(WatchCheckpoint checkpoint)
+    {
+        var existing = GetActiveCheckpoint(checkpoint.PausedMedia);
+        if (existing != null)
+        {
+            existing.ResumeWatching();
+        }
+
+        Checkpoints.Add(checkpoint);
+    }
+
+    public void ClearCheckpoint(Media media)
+    {
+        var active = GetActiveCheckpoint(media);
+        active?.ResumeWatching();
+    }
+
     // для статистики та рулетки
     public List<Media> GetPlannedMedia()
     {
