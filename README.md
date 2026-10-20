@@ -162,3 +162,7 @@ Capture може перебувати у станах:
 20. https://moviesuggest.netlify.app/ example
 21. https://github.com/krishnashah122/Movie-Website example
 22. https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient api tutor
+23. https://developer.themoviedb.org/reference/movie-details tmdb doc
+24. https://www.youtube.com/watch?v=FlFyrOEz2S4 tmdb tutor
+25. https://json2csharp.com/
+26. https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client
