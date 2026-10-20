@@ -13,7 +13,7 @@ public abstract class Media : IComparable<Media>
     public string? ContentRating { get; private set; }
     public string? Country { get; private set; }
     public int? AgeRestriction { get; private set; }
-
+    public double? TmdbRating { get; private set; }
     public VibeRating? Vibe { get; private set; }
     public Director? MediaDirector { get; private set; }
     public List<Actor> Cast { get; private set; }
@@ -39,6 +39,14 @@ public abstract class Media : IComparable<Media>
         Soundtracks = new List<Song>();
         Genres = new List<string>();
         Tags = new List<string>();
+    }
+
+    public void SetTmdbRating(double rating)
+    {
+        if (rating < 0 || rating > 10)
+            throw new ArgumentOutOfRangeException(nameof(rating), "Рейтинг TMDB має бути від 0 до 10.");
+
+        TmdbRating = rating;
     }
 
     public void UpdateDescription(string newDescription)
