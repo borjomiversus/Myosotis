@@ -159,3 +159,6 @@ Capture може перебувати у станах:
 17. https://mudblazor.com/docs/overview docs mudblazor
 18. https://www.youtube.com/watch?v=xS4ISh6ZehU tailwind
 19. https://serializd.com/discover концепт
+20. https://moviesuggest.netlify.app/ example
+21. https://github.com/krishnashah122/Movie-Website example
+22. https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient api tutor
