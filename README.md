@@ -1,10 +1,8 @@
  <div align="center">
 
-<img width="1393" height="586" alt="Логотип Myosotis" src="https://github.com/user-attachments/assets/c609a268-e221-4073-8a05-2646c5e46768" />
+<img width="1736" height="564" alt="logo1" src="https://github.com/user-attachments/assets/5c4abdb3-414d-4d71-b21f-cc8a87e7e360" />
 
 # Myosotis
-
-**collect · watch · remember**
 
 > Myosotis — це застосунок для відстеження перегляду фільмів і серіалів, створення списків перегляду, збереження цікавих сцен, цитат і рекомендацій, а також ведення особистої історії переглядів та оцінювання улюблених творів.
 
