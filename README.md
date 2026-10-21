@@ -6,11 +6,12 @@
 
 > Myosotis — це застосунок для відстеження перегляду фільмів і серіалів, створення списків перегляду, збереження цікавих сцен, цитат і рекомендацій, а також ведення особистої історії переглядів та оцінювання улюблених творів.
 
-![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
 ![C%23](https://img.shields.io/badge/C%23-239120?logo=c-sharp&logoColor=white)
+![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
 ![Blazor Server](https://img.shields.io/badge/Blazor-Server-512BD4?logo=blazor&logoColor=white)
 ![MudBlazor](https://img.shields.io/badge/MudBlazor-UI-5C80BC)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
+![TMDB API](https://img.shields.io/badge/TMDB_API-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
 
 </div>
 
