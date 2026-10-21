@@ -1,171 +1,158 @@
-<div align="center">
-  <img src="MyosotisWeb/wwwroot/favicon.png" width="88" alt="Myosotis icon" />
+ <div align="center">
 
-  # Myosotis
+<img width="1393" height="586" alt="Логотип Myosotis" src="https://github.com/user-attachments/assets/c609a268-e221-4073-8a05-2646c5e46768" />
 
-  **collect · watch · remember**
+# Myosotis
 
-  > Personal movie & series tracker that starts not with a title, but with the moment something catches your attention.
+**collect · watch · remember**
 
-  ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
-  ![C%23](https://img.shields.io/badge/C%23-239120?logo=c-sharp&logoColor=white)
-  ![Blazor Server](https://img.shields.io/badge/Blazor-Server-512BD4?logo=blazor&logoColor=white)
-  ![MudBlazor](https://img.shields.io/badge/MudBlazor-UI-5C80BC)
-  ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
-  ![Material Symbols](https://img.shields.io/badge/Material_Symbols-Icons-757575)
+> Персональний трекер фільмів і серіалів.
+
+![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
+![C%23](https://img.shields.io/badge/C%23-239120?logo=c-sharp&logoColor=white)
+![Blazor Server](https://img.shields.io/badge/Blazor-Server-512BD4?logo=blazor&logoColor=white)
+![MudBlazor](https://img.shields.io/badge/MudBlazor-UI-5C80BC)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-CDN-06B6D4?logo=tailwindcss&logoColor=white)
+
 </div>
 
-## Capture-first idea
+---
 
-You might see a scene, quote, or recommendation in social media and still not know the title.
+## Ідея
 
-**Myosotis** lets you save that moment as a **Capture** first, then later resolve it into a specific movie/series and move it into your watch flow.
+Ти можеш побачити сцену, почути цитату або отримати рекомендацію в соціальних мережах, але так і не дізнатися назву фільму чи серіалу.
 
-## Features
+**Myosotis** дає змогу спочатку зберегти цей момент як **Capture**, а пізніше пов'язати його з конкретним фільмом або серіалом і додати до свого процесу відстеження перегляду.
 
-| | Feature | Description |
+## Можливості
+
+| | Функція | Опис |
 |---|---|---|
-| 🎬 | Captures | Notes of type `Thought`, `Quote`, `Scene`, `Note` with states `Unresolved → Resolved → Archived` |
-| 📚 | Watchlists | Private/public collections with personal notes for each title |
-| ▶️ | Tracking | `Planned`, `Watching`, `Watched`, `Paused`, `Dropped`, `Rewatching` |
-| ⏸️ | WatchCheckpoint | Continue-watching context: season/episode or timecode + pause reason |
-| 🎲 | Roulette | Random pick from unwatched titles filtered by available time and genre |
-| ✦ | Recommendations | Similar titles based on shared genres |
-| ★ | Vibe Rating | Six criteria: Characters, Plot, Visuals, Pacing, Vibe, Soundtrack |
-| 📊 | Statistics | Monthly watch stats: count, time, genres, top director |
-| 🔎 | Search | By title, genre, and actor |
+|  Captures | Нотатки типів `Thought`, `Quote`, `Scene`, `Note` зі статусами `Unresolved → Resolved → Archived` |
+|  Watchlists | Приватні та публічні добірки з особистими нотатками до кожного тайтлу |
+|  Tracking | Статуси перегляду: `Planned`, `Watching`, `Watched`, `Paused`, `Dropped`, `Rewatching` |
+|  WatchCheckpoint | Збереження контексту перегляду: сезон і серія або таймкод, а також причина паузи |
+|  Roulette | Випадковий вибір серед ще не переглянутих тайтлів з урахуванням доступного часу та жанру |
+|  Recommendations | Рекомендації схожих тайтлів на основі спільних жанрів |
+|  Vibe Rating | Оцінювання за шістьма критеріями: Characters, Plot, Visuals, Pacing, Vibe, Soundtrack |
+|  Статистика | Щомісячна статистика переглядів: кількість, час, жанри та режисер, чиї роботи переглядалися найчастіше |
+|  Пошук | Пошук за назвою, жанром та актором |
 
-## Tech stack
+## Технології
 
-| Technology | Usage |
+| Технологія | Призначення |
 |---|---|
-| C# / .NET 10 | Core language & runtime |
-| Blazor Server (Interactive) | UI |
-| Tailwind CSS (CDN) | Styling |
-| MudBlazor | Dialogs and notifications |
-| Material Symbols | Icons |
-| `DemoDataService` | Current in-memory demo data source |
+| C# / .NET 10 | Основна мова програмування та середовище виконання |
+| Blazor Server | Користувацький інтерфейс |
+| Tailwind CSS (CDN) | Стилізація інтерфейсу |
+| MudBlazor | Діалогові вікна та сповіщення |
+| Material Symbols | Іконки |
+| TBDB API | База медіа |
 
-## Current status
+## Поточний стан
 
-- Domain model and core services are implemented.
-- Blazor pages: Overview, Watchlists, Captures, History, Search.
-- Data is currently demo-only (in memory).
-- Movie/series detail page, TMDb integration, JSON persistence, and deployment are in roadmap.
+- Реалізовано предметну модель і основні сервіси.
+- Створено сторінки Blazor: Overview, Watchlists, Captures, History, Search.
+- Наразі використовуються лише демонстраційні дані, що зберігаються в пам'яті.
+- Сторінка детальної інформації про фільм або серіал, інтеграція TMDb, збереження даних у JSON та розгортання застосунку заплановані на наступні етапи.
 
-## Architecture
+## Архітектура
 
 ```mermaid
 flowchart LR
-    UI["Blazor UI\nComponents/Pages"] --> S["Services\nMediaSearch · MediaRecommendation · CaptureProcessing"]
-    S --> D["Domain\nMedia · User · Watchlist · CaptureEntry"]
-    DS["DemoDataService (now)\nTMDb + JSON (planned)"] --> D
+    UI["Інтерфейс Blazor\nComponents/Pages"] --> S["Сервіси\nMediaSearch · MediaRecommendation · CaptureProcessing"]
+    S --> D["Предметна модель\nMedia · User · Watchlist · CaptureEntry"]
+    DS["DemoDataService (зараз)\nTMDb + JSON (заплановано)"] --> D
 ```
 
-Flow: `Blazor UI → Services → Domain`.
+Основний потік взаємодії: `Blazor UI → Services → Domain`.
 
-## Domain model (core classes)
+## Модель предметної області (основні класи)
 
-| Class | Purpose |
+| Клас | Призначення |
 |---|---|
-| `Media` | Abstract base media entity |
-| `Movie` / `Series` | Media types with their own `CalculateTimeDebt()` behavior |
-| `Person` / `Actor` / `Director` | People linked to titles |
-| `User` | Owns watchlists, captures, history, statuses, checkpoints |
-| `Watchlist` / `WatchlistEntry` | User collections and entries |
-| `CaptureEntry` | Unresolved note that can later be linked to a title |
-| `WatchCheckpoint` | Saved watching position and pause context |
-| `VibeRating` | Six-dimensional score with validation (0–10) |
+| `Media` | Абстрактна базова сутність медіаконтенту |
+| `Movie` / `Series` | Типи медіаконтенту |
+| `Person` / `Actor` / `Director` | Люди, пов'язані з тайтлами |
+| `User` | Власник списків, нотаток, історії перегляду, статусів і чекпоінтів |
+| `Watchlist` / `WatchlistEntry` | Користувацькі добірки та записи в них |
+| `CaptureEntry` | Необроблена нотатка, яку згодом можна пов'язати з конкретним тайтлом |
+| `WatchCheckpoint` | Збережена позиція перегляду та контекст паузи |
+| `VibeRating` | Оцінювання за шістьма критеріями з перевіркою значень у діапазоні 0–10 |
 
-<details>
-<summary>OOP focus (university requirements)</summary>
+## Скріншоти
 
-- **Inheritance:** `Media → Movie / Series`, `Person → Actor / Director`
-- **Abstraction:** abstract base models and abstract `CalculateTimeDebt()`
-- **Encapsulation:** `private set` and constructor validation
-- **Dynamic polymorphism:** `override` implementations in media types
-- **Interface-based polymorphism:** `IComparable<Media>` in `Media`
-- **Static polymorphism (generics):** TODO in current lab requirements
-
-</details>
-
-## Screenshots
-
-Screenshot files mentioned in previous versions are currently **not present** in this repository:
+Файли скріншотів, згадані в попередніх версіях, наразі **відсутні в цьому репозиторії**:
 
 - `docs/images/overview.png`
 - `docs/images/captures.png`
 
-## Run locally
+## Локальний запуск
 
-Requires [.NET 10 SDK](https://dotnet.microsoft.com/download).
+Для запуску потрібен [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
 git clone https://github.com/borjomiversus/Myosotis.git
-cd Myosotis/MyosotisWeb    # TODO: verify the project folder name
+cd Myosotis/MyosotisWeb    # TODO: перевірити назву папки проєкту
 dotnet run
 ```
 
-Then open the URL shown in the terminal (for example, `https://localhost:5001`).
+Після запуску відкрий адресу, яку покаже термінал (наприклад, `https://localhost:5001`).
 
-## Project structure
+## Структура проєкту
 
 ```text
 Myosotis/
-├── MyosotisWeb/      # Blazor app (UI + web services)
-├── code/             # Domain model and core logic
-├── Myosotis.Tests/   # Tests
+├── MyosotisWeb/      # Застосунок Blazor (інтерфейс і вебсервіси)
+├── code/             # Предметна модель і основна логіка
+├── Myosotis.Tests/   # Тести
 └── README.md
 ```
 
-## Roadmap
+## Дорожня карта
 
 - [x] Предметна модель і сервіси
-- [x] Blazor-інтерфейс: Overview, Watchlists, Captures, History, Search
-- [x] Roulette, рекомендації, статистика місяця
-- [ ] Сторінка фільму / серіалу
-- [ ] Підключення TMDb (метадані, постери)
+- [x] Інтерфейс Blazor: Overview, Watchlists, Captures, History, Search
+- [x] Roulette, рекомендації, щомісячна статистика
+- [x] Сторінка фільму / серіалу
+- [x] Інтеграція TMDb (метадані та постери)
 - [ ] Збереження даних у JSON
-- [ ] Публікація в Azure
+- [ ] Розгортання в Azure
 - [ ] Користувацький профіль
 
-## Development process
+## Процес розробки
 
-- Product idea, naming, palette, tech choices, and data structure decisions are author-driven.
-- Design was explored/prototyped first, then adapted manually.
-- AI tools (ChatGPT, Claude) were used as assistants for code, refactoring, design, and documentation, with manual verification.
+- Ідея продукту, назва, палітра, вибір технологій і рішення щодо структури даних визначені.
+- Спочатку було досліджено та створено прототип дизайну, який згодом адаптовано вручну.
+- Інструменти штучного інтелекту (Claude, Gemini, Google Studio) використовувалися як допоміжні засоби для роботи з кодом, рефакторингу, дизайном і документацією з подальшою ручною перевіркою.
 
-## Sources
+## Джерела
 
-### Documentation
+### Документація
 
 - [Blazor](https://learn.microsoft.com/aspnet/core/blazor/hosting-models)
 - [MudBlazor](https://mudblazor.com/docs/overview)
 - [TMDb API](https://developer.themoviedb.org/docs/getting-started)
-- [.NET Web API client](https://learn.microsoft.com/dotnet/csharp/tutorials/console-webapiclient)
+- [Клієнт для роботи з Web API у .NET](https://learn.microsoft.com/dotnet/csharp/tutorials/console-webapiclient)
 
-### Code examples
+### Приклади коду
 
 - [Movie-Tracker-App](https://github.com/ertugrulgacal/Movie-Tracker-App)
 - [movieTracker](https://github.com/LeilaniL/movieTracker)
 - [Movie-Website](https://github.com/krishnashah122/Movie-Website)
 
-### Design inspiration
+### Натхнення для дизайну
 
 - [Glassmorphism (Dribbble)](https://dribbble.com/tags/glassmorphism)
 - [Spotify Wrapped Dashboard Concept](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept)
 - [Serializd](https://serializd.com/discover)
 
-### Learning resources
+### Навчальні матеріали
 
-- [Blazor tutorial](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1)
-- [Tailwind CSS tutorial](https://www.youtube.com/watch?v=xS4ISh6ZehU)
-- [TMDb tutorial](https://www.youtube.com/watch?v=FlFyrOEz2S4)
+- [Посібник із Blazor](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1)
+- [Посібник із Tailwind CSS](https://www.youtube.com/watch?v=xS4ISh6ZehU)
+- [Посібник із TMDb](https://www.youtube.com/watch?v=FlFyrOEz2S4)
 
-## Academic context
+## Ліцензія
 
-Навчальний проєкт з дисципліни «Парадигма та інструментальні засоби розробки ООП», КНУ імені Тараса Шевченка.
-
-## License
-
-License not defined yet.
+Ліцензію ще не визначено.
