@@ -1,168 +1,215 @@
+<div align="center">
+
+<img src="https://github.com/user-attachments/assets/2d6de3c3-cf0b-4f94-a84a-87435f6d3bdd" alt="Myosotis — collect, watch, remember" width="720" />
+
 # Myosotis
 
-## 1. Загальна інформація
+**collect · watch · remember**
 
-**Myosotis** — персональний застосунок для пошуку, організації та відстеження фільмів і серіалів.
+Персональний застосунок для пошуку, організації та відстеження фільмів і серіалів.
 
-Ідея проєкту поєднує можливості каталогу медіа, персональних списків перегляду, історії перегляду, нотаток та системи збереження випадково знайденого контенту.
+[![C#](https://img.shields.io/badge/C%23-68217A?style=flat-square&logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
+[![.NET 10](https://img.shields.io/badge/.NET%2010-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![Status](https://img.shields.io/badge/status-console%20version-5C80BC?style=flat-square)](#стан-реалізації)
 
-Основна особливість проєкту — **Нотатки**: користувач може швидко зберегти будь-яку згадку про фільм або серіал у довільній формі, навіть якщо він ще не знає його точної назви. Пізніше ця нотатка може бути пов’язана з конкретним медіа та додана до відповідного списку.
+</div>
 
-Технології: C#, .NET 10. На поточному етапі реалізовано консольну версію. Для наступних завдань планується підключення графічного інтерфейсу на базі Blazor та зовнішніх бібліотек.
-## 2. Мета проєкту
+---
 
-Метою є створення персональної системи для роботи з фільмами та серіалами, яка дозволяє:
+## Що таке Myosotis?
 
-* знаходити фільми та серіали;
-* переглядати інформацію про них;
-* створювати власні списки;
-* зберігати особисті нотатки;
-* фіксувати переглянутий контент;
-* відстежувати прогрес серіалів;
-* зберігати незавершені нотатки про побачений десь контент;
-* отримувати базові рекомендації;
-* персоналізовано оцінювати контент;
-* вибирати контент за доступним часом або жанром.
+**Myosotis** — персональна система для роботи з фільмами та серіалами: пошуку, створення власних списків, ведення історії перегляду, оцінювання та відстеження прогресу.
 
-## 3. Проблема
+Головна особливість проєкту — **Capture**. Користувач може спочатку зберегти нечітку згадку, цитату, сцену або рекомендацію з TikTok, Instagram чи від друга, а вже пізніше визначити відповідний фільм або серіал і структурувати запис.
 
-Інформація про фільми та серіали часто знаходиться у різних місцях: каталозі, соціальних мережах, нотатках користувача, окремих списках та сервісах перегляду.
+> Ідея Myosotis — не лише зберігати назви, а й не втрачати особистий контекст, у якому контент було знайдено.
 
-Додаток має об'єднати ці сценарії в одному персональному застосунку.
+## Основні можливості
 
-Особлива увага приділяється ситуації, коли користувач побачив цікавий фільм або серіал у соціальній мережі, отримав рекомендацію від друга або згадав лише частину сюжету. Такий запис можна зберегти та опрацювати пізніше.
+| Можливість | Опис |
+|---|---|
+| 🎬 **Каталог** | Робота з фільмами та серіалами, їхньою основною інформацією, жанрами, тегами й акторами. |
+| 🔎 **Пошук** | Пошук за назвою, фільтрація за жанром і розширений пошук за жанром та роком. |
+| 📚 **Watchlists** | Створення власних списків і додавання до них медіа з особистими нотатками. |
+| 📝 **Capture** | Збереження необробленої згадки про контент із можливістю структурувати її пізніше. |
+| ▶️ **Tracking** | Персональні статуси перегляду: `Planned`, `Watching`, `Watched`, `Paused`, `Dropped`, `Rewatching`. |
+| ⏸️ **Checkpoints** | Збереження позиції та причини зупинки під час перегляду епізоду. |
+| ⭐ **Vibe Rating** | Оцінювання за критеріями `Characters`, `Plot`, `Visuals`, `Pacing`, `Vibe` та `Soundtrack`. |
+| 🎲 **Roulette** | Вибір контенту з урахуванням доступного часу або жанру. |
+| ✨ **Recommendations** | Базовий механізм пошуку схожого контенту. |
 
-## 4. Цільова аудиторія
+### Стани Capture
 
-Основний користувач — людина, яка регулярно дивиться фільми та серіали і хоче:
+Capture-запис може перебувати в одному з трьох станів:
 
-* зберігати цікаві знахідки;
-* вести власні списки;
-* не забувати рекомендації;
-* відстежувати перегляд серіалів;
-* оцінювати переглянутий контент;
-* отримувати допомогу з вибором того, що подивитися.
-## 5. Обґрунтування вибору технології
+- `Unresolved` — медіа ще не визначено;
+- `Resolved` — запис пов’язано з конкретним фільмом або серіалом;
+- `Archived` — запис заархівовано.
 
-Основною мовою розробки проєкту обрано **C#**.
+## Перегляд серіалів
 
-C# добре підтримує основні принципи ООП, які є фундаментальними для подальшого навчання та поглиблення в ООП. 
-С# є С-подібною мовою, тож поріг входження та розуміння є легшим, так як досвід вивчення С++ був увесь 1 курс.
-Платформа .NET також дозволяє розвивати проєкт від початкового прототипу до застосунку з графічним інтерфейсом, зовнішніми API та постійним збереженням даних.
+Серіали підтримують сезони та епізоди. Для епізоду можна зберегти checkpoint перегляду — позицію та причину, через яку перегляд було зупинено.
 
-## 6. GUI
+## Скріншоти
 
-Для першої графічної версії планується використати Blazor.
+Інтерфейс проєкту ще перебуває на етапі планування, тому готові скріншоти графічної версії відсутні.
 
-Основна логіка проєкту залишатиметься в окремих класах та сервісах,  а GUI фреймворки виконуватимуть роль користувацького інтерфейсу.
+Замініть ці блоки на зображення, коли вони з’являться:
 
+```text
+docs/images/overview.png
 
-## 7. Основні функціональні можливості
+docs/images/captures.png
 
-### Каталог
+docs/images/watchlists.png
+```
 
-Система працює з об'єктами фільмів і серіалів, які містять основну інформацію про медіа, жанри, теги, акторів, режисера, опис та інші характеристики.
+## Технології
 
-### Пошук
+| Категорія | Поточний стан |
+|---|---|
+| Мова | **C#** |
+| Платформа | **.NET 10** |
+| Поточний інтерфейс | Консольна версія |
+| Графічний інтерфейс | **Blazor** — заплановано для першої графічної версії |
+| Зовнішні дані | Підключення API метаданих фільмів і серіалів — заплановано |
+| Постійне збереження | Заплановано |
 
-Передбачені пошук за назвою, фільтрація за жанром та розширений пошук за жанром і роком.
+Blazor має виконувати роль інтерфейсного шару, тоді як основна логіка проєкту залишатиметься в окремих класах і сервісах.
 
-### Watchlists
+## Архітектура
 
-Користувач може створювати власні списки та додавати до них медіа з особистими нотатками.
+Поточна версія проєкту є консольною. Логіка роботи з медіа, пошуком, Capture, рекомендаціями та Roulette зосереджена в моделях і сервісах.
 
-### Capture
+```mermaid
+flowchart LR
+    UI[Консольний інтерфейс] --> Services[Сервіси]
+    Services --> Domain[Моделі домену]
 
-Користувач може зберегти необроблену нотатку, пов’язану, наприклад, із TikTok, Instagram або рекомендацією друга.
+    Domain --> Media[Фільми та серіали]
+    Domain --> Tracking[Tracking та history]
+    Domain --> Capture[Capture-записи]
+    Domain --> Ratings[Ratings]
 
-Capture може перебувати у станах:
+    PlannedUI[Blazor<br/>заплановано] -. майбутній інтерфейс .-> Services
+    ExternalAPI[Зовнішній API<br/>заплановано] -. майбутнє джерело метаданих .-> Services
+    Storage[Постійне збереження<br/>заплановано] -. майбутній шар даних .-> Services
+```
 
-* Unresolved;
-* Resolved;
-* Archived.
+## Основні доменні сутності
 
-Після визначення відповідного медіа Capture може бути пов’язаний із конкретним фільмом або серіалом.
+| Сутність | Призначення |
+|---|---|
+| **Media** | Базове представлення медіаконтенту. |
+| **Movie** | Модель фільму. |
+| **Series** | Модель серіалу із сезонами та епізодами. |
+| **Season** | Сезон серіалу. |
+| **Episode** | Окремий епізод серіалу. |
+| **User** | Користувач і його персональний контекст перегляду. |
+| **Watchlist** | Власний список медіа користувача. |
+| **Capture** | Необроблена згадка або рекомендація, яку можна пов’язати з медіа пізніше. |
+| **WatchCheckpoint** | Збережена позиція та причина зупинки перегляду епізоду. |
+| **Vibe Rating** | Деталізована оцінка медіа за шістьма критеріями. |
+| **History** | Історія перегляду. |
+| **Tracking** | Поточний персональний статус перегляду. |
 
-### Перегляд серіалів
+## ООП та навчальний контекст
 
-Серіали підтримують сезони та епізоди. Для епізоду може бути збережений checkpoint перегляду із позицією та причиною паузи.
+Проєкт створено як студентський C#/.NET-проєкт для практики об’єктно-орієнтованого програмування та проєктування предметної області.
 
-### Персональний tracking
+У Myosotis використовуються:
 
-Для користувача передбачені статуси:
+- окремі моделі для фільмів, серіалів, сезонів, епізодів, користувача та персональних записів;
+- інкапсуляція даних і поведінки в класах предметної області;
+- сервіси для пошуку, роботи з Capture, рекомендацій і Roulette;
+- розділення доменної логіки та інтерфейсу, що має спростити подальше підключення Blazor.
 
-* Planned;
-* Watching;
-* Watched;
-* Paused;
-* Dropped;
-* Rewatching.
+## Стан реалізації
 
-### Власна система Vibe Rating
+### Реалізовано
 
-Для медіа використовується деталізована оцінка за шістьма критеріями:
+- [x] Консольна версія на C#/.NET 10
+- [x] Моделі медіа та користувача
+- [x] Моделі списків і Capture-записів
+- [x] Моделі сезонів та епізодів
+- [x] Ratings, history та tracking
+- [x] Сервіс пошуку
+- [x] Сервіс роботи з Capture
+- [x] Базові рекомендації
+- [x] Roulette
 
-* Characters;
-* Plot;
-* Visuals;
-* Pacing;
-* Vibe;
-* Soundtrack.
+### Заплановано
 
-### Recommendations та Roulette
+- [ ] Графічний інтерфейс на Blazor
+- [ ] Підключення зовнішнього API для метаданих фільмів і серіалів
+- [ ] Постійне збереження даних
+- [ ] Авторизація та користувацький профіль
+- [ ] Розширення рекомендаційної та соціальної функціональності
 
-Проєкт містить базовий механізм пошуку схожого контенту та Roulette, яка може обирати медіа з урахуванням доступного часу та жанру/тега.
+## Запуск локально
 
-## 8. Особливість проєкту
+Поточна реалізація є консольною. Команди запуску та точний шлях до проєкту не наведені в поточному описі репозиторію, тому їх потрібно уточнити відповідно до фактичної структури solution.
 
-На відміну від звичайного каталогу, Myosotis робить акцент на **персональному контексті користувача**.
+```text
+<!-- update: додайте точні команди після перевірки структури .sln/.csproj -->
+```
 
-Тобто користувач може спочатку зберегти нечітку згадку про контент, а структурувати її пізніше.
+## Brand identity
 
-## 9. Brand identity
-<img width="1748" height="1240" alt="collect watch remember, копія (1)" src="https://github.com/user-attachments/assets/2d6de3c3-cf0b-4f94-a84a-87435f6d3bdd" />
-Палітра: https://coolors.co/1a2235-332d57-5c80bc-84dcc6-e2e8f0-d4915a
+Назва, візуальний напрям і палітра проєкту розроблялися для майбутнього графічного інтерфейсу.
 
-## 10. Стан реалізації
+**Палітра:** [Coolors](https://coolors.co/1a2235-332d57-5c80bc-84dcc6-e2e8f0-d4915a)
 
-На поточному етапі реалізовано консольний вигляд на C#.
+## Інструменти та джерела
 
-Реалізовані моделі медіа, користувача, списків, capture-записів, сезонів, епізодів, ratings, history та tracking.
+### Документація
 
-Також реалізовані сервіси пошуку, роботи з Capture, рекомендацій та Roulette.
+- [C# — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/csharp/)
+- [Blazor hosting models](https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly)
+- [Calling a web API from a .NET client](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient)
+- [ASP.NET Web API: calling a web API from a .NET client](https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client)
+- [TMDb API documentation](https://developer.themoviedb.org/docs/getting-started)
+- [TMDb movie details](https://developer.themoviedb.org/reference/movie-details)
+- [MudBlazor documentation](https://mudblazor.com/docs/overview)
 
-### Наступні етапи
+### Приклади коду
 
-1. Графічний інтерфейс.
-2. Підключення зовнішнього API для отримання метаданих фільмів і серіалів.
-3. Постійне збереження даних.
-4. Авторизація та користувацький профіль.
-5. Розширення рекомендаційної та соціальної функціональності.
+- [Movie Tracker App](https://github.com/ertugrulgacal/Movie-Tracker-App)
+- [movieTracker](https://github.com/LeilaniL/movieTracker)
+- [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor)
+- [Movie Website](https://github.com/krishnashah122/Movie-Website)
+- [JSON to C#](https://json2csharp.com/)
 
-### Джерела
-1. https://github.com/ertugrulgacal/Movie-Tracker-App code example, stucture
-2. https://github.com/LeilaniL/movieTracker code example
-3. LLM
-4. https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H
-5. https://dribbble.com/tags/glassmorphism напрям дизайну застосунка
-6. https://dribbble.com/search/raycast дизайн
-7. https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept concept 
-8. http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App concept
-9. https://dribbble.com/search/movie-site concept
-10. https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1 blazor tutorial
-11. https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly documentation
-12. https://github.com/AdrienTorris/awesome-blazor useful
-13. https://developer.themoviedb.org/docs/getting-started tmdb doc
-14. https://www.originkit.dev/ ui
-15. https://smoothui.dev/docs/components ui
-16. https://design.dev/tools/ tools for ui
-17. https://mudblazor.com/docs/overview docs mudblazor
-18. https://www.youtube.com/watch?v=xS4ISh6ZehU tailwind
-19. https://serializd.com/discover концепт
-20. https://moviesuggest.netlify.app/ example
-21. https://github.com/krishnashah122/Movie-Website example
-22. https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient api tutor
-23. https://developer.themoviedb.org/reference/movie-details tmdb doc
-24. https://www.youtube.com/watch?v=FlFyrOEz2S4 tmdb tutor
-25. https://json2csharp.com/
-26. https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client
+### Дизайн і візуальні референси
+
+- [Glassmorphism — Dribbble](https://dribbble.com/tags/glassmorphism)
+- [Raycast — Dribbble](https://dribbble.com/search/raycast)
+- [Spotify Wrapped Dashboard Concept](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept)
+- [Abstract Star Logo Concept](https://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App)
+- [Movie site concepts — Dribbble](https://dribbble.com/search/movie-site)
+- [Serializd Discover](https://serializd.com/discover)
+- [Movie Suggest](https://moviesuggest.netlify.app/)
+- [Origin UI](https://www.originkit.dev/)
+- [Smooth UI](https://smoothui.dev/docs/components)
+- [Design.dev tools](https://design.dev/tools/)
+
+### Навчальні матеріали
+
+- [Blazor tutorial](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1)
+- [Tailwind CSS tutorial](https://www.youtube.com/watch?v=xS4ISh6ZehU)
+- [TMDb tutorial](https://www.youtube.com/watch?v=FlFyrOEz2S4)
+- [Відеокурс з C#/.NET](https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H)
+
+## Використання LLM
+
+Під час розробки використовувалися LLM-інструменти як допоміжний засіб для написання й рефакторингу коду, пошуку ідей для дизайну та підготовки документації.
+
+Архітектурні рішення, набір функцій і фінальна реалізація були переглянуті та визначені автором проєкту.
+
+## Авторський та академічний контекст
+
+Myosotis — персональний навчальний проєкт, створений для практики C#, .NET та об’єктно-орієнто��аного проєктування на прикладі предметної області фільмів і серіалів.
+
+## Ліцензія
+
+Ліцензію для проєкту ще не визначено.
