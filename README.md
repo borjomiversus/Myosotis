@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/2d6de3c3-cf0b-4f94-a84a-87435f6d3bdd" alt="Myosotis — collect, watch, remember" width="720" />
+<img width="1393" height="586" alt="logo" src="https://github.com/user-attachments/assets/29e35640-b640-4b04-be4d-040b9e4e8470" />
 
 # Myosotis
 
