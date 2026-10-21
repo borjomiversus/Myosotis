@@ -152,25 +152,25 @@ Myosotis/
 
 ## Джерела
 
-- [Movie-Tracker-App (ertugrulgacal)](https://github.com/ertugrulgacal/Movie-Tracker-App) — приклад структури та коду.
-- [movieTracker (LeilaniL)](https://github.com/LeilaniL/movieTracker) — референс реалізації.
-- [Movie-Website (krishnashah122)](https://github.com/krishnashah122/Movie-Website) — приклад вебзастосунку.
-- [Movie Suggest](https://moviesuggest.netlify.app/) — приклад робочого застосунку.
+- [Movie-Tracker-App (ertugrulgacal)](https://github.com/ertugrulgacal/Movie-Tracker-App)
+- [movieTracker (LeilaniL)](https://github.com/LeilaniL/movieTracker) 
+- [Movie-Website (krishnashah122)](https://github.com/krishnashah122/Movie-Website) 
+- [Movie Suggest](https://moviesuggest.netlify.app/) 
 
-- [Serializd Discover](https://serializd.com/discover), [2020 Spotify Wrapped Dashboard](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept), [Abstract Star Logo](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App), [Movie Site](https://dribbble.com/search/movie-site), [Raycast](https://dribbble.com/search/raycast) - концепції.
-- [Glassmorphism](https://dribbble.com/tags/glassmorphism).
-- [OriginKit](https://www.originkit.dev/), [SmoothUI](https://smoothui.dev/docs/components), [MudBlazor Docs](https://mudblazor.com/docs/overview), [Design.dev Tools](https://design.dev/tools/).
+- [Serializd Discover](https://serializd.com/discover), [2020 Spotify Wrapped Dashboard](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept), [Abstract Star Logo](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App), [Movie Site](https://dribbble.com/search/movie-site), [Raycast](https://dribbble.com/search/raycast) 
+- [Glassmorphism](https://dribbble.com/tags/glassmorphism)
+- [OriginKit](https://www.originkit.dev/), [SmoothUI](https://smoothui.dev/docs/components), [MudBlazor Docs](https://mudblazor.com/docs/overview), [Design.dev Tools](https://design.dev/tools/)
 
 - [TMDB API: Getting Started](https://developer.themoviedb.org/docs/getting-started), [Movie Details](https://developer.themoviedb.org/reference/movie-details).
-- [Blazor WebAssembly Hosting Models](https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly) — документація Microsoft.
-- [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor) — корисна підбірка ресурсів для Blazor.
+- [Blazor WebAssembly Hosting Models](https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly) 
+- [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor) 
 - [Calling a Web API from a .NET Client](https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client), [Tutorial: Console WebApiClient](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient).
 
 - [Blazor Tutorial (YouTube)](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1).
 - [TMDB API Tutorial (YouTube)](https://www.youtube.com/watch?v=FlFyrOEz2S4).
 - [Tailwind CSS Guide (YouTube)](https://www.youtube.com/watch?v=xS4ISh6ZehU).
 - [Уроки з розробки C# (YouTube Playlist)](https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H).
-- [JSON2CSharp](https://json2csharp.com/) - генерація класів C# з JSON.
+- [JSON2CSharp](https://json2csharp.com/) 
 
 - [Blazor](https://learn.microsoft.com/aspnet/core/blazor/hosting-models)
 - [MudBlazor](https://mudblazor.com/docs/overview)
