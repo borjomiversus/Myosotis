@@ -25,7 +25,7 @@
 ## Можливості
 
 | | Функція | Опис |
-|---|---|---|
+|---|---|
 |  Captures | Нотатки типів `Thought`, `Quote`, `Scene`, `Note` зі статусами `Unresolved → Resolved → Archived` |
 |  Watchlists | Приватні та публічні добірки з особистими нотатками до кожного тайтлу |
 |  Tracking | Статуси перегляду: `Planned`, `Watching`, `Watched`, `Paused`, `Dropped`, `Rewatching` |
