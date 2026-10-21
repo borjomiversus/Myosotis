@@ -6,7 +6,7 @@
 
 **collect · watch · remember**
 
-> Персональний трекер фільмів і серіалів.
+> Myosotis — це застосунок для відстеження перегляду фільмів і серіалів, створення списків перегляду, збереження цікавих сцен, цитат і рекомендацій, а також ведення особистої історії переглядів та оцінювання улюблених творів.
 
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)
 ![C%23](https://img.shields.io/badge/C%23-239120?logo=c-sharp&logoColor=white)
@@ -92,8 +92,8 @@ flowchart LR
 Для запуску потрібен [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
-git clone https://github.com/borjomiversus/Myosotis.git
-cd Myosotis/MyosotisWeb    # TODO: перевірити назву папки проєкту
+git clone [https://github.com/your-username/Myosotis.git](https://github.com/your-username/Myosotis.git)
+cd Myosotis   
 dotnet run
 ```
 
@@ -128,26 +128,38 @@ Myosotis/
 
 ## Джерела
 
-### Документація
+- [Movie-Tracker-App (ertugrulgacal)](https://github.com/ertugrulgacal/Movie-Tracker-App) — приклад структури та коду.
+- [movieTracker (LeilaniL)](https://github.com/LeilaniL/movieTracker) — референс реалізації.
+- [Movie-Website (krishnashah122)](https://github.com/krishnashah122/Movie-Website) — приклад вебзастосунку.
+- [Movie Suggest](https://moviesuggest.netlify.app/) — приклад робочого застосунку.
+
+- [Serializd Discover](https://serializd.com/discover), [2020 Spotify Wrapped Dashboard](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept), [Abstract Star Logo](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App), концепції [Movie Site](https://dribbble.com/search/movie-site) та [Raycast](https://dribbble.com/search/raycast).
+- Напрям дизайну [Glassmorphism](https://dribbble.com/tags/glassmorphism).
+- [OriginKit](https://www.originkit.dev/), [SmoothUI](https://smoothui.dev/docs/components), [MudBlazor Docs](https://mudblazor.com/docs/overview), [Design.dev Tools](https://design.dev/tools/).
+
+- [TMDB API: Getting Started](https://developer.themoviedb.org/docs/getting-started) та [Movie Details](https://developer.themoviedb.org/reference/movie-details).
+- [Blazor WebAssembly Hosting Models](https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly) — офіційна документація Microsoft.
+- [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor) — корисна підбірка ресурсів для Blazor.
+- [Calling a Web API from a .NET Client](https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client) та [Tutorial: Console WebApiClient](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient).
+
+- [Blazor Tutorial (YouTube)](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1).
+- [TMDB API Tutorial (YouTube)](https://www.youtube.com/watch?v=FlFyrOEz2S4).
+- [Tailwind CSS Guide (YouTube)](https://www.youtube.com/watch?v=xS4ISh6ZehU).
+- [Уроки з розробки C# (YouTube Playlist)](https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H).
+- [JSON2CSharp](https://json2csharp.com/) (генерація класів C# з JSON) та LLM (допомога з кодом).
 
 - [Blazor](https://learn.microsoft.com/aspnet/core/blazor/hosting-models)
 - [MudBlazor](https://mudblazor.com/docs/overview)
 - [TMDb API](https://developer.themoviedb.org/docs/getting-started)
 - [Клієнт для роботи з Web API у .NET](https://learn.microsoft.com/dotnet/csharp/tutorials/console-webapiclient)
 
-### Приклади коду
-
 - [Movie-Tracker-App](https://github.com/ertugrulgacal/Movie-Tracker-App)
 - [movieTracker](https://github.com/LeilaniL/movieTracker)
 - [Movie-Website](https://github.com/krishnashah122/Movie-Website)
 
-### Натхнення для дизайну
-
 - [Glassmorphism (Dribbble)](https://dribbble.com/tags/glassmorphism)
 - [Spotify Wrapped Dashboard Concept](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept)
 - [Serializd](https://serializd.com/discover)
-
-### Навчальні матеріали
 
 - [Посібник із Blazor](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1)
 - [Посібник із Tailwind CSS](https://www.youtube.com/watch?v=xS4ISh6ZehU)
@@ -156,3 +168,6 @@ Myosotis/
 ## Ліцензія
 
 Ліцензію ще не визначено.
+
+
+
