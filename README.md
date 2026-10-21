@@ -1,6 +1,6 @@
  <div align="center">
 
-<img width="1736" height="564" alt="logo1" src="https://github.com/user-attachments/assets/5c4abdb3-414d-4d71-b21f-cc8a87e7e360" />
+<img width="1687" height="564" alt="logo1" src="https://github.com/user-attachments/assets/eb8e7446-4dd5-416e-9968-fd40d5c9d421" />
 
 # Myosotis
 
