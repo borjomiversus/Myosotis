@@ -142,7 +142,7 @@ Myosotis/
 - [Movie Suggest](https://moviesuggest.netlify.app/) — приклад робочого застосунку.
 
 - [Serializd Discover](https://serializd.com/discover), [2020 Spotify Wrapped Dashboard](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept), [Abstract Star Logo](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App), концепції [Movie Site](https://dribbble.com/search/movie-site) та [Raycast](https://dribbble.com/search/raycast).
-- Напрям дизайну [Glassmorphism](https://dribbble.com/tags/glassmorphism).
+- [Glassmorphism](https://dribbble.com/tags/glassmorphism).
 - [OriginKit](https://www.originkit.dev/), [SmoothUI](https://smoothui.dev/docs/components), [MudBlazor Docs](https://mudblazor.com/docs/overview), [Design.dev Tools](https://design.dev/tools/).
 
 - [TMDB API: Getting Started](https://developer.themoviedb.org/docs/getting-started) та [Movie Details](https://developer.themoviedb.org/reference/movie-details).
