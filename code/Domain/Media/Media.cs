@@ -14,7 +14,7 @@ public abstract class Media : IComparable<Media>
     public string? Country { get; private set; }
     public int? AgeRestriction { get; private set; }
     public double? TmdbRating { get; private set; }
-    public string? TmdbReview { get; private set; }
+    public List<TmdbReview> TmdbReviews { get; private set; } = new List<TmdbReviewItem>();    
     public VibeRating? Vibe { get; private set; }
     public Director? MediaDirector { get; private set; }
     public List<Actor> Cast { get; private set; }
@@ -50,14 +50,13 @@ public abstract class Media : IComparable<Media>
         TmdbRating = rating;
     }
 
-    public void SetTmdbReview(string? review)
+    public void SetTmdbReviews(List<TmdbReview>? review)
+{
+    if (review != null)
     {
-        if (!string.IsNullOrWhiteSpace(review))
-        {
-               TmdbReview = review;
-
-        }
+        TmdbReviews = review;
     }
+}
 
     public void UpdateDescription(string newDescription)
     {
@@ -174,4 +173,11 @@ public abstract class Media : IComparable<Media>
     }
 
     public abstract int CalculateTimeDebt();
+}
+
+public class TmdbReview
+{
+    public string Author { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+
 }
