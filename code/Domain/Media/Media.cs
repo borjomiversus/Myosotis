@@ -14,7 +14,7 @@ public abstract class Media : IComparable<Media>
     public string? Country { get; private set; }
     public int? AgeRestriction { get; private set; }
     public double? TmdbRating { get; private set; }
-    public List<TmdbReview> TmdbReviews { get; private set; } = new List<TmdbReviewItem>();    
+    public List<TmdbReview> TmdbReviews { get; private set; } = new List<TmdbReview>();    
     public VibeRating? Vibe { get; private set; }
     public Director? MediaDirector { get; private set; }
     public List<Actor> Cast { get; private set; }
