@@ -11,13 +11,11 @@
 <PageTitle>Myosotis · Search Archive</PageTitle>
 
 <div class="relative w-full overflow-hidden px-margin py-space-xl">
-    <!-- Ambient Canvas Glow -->
     <div class="absolute -top-32 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute top-48 right-10 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Header & Search Command Zone -->
+    <!-- Header  -->
     <section class="relative z-10 flex flex-col gap-space-lg mb-space-xl">
-        <!-- Eyebrow & Archival Registry Marker -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-space-sm">
                 <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
@@ -31,7 +29,7 @@
             </div>
         </div>
 
-        <!-- Main Input Bar Component -->
+        <!-- Bar -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
             <div class="relative flex-1 group">
                 <div class="absolute inset-y-0 left-0 pl-space-md flex items-center pointer-events-none text-on-surface-variant group-focus-within:text-primary transition-colors">
@@ -58,7 +56,7 @@
             </div>
         </div>
 
-        <!-- Result Metadata Count & Subtitle -->
+        <!-- Result -->
         <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-space-xs">
             <h1 class="font-headline-lg text-headline-lg text-on-surface">
                 @(string.IsNullOrWhiteSpace(Query) ? "Catalog Archive" : "Results for ")
@@ -72,7 +70,7 @@
             </p>
         </div>
 
-        <!-- Filter Pills Bar -->
+        <!-- Filter Bar -->
         @if (results.Count > 0)
         {
             <div class="flex items-center gap-space-xs overflow-x-auto pb-space-xs">
@@ -97,7 +95,6 @@
         }
     </section>
 
-    <!-- LOADING STATE DURING TMDB FETCH -->
     @if (isSearching)
     {
         <div class="flex flex-col items-center justify-center py-space-xl gap-3">
@@ -107,7 +104,6 @@
     }
     else if (GetFilteredResults().Count > 0)
     {
-        <!-- ACTIVE RESULTS VIEW CONTAINER -->
         <div class="flex flex-col gap-space-lg transition-all duration-300">
             @foreach (var m in GetFilteredResults())
             {
@@ -116,7 +112,7 @@
 
                 <article class="group relative bg-surface-container-low rounded-xl p-space-lg sm:p-space-xl hover:bg-surface-container transition-all duration-300 shadow-md">
                     <div class="flex flex-col lg:flex-row gap-space-lg items-start">
-                        <!-- Poster Thumbnail -->
+                        <!-- Poster -->
                         <a href="/media/@m.Id" class="relative w-full lg:w-48 shrink-0 aspect-[2/3] rounded-lg overflow-hidden bg-surface-container-highest shadow-sm block">
                             @if (!string.IsNullOrEmpty(m.PosterUrl))
                             {
@@ -138,16 +134,15 @@
                             }
                         </a>
 
-                        <!-- Narrative Content Column -->
+                        <!-- Content Column -->
                         <div class="flex flex-col flex-1 min-w-0 justify-between gap-space-md">
                             <div class="flex flex-col gap-space-xs">
-                                <!-- Badges Row -->
                                 <div class="flex flex-wrap items-center gap-space-xs">
                                     <span class="px-space-sm py-0.5 rounded bg-surface-container-high font-label-caps text-label-caps text-primary tracking-wider uppercase">
                                         @(m is Series ? "TV Series" : "Feature Film")
                                     </span>
                                     
-                                    <!-- МІТКА ДАНІ З TMDB -->
+                                    <!-- TMDB -->
                                     <span class="px-space-sm py-0.5 rounded bg-primary/10 border border-primary/20 font-label-caps text-label-caps text-primary tracking-wider uppercase flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[12px]">database</span>
                                         <span>TMDB Canon</span>
@@ -175,7 +170,7 @@
                                     }
                                 </div>
 
-                                <!-- Synopsis -->
+                                <!-- description -->
                                 @if (!string.IsNullOrWhiteSpace(m.Description))
                                 {
                                     <p class="font-body-lg text-body-lg text-on-surface-variant/90 line-clamp-2 max-w-3xl mt-1">
@@ -184,7 +179,7 @@
                                 }
                             </div>
 
-                            <!-- Vibe consensus preview & Personal Status Badges -->
+                            <!-- Vibe preview -->
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm p-space-md rounded-lg bg-surface-container-lowest/60">
                                 <div class="flex items-center gap-space-md">
                                     @if (m.Vibe != null)
@@ -205,7 +200,7 @@
                                     }
                                 </div>
 
-                                <!-- Personal Sanctuary State Badges -->
+                                <!-- Personal Badge -->
                                 <div class="flex flex-wrap items-center gap-space-xs">
                                     @if (containingList != null)
                                     {
@@ -224,7 +219,7 @@
                                 </div>
                             </div>
 
-                            <!-- Editorial Actions Row -->
+                            <!-- actions  -->
                             <div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs border-t border-surface-variant/20">
                                 <div class="flex flex-wrap items-center gap-space-sm">
                                     <a href="/media/@m.Id" class="px-space-md py-space-xs rounded-full bg-primary text-on-primary font-title-md text-title-md hover:bg-primary-fixed transition-all flex items-center gap-1.5 shadow-sm">
@@ -258,7 +253,7 @@
     }
     else if (!string.IsNullOrWhiteSpace(Query))
     {
-        <!-- POETIC SILENT CATALOG STATE (EMPTY STATE VIEW) -->
+        <!-- catalog empty -->
         <div class="flex flex-col items-center justify-center py-space-xl px-space-md text-center bg-surface-container-low rounded-2xl border-dashed border-2 border-surface-variant/40 transition-all duration-300 my-space-md">
             <div class="relative w-24 h-24 mb-space-md flex items-center justify-center">
                 <div class="absolute inset-0 bg-primary/10 rounded-full blur-xl"></div>
@@ -298,7 +293,6 @@
         </div>
     }
 
-    <!-- Editorial Footer Ribbon -->
     <footer class="mt-space-xl pt-space-md border-t border-surface-variant/20 flex flex-col sm:flex-row items-center justify-between gap-space-sm text-on-surface-variant/60 font-label-sm text-label-sm">
         <div class="flex items-center gap-space-xs">
             <span class="w-1 h-1 rounded-full bg-primary/70"></span>
@@ -315,7 +309,7 @@
     public string? Query { get; set; }
 
     private string searchInput = "";
-    private string selectedFilter = "All"; // "All", "Movies", "Series", "Watchlist"
+    private string selectedFilter = "All"; 
     private List<Media> results = new List<Media>();
     private bool isSearching = false;
     private string? lastLogged;
@@ -324,7 +318,6 @@
 
     private User Me => DataService.CurrentUser;
 
-    // АСИНХРОННИЙ ПОШУК (ЛОКАЛЬНА БАЗА + TMDB API)
     protected override async Task OnParametersSetAsync()
     {
         results = new List<Media>();
@@ -334,36 +327,32 @@
 
         isSearching = true;
 
-        // 1. Пошук у локальній базі даних
         var allMedia = DataService.GetAllMedia();
         AddUnique(SearchService.SearchByTitle(allMedia, Query));
         AddUnique(SearchService.FilterByGenre(allMedia, Query));
         AddUnique(SearchService.SearchByActor(allMedia, Query));
 
-        // 2. Якщо в інтернеті є відповідь з TMDB — підтягуємо її
         try
         {
             var tmdbResults = await TmdbService.SearchMediaAsync(Query);
+
             foreach (var item in tmdbResults)
             {
                 AddUnique(new List<Media> { item });
 
-                // Додаємо в локальну бібліотеку, щоб працювала сторінка детального перегляду /media/{id}
-                var existingLibrary = DataService.GetAllMedia();
-                bool exists = false;
-                foreach (var libItem in existingLibrary)
+                bool existsInLibrary = DataService.Library.Any(libItem =>
+                    (libItem.TmdbId.HasValue && item.TmdbId.HasValue && libItem.TmdbId == item.TmdbId) ||
+                    (libItem.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase) && libItem.ReleaseYear == item.ReleaseYear));
+
+                if (!existsInLibrary)
                 {
-                    if (libItem.Id == item.Id) { exists = true; break; }
-                }
-                if (!exists)
-                {
-                    DataService.Library.Add(item);
+                    DataService.AddToLibrary(item);
                 }
             }
         }
         catch
         {
-            // Якщо інтернет відсутній — просто залишаємо локальні результати
+           
         }
 
         isSearching = false;
@@ -375,6 +364,20 @@
         }
     }
 
+    private void AddUnique(List<Media> found)
+    {
+        foreach (var media in found)
+        {
+            bool exists = results.Any(existing =>
+                (existing.TmdbId.HasValue && media.TmdbId.HasValue && existing.TmdbId == media.TmdbId) ||
+                (existing.Title.Equals(media.Title, StringComparison.OrdinalIgnoreCase) && existing.ReleaseYear == media.ReleaseYear));
+
+            if (!exists)
+            {
+                results.Add(media);
+            }
+        }
+    }
     private void ExecuteSearch()
     {
         if (string.IsNullOrWhiteSpace(searchInput))
@@ -391,26 +394,6 @@
     {
         searchInput = "";
         Navigation.NavigateTo("/search");
-    }
-
-    private void AddUnique(List<Media> found)
-    {
-        foreach (var media in found)
-        {
-            bool exists = false;
-            foreach (var existing in results)
-            {
-                if (existing.Id == media.Id)
-                {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists)
-            {
-                results.Add(media);
-            }
-        }
     }
 
     private List<Media> GetFilteredResults()
