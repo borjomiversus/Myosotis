@@ -1,4 +1,5 @@
 ﻿@page "/media/{Id:guid}"
+@inject TmdbApiService TmdbService
 @using System.Globalization
 @using MyosotisWeb.ServicesWeb
 @inject DemoDataService DataService
@@ -77,11 +78,11 @@ else
 
                             @if (MediaItem is Series series)
                             {
-                                <span class="font-body-md text-body-md text-on-surface">@series.TotalSeasons Seasons • @series.CalculateTimeDebt() mins</span>
+                                <span class="font-body-md text-body-md text-on-surface">@series.TotalSeasons Seasons • @series.Seasons.Sum(s => s.Episodes.Count) Episodes</span>
                             }
                             else if (MediaItem is Movie movie)
                             {
-                                <span class="font-body-md text-body-md text-on-surface">@movie.DurationMinutes mins</span>
+                                <span class="font-body-md text-body-md text-on-surface">@movie.TotalDurationMinutes mins</span>
                             }
 
                             @if (MediaItem.Genres != null && MediaItem.Genres.Count > 0)
@@ -108,7 +109,6 @@ else
 
                     <!-- Action Bar -->
                     <div class="flex flex-wrap items-center gap-3 pt-2">
-                        <!-- Watchlist Status -->
                         @if (ContainingWatchlist != null)
                         {
                             <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container font-title-md shadow-md">
@@ -117,7 +117,6 @@ else
                             </span>
                         }
 
-                        <!-- Checkpoint Button -->
                         @if (ActiveCheckpoint == null)
                         {
                             <button @onclick="OpenCheckpointModal" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-high text-on-surface font-title-md hover:bg-surface-container-highest transition-colors">
@@ -126,14 +125,13 @@ else
                             </button>
                         }
 
-                        <!-- Mark Watched Button -->
                         <button @onclick="ToggleWatched" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg @(IsWatched ? "bg-primary text-on-primary" : "bg-secondary-container text-on-secondary-container") font-title-md hover:opacity-90 transition-all">
                             <span class="material-symbols-outlined text-[18px]">check_circle</span>
                             <span>@(IsWatched ? "Watched" : "Mark Watched")</span>
                         </button>
                     </div>
 
-                    <!-- Director -->
+                    <!-- Director & Cast -->
                     <div class="pt-2 flex flex-wrap items-center gap-y-2 gap-x-6 text-on-surface-variant font-label-sm text-label-sm">
                         @if (MediaItem.MediaDirector != null)
                         {
@@ -157,7 +155,7 @@ else
 
         <div class="max-w-7xl mx-auto w-full px-margin py-8 flex flex-col gap-10">
 
-            <!-- вотч чекпоінт -->
+            <!-- Watch Checkpoint Banner -->
             @if (ActiveCheckpoint != null)
             {
                 <div class="relative w-full rounded-xl bg-surface-container-low p-6 overflow-hidden shadow-lg border-l-4 border-primary">
@@ -216,7 +214,7 @@ else
                 </div>
             }
 
-            <!-- рейтинг і ще -->
+            <!-- Diary & Vibe Rating -->
             <div class="flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -241,9 +239,12 @@ else
                         </div>
                         <div class="pt-6 flex flex-col gap-3">
                             <div class="flex items-center justify-between py-2 border-b border-surface-container-highest">
-                                <span class="font-body-md text-body-md text-on-surface-variant">Runtime</span>
-
+                                <span class="font-body-md text-body-md text-on-surface-variant">Time Debt</span>
                                 <span class="font-title-md text-title-md text-primary font-bold">@MediaItem.CalculateTimeDebt() mins</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2">
+                                <span class="font-body-md text-body-md text-on-surface-variant">Total Duration</span>
+                                <span class="font-title-md text-title-md text-on-surface font-bold">@MediaItem.TotalDurationMinutes mins</span>
                             </div>
                         </div>
                     </div>
@@ -252,7 +253,6 @@ else
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex flex-col">
                                 <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">MY RATING</span>
-
                             </div>
                             <div class="flex items-baseline gap-1">
                                 <span class="font-serif text-3xl md:text-4xl text-primary font-normal">
@@ -263,7 +263,6 @@ else
                         </div>
 
                         <div class="flex flex-col gap-3">
-                            <!-- Characters -->
                             <div class="flex flex-col gap-1">
                                 <div class="flex justify-between font-label-sm text-label-sm">
                                     <span class="text-on-surface font-medium">Characters</span>
@@ -274,7 +273,6 @@ else
                                        class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                             </div>
 
-                            <!-- Plot -->
                             <div class="flex flex-col gap-1">
                                 <div class="flex justify-between font-label-sm text-label-sm">
                                     <span class="text-on-surface font-medium">Plot</span>
@@ -285,7 +283,6 @@ else
                                        class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                             </div>
 
-                            <!-- Visuals -->
                             <div class="flex flex-col gap-1">
                                 <div class="flex justify-between font-label-sm text-label-sm">
                                     <span class="text-on-surface font-medium">Visuals</span>
@@ -296,7 +293,6 @@ else
                                        class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                             </div>
 
-                            <!-- Pacing -->
                             <div class="flex flex-col gap-1">
                                 <div class="flex justify-between font-label-sm text-label-sm">
                                     <span class="text-on-surface font-medium">Pacing</span>
@@ -307,7 +303,6 @@ else
                                        class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                             </div>
 
-                            <!-- Vibe -->
                             <div class="flex flex-col gap-1">
                                 <div class="flex justify-between font-label-sm text-label-sm">
                                     <span class="text-on-surface font-medium">Vibe</span>
@@ -318,7 +313,6 @@ else
                                        class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                             </div>
 
-                            <!-- Soundtrack -->
                             <div class="flex flex-col gap-1">
                                 <div class="flex justify-between font-label-sm text-label-sm">
                                     <span class="text-on-surface font-medium">Soundtrack</span>
@@ -368,7 +362,7 @@ else
                 </div>
             </div>
 
-            <!-- дл серіла еп -->
+            <!-- Seasons for Series -->
             @if (MediaItem is Series currentSeries && currentSeries.Seasons.Count > 0)
             {
                 <div class="flex flex-col gap-4">
@@ -419,7 +413,8 @@ else
                     }
                 </div>
             }
-            <!-- soundtracks -->
+
+            <!-- Soundtracks -->
             @if (MediaItem.Soundtracks != null && MediaItem.Soundtracks.Count > 0)
             {
                 <div class="flex flex-col gap-4 bg-surface-container p-6 rounded-xl shadow-sm">
@@ -456,7 +451,7 @@ else
                 </div>
             }
 
-            <!-- відгуки -->
+            <!-- Reviews -->
             <div class="flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -521,7 +516,7 @@ else
                 }
             </div>
 
-            <!-- recs -->
+            <!-- Similar Titles -->
             @if (SimilarTitles.Count > 0)
             {
                 <div class="flex flex-col gap-4 pb-12">
@@ -658,7 +653,7 @@ else
     private int inputSeason = 1;
     private int inputEpisode = 1;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         MediaItem = DataService.GetById(Id);
 
@@ -686,6 +681,11 @@ else
                 vibePacing = 8;
                 vibeVibe = 8;
                 vibeSoundtrack = 8;
+            }
+
+            if (MediaItem.TmdbId.HasValue)
+            {
+                await TmdbService.EnrichMediaDetailsAsync(MediaItem);
             }
         }
     }

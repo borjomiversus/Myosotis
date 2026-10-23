@@ -2,6 +2,7 @@
 @using System.Globalization
 @using MudBlazor
 @using MyosotisWeb.ServicesWeb
+@inject TmdbApiService TmdbService
 @inject DemoDataService DataService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -12,9 +13,16 @@
 <div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-10">
 
     <!-- БАНЕР -->
-    @if (FeaturedMedia != null)
+    @if (isLoading)
     {
-        <div class="relative w-full h-[300px] rounded-lg overflow-hidden border border-secondary/30 shadow-xl flex items-center group bg-gradient-to-br from-secondary/20 via-background to-secondary/10">
+        <div class="w-full h-[300px] rounded-lg border border-secondary/20 bg-gradient-to-br from-secondary/10 to-background flex flex-col items-center justify-center gap-3">
+            <span class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+            <span class="text-secondary font-body-md text-[13px]">Loading TMDB Trends...</span>
+        </div>
+    }
+    else if (FeaturedMedia != null)
+    {
+        <div class="relative w-full h-[320px] rounded-lg overflow-hidden border border-secondary/30 shadow-xl flex items-center group bg-gradient-to-br from-secondary/20 via-background to-secondary/10">
 
             <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                  style="@UiHelpers.CardBackground(FeaturedMedia.PosterUrl)">
@@ -25,65 +33,74 @@
 
             <div class="relative z-10 w-full p-10 flex flex-col max-w-2xl">
 
-                <span class="px-2 py-1 rounded bg-primary/15 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/30 mb-4 backdrop-blur-sm">
-                    RECOMMENDATION
-                </span>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="px-2 py-1 rounded bg-primary/15 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/30 backdrop-blur-sm">
+                        TRENDING RECOMMENDATION
+                    </span>
+                    @if (FeaturedMedia.TmdbRating.HasValue)
+                    {
+                        <span class="text-primary font-title-md text-[12px] font-bold">
+                            ★ @FeaturedMedia.TmdbRating.Value.ToString("0.0")
+                        </span>
+                    }
+                </div>
 
-                <!-- Заголовок банера з посиланням -->
                 <a href="/media/@FeaturedMedia.Id" class="hover:text-primary transition-colors">
-                    <h1 class="font-headline-xl text-headline-xl text-[#E2E8F0] drop-shadow-lg mb-3">
+                    <h1 class="font-headline-xl text-headline-xl text-[#E2E8F0] drop-shadow-lg mb-2 line-clamp-1">
                         @FeaturedMedia.Title
                     </h1>
                 </a>
 
                 <!-- Метадані -->
-                <div class="flex items-center gap-2 font-body-md text-[13px] text-secondary mb-4 drop-shadow-md">
+                <div class="flex items-center gap-2 font-body-md text-[13px] text-secondary mb-3 drop-shadow-md">
                     <span>@FeaturedMedia.ReleaseYear</span>
+
+                    <span>·</span>
+                    <span class="text-primary/90 font-semibold">@(FeaturedMedia is Series ? "TV Series" : "Movie")</span>
 
                     @if (FeaturedMedia.Genres != null && FeaturedMedia.Genres.Count > 0)
                     {
                         <span>·</span>
                         <span>@string.Join(" · ", FeaturedMedia.Genres)</span>
                     }
-
-                    <span>·</span>
-
-                    @if (FeaturedMedia is Movie movie)
-                    {
-                        <span>@UiHelpers.FormatMinutes(movie.DurationMinutes)</span>
-                    }
-                    else if (FeaturedMedia is Series series)
-                    {
-                        int totalSeasons = series.Seasons.Count;
-                        int totalEpisodes = 0;
-                        foreach (var s in series.Seasons)
-                        {
-                            totalEpisodes += s.Episodes.Count;
-                        }
-
-                        <span>@totalSeasons сезонів · @totalEpisodes епізодів</span>
-                    }
                 </div>
 
                 @if (!string.IsNullOrWhiteSpace(FeaturedMedia.Description))
                 {
-                    <p class="font-body-lg text-body-lg text-[#E2E8F0]/80 italic font-serif max-w-xl line-clamp-3 mb-8 drop-shadow-md">
+                    <p class="font-body-lg text-body-lg text-[#E2E8F0]/80 italic font-serif max-w-xl line-clamp-2 mb-6 drop-shadow-md">
                         @FeaturedMedia.Description
                     </p>
                 }
 
-                <!-- Кнопки -->
-                <div class="flex items-center gap-4">
-                    <button class="px-5 py-2.5 rounded-lg bg-primary text-background font-title-md font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center gap-2 shadow-md">
-                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
-                        Add to list
-                    </button>
+                <div class="flex flex-wrap items-center gap-3">
+                    @if (Me.Watchlists.Count > 0)
+                    {
+                        <div class="flex items-center gap-2 bg-background/80 p-1 rounded-lg border border-secondary/30 backdrop-blur-md">
+                            <select @bind="selectedWatchlist" class="bg-transparent text-white font-title-md text-[13px] px-2 py-1 outline-none cursor-pointer">
+                                @foreach (var list in Me.Watchlists)
+                                {
+                                    <option value="@list.Name" class="bg-background text-white">@list.Name</option>
+                                }
+                            </select>
 
-                    <!-- Посилання на деталі медіа -->
-                    <a href="/media/@FeaturedMedia.Id" class="px-5 py-2.5 rounded-lg border border-secondary text-secondary font-title-md text-[14px] hover:bg-secondary/10 transition-colors flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[20px]">info</span>
+                            <button @onclick="AddFeaturedToWatchlist" class="px-4 py-1.5 rounded-md bg-primary text-background font-title-md font-bold text-[13px] hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md">
+                                <span class="material-symbols-outlined text-[18px]">bookmark_add</span>
+                                Add to list
+                            </button>
+                        </div>
+                    }
+
+                    <!-- деталі медіа -->
+                    <a href="/media/@FeaturedMedia.Id" class="px-4 py-2 rounded-lg border border-secondary text-secondary font-title-md text-[13px] hover:bg-secondary/10 transition-colors flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">info</span>
                         Details
                     </a>
+
+                    <!-- рекомендації  -->
+                    <button @onclick="NextRandomPick" class="px-3 py-2 rounded-lg bg-secondary/10 border border-secondary/20 hover:border-primary text-secondary hover:text-primary transition-all flex items-center gap-1.5" title="Next recommendation">
+                        <span class="material-symbols-outlined text-[18px]">shuffle</span>
+                        <span class="text-[12px] font-title-md">Next pick</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -167,7 +184,7 @@
                 </div>
             }
 
-            <div class="snap-start shrink-0 w-[200px] h-[200px] rounded-lg bg-background border border-dashed border-secondary/40 shadow-lg cursor-pointer hover:bg-secondary/10 transition-colors flex flex-col items-center justify-center gap-4 group">
+            <a href="/watchlists" class="snap-start shrink-0 w-[200px] h-[200px] rounded-lg bg-background border border-dashed border-secondary/40 shadow-lg cursor-pointer hover:bg-secondary/10 transition-colors flex flex-col items-center justify-center gap-4 group">
                 <div class="w-12 h-12 rounded-full border border-secondary/40 flex items-center justify-center text-secondary group-hover:text-primary group-hover:border-primary transition-colors">
                     <span class="material-symbols-outlined text-[24px]">
                         add
@@ -176,7 +193,7 @@
                 <span class="text-[14px] text-secondary group-hover:text-white transition-colors text-center font-body-md">
                     Create new<br />watchlist
                 </span>
-            </div>
+            </a>
 
         </div>
     </div>
@@ -184,7 +201,7 @@
     <!-- НИЖНІ БЛОКИ -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-        <!-- Вечір (Рекомендації з посиланнями на деталі) -->
+        <!-- рекомендації з TMDB -->
         <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-[18px] text-white">
@@ -364,26 +381,110 @@
 </div>
 
 @code {
+    private List<Media> trendingList = new();
+    private Media? FeaturedMedia;
+    private bool isLoading = true;
+    private string selectedWatchlist = "";
+    private Random random = new Random();
+
     private User Me => DataService.CurrentUser;
 
-    // Без LINQ (індексація за списком)
-    private Media? FeaturedMedia => DataService.Library.Count > 0 ? DataService.Library[0] : null;
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
 
-    // Без LINQ (звичайний цикл for)
+        var fetchedList = await TmdbService.GetTrendingMediaAsync();
+
+        trendingList.Clear();
+        foreach (var item in fetchedList)
+        {
+            var trackedItem = DataService.GetOrAddToLibrary(item);
+            trendingList.Add(trackedItem);
+        }
+
+        if (trendingList.Count > 0)
+        {
+            FeaturedMedia = trendingList[0];
+        }
+
+        if (Me.Watchlists.Count > 0)
+        {
+            selectedWatchlist = Me.Watchlists[0].Name;
+        }
+
+        isLoading = false;
+    }
+
+    private void NextRandomPick()
+    {
+        if (trendingList.Count <= 1) return;
+
+        Media newPick;
+        do
+        {
+            int index = random.Next(trendingList.Count);
+            newPick = trendingList[index];
+        }
+        while (newPick == FeaturedMedia && trendingList.Count > 1);
+
+        FeaturedMedia = newPick;
+    }
+
+    private void AddFeaturedToWatchlist()
+    {
+        if (FeaturedMedia == null) return;
+
+        Watchlist? target = null;
+        foreach (var w in Me.Watchlists)
+        {
+            if (w.Name == selectedWatchlist)
+            {
+                target = w;
+                break;
+            }
+        }
+
+        if (target == null) return;
+
+        bool alreadyIn = false;
+        foreach (var entry in target.Entries)
+        {
+            if ((entry.Item.TmdbId.HasValue && FeaturedMedia.TmdbId.HasValue && entry.Item.TmdbId == FeaturedMedia.TmdbId) ||
+                entry.Item.Id == FeaturedMedia.Id)
+            {
+                alreadyIn = true;
+                break;
+            }
+        }
+
+        if (alreadyIn)
+        {
+            Snackbar.Add($"«{FeaturedMedia.Title}» вже є у «{selectedWatchlist}»", Severity.Warning);
+            return;
+        }
+
+        Me.AddMediaToWatchlist(target, FeaturedMedia, null);
+        Snackbar.Add($"«{FeaturedMedia.Title}» додано до «{selectedWatchlist}»", Severity.Success);
+
+        NextRandomPick();
+    }
+
     private List<Media> SuggestedMedia
     {
         get
         {
             var result = new List<Media>();
-            for (int i = 1; i < DataService.Library.Count && result.Count < 2; i++)
+            for (int i = 0; i < trendingList.Count && result.Count < 2; i++)
             {
-                result.Add(DataService.Library[i]);
+                if (trendingList[i] != FeaturedMedia)
+                {
+                    result.Add(trendingList[i]);
+                }
             }
             return result;
         }
     }
 
-    // Без LINQ для нотаток
     private List<CaptureEntry> RecentCaptures
     {
         get

@@ -28,6 +28,7 @@ namespace MyosotisWeb.ServicesWeb
                                      (m.Genres != null && m.Genres.Any(g => g.ToLowerInvariant().Contains(q))));
         }
 
+
         public DemoDataService()
         {
             CurrentUser = new User("spacedream");
@@ -35,13 +36,19 @@ namespace MyosotisWeb.ServicesWeb
             CurrentUser.CreateWatchlist("Adrenaline", true);
         }
 
-        // з TMDB у бібліотеку користувача
-        public void AddToLibrary(Media media)
+        public Media GetOrAddToLibrary(Media media)
         {
-            if (!Library.Any(m => m.Title.Equals(media.Title, StringComparison.OrdinalIgnoreCase)))
+            var existing = Library.FirstOrDefault(m =>
+                (m.TmdbId.HasValue && media.TmdbId.HasValue && m.TmdbId == media.TmdbId) ||
+                (m.Title.Equals(media.Title, StringComparison.OrdinalIgnoreCase) && m.ReleaseYear == media.ReleaseYear));
+
+            if (existing != null)
             {
-                Library.Add(media);
+                return existing; 
             }
+
+            Library.Add(media);
+            return media;
         }
     }
 }

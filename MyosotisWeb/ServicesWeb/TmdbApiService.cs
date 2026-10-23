@@ -170,7 +170,122 @@ namespace MyosotisWeb.ServicesWeb
             }
             return DateTime.Now.Year;
         }
+
+        public async Task<List<Media>> GetTrendingMediaAsync()
+        {
+            var list = new List<Media>();
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                var response = await client.GetFromJsonAsync<TmdbSearchResponse>("trending/all/week?language=en-US");
+
+                if (response?.Results == null) return list;
+
+                foreach (var item in response.Results)
+                {
+                    int releaseYear = ParseYear(item.ReleaseDate ?? item.FirstAirDate);
+                    string title = item.Title ?? item.Name ?? "Untitled";
+
+                    if (item.MediaType == "movie")
+                    {
+                        var movie = new Movie(title, releaseYear, 1, null);
+                        PopulateBasicMedia(movie, item);
+                        list.Add(movie);
+                    }
+                    else if (item.MediaType == "tv")
+                    {
+                        var series = new Series(title, releaseYear, 1, 1, null);
+                        PopulateBasicMedia(series, item);
+                        list.Add(series);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Trending Error]: {ex.Message}");
+            }
+
+            return list;
+        }
+
+        public async Task EnrichMediaDetailsAsync(Media media)
+        {
+            if (!media.TmdbId.HasValue) return;
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                string endpoint = media is Movie
+                    ? $"movie/{media.TmdbId}?append_to_response=credits"
+                    : $"tv/{media.TmdbId}?append_to_response=credits";
+
+                var response = await client.GetFromJsonAsync<TmdbFullDetailsDto>(endpoint);
+                if (response == null) return;
+
+                if (media is Movie && response.Runtime.HasValue)
+                {
+                    media.UpdateRuntimeInfo(response.Runtime.Value);
+                }
+                else if (media is Series seriesObj)
+                {
+                    int rawLength = response.EpisodeRunTime?.FirstOrDefault() ?? 0;
+                    int avgLength = rawLength > 0 ? rawLength : 45;
+
+                    int seasonsCount = response.NumberOfSeasons ?? 1;
+                    int totalEpisodes = response.NumberOfEpisodes ?? 1;
+
+                    seriesObj.UpdateRuntimeInfo(avgLength);
+
+                    if (seriesObj.Seasons == null || seriesObj.Seasons.Count == 0)
+                    {
+                        int episodesPerSeason = seasonsCount > 0 ? Math.Max(1, totalEpisodes / seasonsCount) : totalEpisodes;
+
+                        for (int s = 1; s <= seasonsCount; s++)
+                        {
+                            var season = new Season(s);
+                            for (int e = 1; e <= episodesPerSeason; e++)
+                            {
+                                season.AddEpisode(new Episode(e, $"Episode {e}", avgLength));
+                            }
+                            seriesObj.AddSeason(season);
+                        }
+                    }
+                }
+
+                if (response.ProductionCountries != null && response.ProductionCountries.Any())
+                {
+                    string country = response.ProductionCountries.First().Name;
+                    string studio = response.ProductionCompanies?.FirstOrDefault()?.Name ?? "Unknown Studio";
+                    media.SetProductionDetails(studio, country);
+                }
+
+                if (response.Credits != null)
+                {
+                    if (response.Credits.Cast != null)
+                    {
+                        media.Cast.Clear();
+                        foreach (var c in response.Credits.Cast.Take(5))
+                        {
+                            media.AddCastMember(new Actor(c.Name, string.IsNullOrEmpty(c.Character) ? "Unknown" : c.Character));
+                        }
+                    }
+
+                    var directorDto = response.Credits.Crew?.FirstOrDefault(c => c.Job == "Director" || c.Job == "Executive Producer");
+                    if (directorDto != null)
+                    {
+                        media.SetDirector(new Director(directorDto.Name, "Classic"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Details Error]: {ex.Message}");
+            }
+        }
     }
+
+    
 
     public class TmdbSearchResponse
     {
@@ -206,7 +321,14 @@ namespace MyosotisWeb.ServicesWeb
 
         [JsonPropertyName("vote_average")]
         public double VoteAverage { get; set; }
-    }
+
+        [JsonPropertyName("runtime")] 
+        public int? Runtime { get; set; }
+
+        [JsonPropertyName("episode_run_time")]
+        public List<int>? EpisodeRunTime { get; set; }
+   
+}
 
     public class TmdbMovieDetailsDto
     {
@@ -323,5 +445,34 @@ namespace MyosotisWeb.ServicesWeb
 
         [JsonPropertyName("content")]
         public string? Content { get; set; }
+    }
+
+    public class TmdbFullDetailsDto
+    {
+        [JsonPropertyName("runtime")] public int? Runtime { get; set; }
+        [JsonPropertyName("episode_run_time")] public List<int>? EpisodeRunTime { get; set; }
+        [JsonPropertyName("number_of_seasons")] public int? NumberOfSeasons { get; set; }
+        [JsonPropertyName("number_of_episodes")] public int? NumberOfEpisodes { get; set; }
+        [JsonPropertyName("production_countries")] public List<TmdbCountry>? ProductionCountries { get; set; }
+        [JsonPropertyName("production_companies")] public List<TmdbCompany>? ProductionCompanies { get; set; }
+        [JsonPropertyName("credits")] public TmdbCredits? Credits { get; set; }
+    }
+
+    public class TmdbCountry { [JsonPropertyName("name")] public string Name { get; set; } = ""; }
+    public class TmdbCompany { [JsonPropertyName("name")] public string Name { get; set; } = ""; }
+    public class TmdbCredits
+    {
+        [JsonPropertyName("cast")] public List<TmdbCast>? Cast { get; set; }
+        [JsonPropertyName("crew")] public List<TmdbCrew>? Crew { get; set; }
+    }
+    public class TmdbCast
+    {
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+        [JsonPropertyName("character")] public string Character { get; set; } = "";
+    }
+    public class TmdbCrew
+    {
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+        [JsonPropertyName("job")] public string Job { get; set; } = "";
     }
 }
