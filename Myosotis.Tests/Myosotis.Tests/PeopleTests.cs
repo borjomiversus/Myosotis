@@ -28,7 +28,7 @@ public class PeopleTests
     [Fact]
     public void Actor_AddToFilmography_AddsElement()
     {
-        var a = new Actor("Test Actor", 1980, "Hero");
+        var a = new Actor("Test Actor", "Hero", 1980);
         a.AddToFilmography("Movie A");
 
         Assert.Equal(1, a.GetWorksCount());
@@ -38,7 +38,7 @@ public class PeopleTests
     [Fact]
     public void Director_AddDirectedWork_AddsToList()
     {
-        var d = new Director("Test Director", 1970, "Style");
+        var d = new Director("Test Director", "Style",  1970);
         d.AddDirectedWork("Film X");
 
         Assert.Contains("Film X", d.DirectedWorks);
