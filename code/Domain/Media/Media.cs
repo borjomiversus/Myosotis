@@ -194,6 +194,8 @@ public abstract class Media : IComparable<Media>
     public abstract int CalculateTimeDebt();
 
     public abstract int TotalDurationMinutes { get; }
+
+    public abstract void UpdateRuntimeInfo(int length, int count = 1);
 }
 
 public class TmdbReview

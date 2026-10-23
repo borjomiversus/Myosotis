@@ -13,6 +13,12 @@ public class Movie : Media
     }
     
     public override int TotalDurationMinutes => DurationMinutes;
+
+    public override void UpdateRuntimeInfo(int length, int count = 1)
+    {
+        if (length > 0)
+        DurationMinutes = length;
+    }
     public override int CalculateTimeDebt()
     {
         return DurationMinutes;

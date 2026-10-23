@@ -33,22 +33,30 @@ public class Series : Media
     }
 
     public override int TotalDurationMinutes
-{
-    get
     {
-        if (Seasons != null && Seasons.Count > 0)
+        get
         {
-            int sum = 0;
-            foreach (var season in Seasons)
+            if (Seasons != null && Seasons.Count > 0)
             {
-                sum += season.GetTotalRuntime(); 
+                int sum = 0;
+                foreach (var season in Seasons)
+                {
+                    sum += season.GetTotalRuntime(); 
+                }
+                if (sum > 0) return sum;
             }
-            if (sum > 0) return sum;
+
+            return AverageEpisodeLength * UnwatchedEpisodes;
         }
 
-        return AverageEpisodeLength * UnwatchedEpisodes;
     }
-}
+
+    public override void UpdateRuntimeInfo(int length, int count = 1)
+    {
+        if (length > 0)
+        return AverageEpisodeLength = length;
+    } 
+
     public bool IsCaughtUp()
     {
         return UnwatchedEpisodes == 0;
