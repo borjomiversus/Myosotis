@@ -11,7 +11,8 @@ public class Movie : Media
 
         DurationMinutes = durationMinutes;
     }
-
+    
+    public override int TotalDurationMinutes => DurationMinutes;
     public override int CalculateTimeDebt()
     {
         return DurationMinutes;

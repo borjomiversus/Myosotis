@@ -31,6 +31,24 @@ public class Series : Media
     {
         return AverageEpisodeLength * UnwatchedEpisodes;
     }
+
+    public override int TotalDurationMinutes
+{
+    get
+    {
+        if (Seasons != null && Seasons.Count > 0)
+        {
+            int sum = 0;
+            foreach (var season in Seasons)
+            {
+                sum += season.GetTotalRuntime(); 
+            }
+            if (sum > 0) return sum;
+        }
+
+        return AverageEpisodeLength * UnwatchedEpisodes;
+    }
+}
     public bool IsCaughtUp()
     {
         return UnwatchedEpisodes == 0;
