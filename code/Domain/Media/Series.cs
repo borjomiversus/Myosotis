@@ -54,7 +54,7 @@ public class Series : Media
     public override void UpdateRuntimeInfo(int length, int count = 1)
     {
         if (length > 0)
-        return AverageEpisodeLength = length;
+        AverageEpisodeLength = length;
     } 
 
     public bool IsCaughtUp()
