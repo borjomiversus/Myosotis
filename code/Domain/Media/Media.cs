@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public abstract class Media : IComparable<Media>
@@ -8,6 +8,7 @@ public abstract class Media : IComparable<Media>
     public int ReleaseYear { get; private set; }
     public string? ProductionStudio { get; private set; }
     public string? PosterUrl { get; private set; }
+    public string? BackdropUrl { get; private set; }
     public string? TrailerUrl { get; private set; }
     public string? Description { get; private set; }
     public string? ContentRating { get; private set; }
@@ -130,6 +131,11 @@ public abstract class Media : IComparable<Media>
         Reviews.Add(review);
     }
 
+    public void SetDirector(Director director)
+    {
+        MediaDirector = director;
+    }
+
     public bool IsAgeAppropriate(int viewerAge)
     {
         if (AgeRestriction == null)
@@ -142,6 +148,12 @@ public abstract class Media : IComparable<Media>
     {
         if (!string.IsNullOrWhiteSpace(url))
             PosterUrl = url;
+    }
+
+    public void SetBackDropUrl(string url)
+    {
+        if (!string.IsNullOrWhiteSpace(url))
+            BackdropUrl = url;
     }
 
 
@@ -180,6 +192,8 @@ public abstract class Media : IComparable<Media>
     }
 
     public abstract int CalculateTimeDebt();
+
+    public abstract int TotalDurationMinutes { get; }
 }
 
 public class TmdbReview
