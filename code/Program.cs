@@ -298,7 +298,7 @@ class Program
             var bill = library.Find(m => m.Title.Contains("Kill Bill"));
             if (bill?.MediaDirector != null)
             {
-                int directorAge = bill.MediaDirector.GetAge(DateTime.Now.Year);
+                int? directorAge = bill.MediaDirector.GetAge(DateTime.Now.Year);
                 Console.WriteLine($"Режисер {bill.MediaDirector.FullName}: {directorAge} років у поточному році.");
             }
         }
@@ -329,9 +329,9 @@ class Program
 
     static void SeedData()
     {
-        Director dir = new Director("Eric Kripke", 1974, "Satire");
-        Director dir1 = new Director("Quentin Tarantino", 1963, "Non-linear storytelling");
-        Director dir2 = new Director("Wong Kar-wai", 1958, "Romantic visual storytelling");
+        Director dir = new Director("Eric Kripke", "Satire", 1974);
+        Director dir1 = new Director("Quentin Tarantino", "Non-linear storytelling", 1963);
+        Director dir2 = new Director("Wong Kar-wai", "Romantic visual storytelling", 1958); 
 
         Series theBoys = new Series("The Boys", 2019, 60, 8, dir);
         theBoys.SetVibeRating(new VibeRating(8, 7, 5, 6, 9, 4));
@@ -350,7 +350,7 @@ class Program
         bill.ApplyAgeRestriction(18, "R");
         bill.UpdateDescription("A former assassin wakes from a coma and wreaks vengeance on her ex-boss.");
 
-        Actor uma = new Actor("Uma Thurman", 1970, "The Bride");
+        Actor uma = new Actor("Uma Thurman", "The Bride", 1970);
         bill.AddCastMember(uma);
 
         Song bangBang = new Song("Bang Bang", "Nancy Sinatra");
