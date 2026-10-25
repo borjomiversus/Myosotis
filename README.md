@@ -73,9 +73,10 @@ C# добре підтримує основні принципи ООП, які 
 ## Поточний стан
 
 - Реалізовано предметну модель і основні сервіси.
-- Створено сторінки Blazor: Overview, Watchlists, Captures, History, Search.
-- Наразі використовуються лише демонстраційні дані, що зберігаються в пам'яті.
-- Сторінка детальної інформації про фільм або серіал, інтеграція TMDb, збереження даних у JSON та розгортання застосунку заплановані на наступні етапи.
+- Створено сторінки Blazor: Overview, Watchlists, Captures, History, Search, MediaDetails.
+- Інтегровано TMDb API для пошуку фільмів і серіалів та отримання детальної інформації про них.
+- Дані користувацьких списків і історії переглядів наразі зберігаються в пам'яті та не зберігаються після перезапуску застосунку.
+- Збереження даних у JSON і розгортання застосунку заплановані на наступні етапи.
 
 ## Модель предметної області (основні класи)
 
@@ -115,7 +116,7 @@ C# добре підтримує основні принципи ООП, які 
 ## Локальний запуск
 
 Для запуску потрібен [.NET 10 SDK](https://dotnet.microsoft.com/download).
-
+Отримати ключ [TmdbApi](https://developer.themoviedb.org/docs/getting-started). 
 ```bash
 git clone [https://github.com/your-username/Myosotis.git](https://github.com/your-username/Myosotis.git)
 cd Myosotis/MyosotisWeb
@@ -146,48 +147,81 @@ Myosotis/
 
 ## Процес розробки
 
-- Ідея продукту, назва, палітра, вибір технологій і рішення щодо структури даних визначені.
-- Спочатку було досліджено та створено прототип дизайну, який згодом адаптовано вручну.
-- Інструменти штучного інтелекту (Claude, Gemini, Google Studio) використовувалися як допоміжні засоби для роботи з кодом, рефакторингу, дизайном і документацією з подальшою ручною перевіркою.
+- **Ідея та концепція продукту.** Myosotis задумувався як простір для зберігання інформації про фільми й серіали в одному місці, ведення історії переглядів та формування списку контенту для майбутнього перегляду. Назва Myosotis походить від латинської назви квітки незабудки та відображає основну ідею застосунку: зберігати інформацію, яку не хочеш забувати. Ця концепція також знайшла відображення у візуальному оформленні, зокрема у виборі кольорів, натхненних образом квітки. Ідея виникла з бажання створити власний застосунок на цю тему, що водночас відповідав би вимогам навчального проєкту з ООП, давав змогу працювати з C# та поглибити знання в процесі розробки.
+
+- **Дизайн інтерфейсу.** На початковому етапі досліджувалися візуальні рішення та створювалися прототипи за допомогою Google Stitch і референсів сучасних вебзастосунків. На основі цих матеріалів сформовано візуальний стиль Myosotis, який надалі адаптувався відповідно до функціональності та технічних можливостей застосунку.
+
+- **Програмна логіка на C#/.NET.** Під час розробки вивчалися принципи проєктування ПЗ, об'єктноорієнтоване програмування, побудова моделей, класів, сервісів та їхня взаємодія. C# і .NET використовувалися для реалізації програмної логіки та основних функцій Myosotis.
+
+- **Навчання та дослідження технічних рішень.** Для навчання й пошуку рішень використовувалися відеоуроки, офіційна документація, відкриті репозиторії GitHub, обговорення на Reddit і Stack Overflow та інші онлайн-ресурси. Засоби ШІ застосовувалися для пояснення незнайомих концепцій, дослідження можливих підходів до реалізації, генерації та доповнення коду, рефакторингу й пошуку помилок. Частина програмної логіки та компонентів інтерфейсу створювалася за допомогою ШІ й надалі адаптувалася до потреб і структури проєкту.
+
+- **Користувацький інтерфейс.** Інтерфейс реалізовано на Blazor із використанням MudBlazor і Tailwind CSS. MudBlazor застосовується для готових UI-компонентів та інтерактивних елементів, а Tailwind CSS - для компонування, стилізації й адаптації сторінок. Під час розробки поєднувалися можливості готових бібліотек, власні зміни та рішення, запропоновані за допомогою ШІ.
+  
+- **Інтеграція з TMDb API.** API The Movie Database використовується для отримання інформації про фільми й серіали. 
+
+- **Використання інструментів ШІ.** [Gemini](https://share.gemini.google/lh6t42ruRE7I), Claude та ChatGPT використовувалися як допоміжні інструменти для навчання, вивчення нових технологій, отримання пояснень щодо C#, .NET, Blazor і роботи з API, дослідження можливих технічних рішень, генерації та доповнення коду, рефакторингу компонентів, пошуку й виправлення помилок, а також опрацювання інтерфейсу. 
+Google Stitch використовувався для дослідження та прототипування дизайну інтерфейсу. Створені прототипи слугували орієнтиром для подальшої реалізації й адаптації інтерфейсу в застосунку. [Переглянути проєкт у Google Stitch](https://stitch.google.com/projects/32231074868639292).
+GitHub Copilot використовувався, зокрема, для допомоги з оформленням README.
+
+- **Документація та сторонні матеріали.** Під час розробки використовувалися офіційна документація, навчальні матеріали, відкриті проєкти та дизайнерські референси. Відповідні джерела наведено в розділі [Джерела](#джерела).
 
 ## Джерела
 
+### Проєкти для дослідження та приклади реалізації
+
+Репозиторії та вебзастосунки, які використовувалися для ознайомлення з підходами до реалізації функціональності, організації коду та побудови інтерфейсу.
+
 - [Movie-Tracker-App (ertugrulgacal)](https://github.com/ertugrulgacal/Movie-Tracker-App)
-- [movieTracker (LeilaniL)](https://github.com/LeilaniL/movieTracker) 
-- [Movie-Website (krishnashah122)](https://github.com/krishnashah122/Movie-Website) 
-- [Movie Suggest](https://moviesuggest.netlify.app/) 
+- [movieTracker (LeilaniL)](https://github.com/LeilaniL/movieTracker)
+- [Movie-Website (krishnashah122)](https://github.com/krishnashah122/Movie-Website)
+- [Movie Suggest](https://moviesuggest.netlify.app/)
+- [SignalR Blazor Chess](https://github.com/csuka1219/SignalR_BlazorChess)
+- [Radarr](https://github.com/Radarr/Radarr)
+- [Jellyfin](https://github.com/jellyfin/jellyfin)
+- [Ryot](https://github.com/ignisda/ryot)
+- [Flox (Movie Tracker)](https://github.com/devfake/flox)
+- [Serializd (Discover)](https://serializd.com/discover)
+- [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor)
 
-- [Serializd Discover](https://serializd.com/discover), [2020 Spotify Wrapped Dashboard](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept), [Abstract Star Logo](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App), [Movie Site](https://dribbble.com/search/movie-site), [Raycast](https://dribbble.com/search/raycast) 
-- [Glassmorphism](https://dribbble.com/tags/glassmorphism)
-- [OriginKit](https://www.originkit.dev/), [SmoothUI](https://smoothui.dev/docs/components), [MudBlazor Docs](https://mudblazor.com/docs/overview), [Design.dev Tools](https://design.dev/tools/)
+### Дизайн та UI/UX
 
-- [TMDB API: Getting Started](https://developer.themoviedb.org/docs/getting-started), [Movie Details](https://developer.themoviedb.org/reference/movie-details).
-- [Blazor WebAssembly Hosting Models](https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly) 
-- [Awesome Blazor](https://github.com/AdrienTorris/awesome-blazor) 
-- [Calling a Web API from a .NET Client](https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client), [Tutorial: Console WebApiClient](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient).
+Візуальні референси, дизайн-концепції, бібліотеки компонентів та інструменти, які використовувалися для дослідження й прототипування інтерфейсу.
 
-- [Blazor Tutorial (YouTube)](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1).
-- [TMDB API Tutorial (YouTube)](https://www.youtube.com/watch?v=FlFyrOEz2S4).
-- [Tailwind CSS Guide (YouTube)](https://www.youtube.com/watch?v=xS4ISh6ZehU).
-- [Уроки з розробки C# (YouTube Playlist)](https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H).
-- [JSON2CSharp](https://json2csharp.com/) 
-
-- [Blazor](https://learn.microsoft.com/aspnet/core/blazor/hosting-models)
-- [MudBlazor](https://mudblazor.com/docs/overview)
-- [TMDb API](https://developer.themoviedb.org/docs/getting-started)
-- [Клієнт для роботи з Web API у .NET](https://learn.microsoft.com/dotnet/csharp/tutorials/console-webapiclient)
-
-- [Movie-Tracker-App](https://github.com/ertugrulgacal/Movie-Tracker-App)
-- [movieTracker](https://github.com/LeilaniL/movieTracker)
-- [Movie-Website](https://github.com/krishnashah122/Movie-Website)
-
-- [Glassmorphism (Dribbble)](https://dribbble.com/tags/glassmorphism)
+- [Google Stitch, прототип Myosotis](https://stitch.google.com/projects/32231074868639292)
 - [Spotify Wrapped Dashboard Concept](https://dribbble.com/shots/14686871-2020-Spotify-Wrapped-Dashboard-Concept)
-- [Serializd](https://serializd.com/discover)
+- [Abstract Star Logo Concept](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App)
+- [Dribbble, Movie Site](https://dribbble.com/search/movie-site)
+- [Dribbble, Raycast](https://dribbble.com/search/raycast)
+- [Glassmorphism (Dribbble)](https://dribbble.com/tags/glassmorphism)
+- [OriginKit](https://www.originkit.dev/)
+- [SmoothUI](https://smoothui.dev/docs/components)
+- [MudBlazor Documentation](https://mudblazor.com/docs/overview)
+- [Design.dev Tools](https://design.dev/tools/)
 
-- [Посібник із Blazor](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1)
-- [Посібник із Tailwind CSS](https://www.youtube.com/watch?v=xS4ISh6ZehU)
-- [Посібник із TMDb](https://www.youtube.com/watch?v=FlFyrOEz2S4)
+### Офіційна документація
+
+- [Blazor Hosting Models](https://learn.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-10.0#blazor-webassembly)
+- [Calling a Web API from a .NET Client](https://learn.microsoft.com/fr-fr/aspnet/web-api/overview/advanced/calling-a-web-api-from-a-net-client)
+- [Console WebApiClient Tutorial](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/console-webapiclient)
+- [System.Text.Json: JSON Serialization and Deserialization](https://learn.microsoft.com/ru-ru/dotnet/standard/serialization/system-text-json/how-to)
+- [Deploy a Blazor App on Azure Static Web Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/deploy-blazor)
+- [Blazor Tutorial (Microsoft)](https://dotnet.microsoft.com/en-us/learn/aspnet/blazor-tutorial/intro)
+- [TMDb API: Getting Started](https://developer.themoviedb.org/docs/getting-started)
+- [TMDb API: Movie Details](https://developer.themoviedb.org/reference/movie-details)
+
+### Навчальні матеріали та відеоуроки
+
+- [Blazor Tutorial (YouTube)](https://www.youtube.com/watch?v=dY_AWdCzsCY&list=PLzewa6pjbr3IQEUfNiK2SROQC1NuKl6PV&index=1)
+- [Blazor in .NET 10 (dev.to)](https://dev.to/mashrulhaque/blazor-in-net-10-the-features-that-actually-matter-nc1)
+- [TMDb API Tutorial (YouTube)](https://www.youtube.com/watch?v=FlFyrOEz2S4)
+- [Tailwind CSS Tutorial (YouTube)](https://www.youtube.com/watch?v=xS4ISh6ZehU)
+- [C# Tutorials (YouTube Playlist)](https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H)
+- [Deploying a Blazor Application to Azure App Services Using Visual Studio 2026 (YouTube)](https://www.youtube.com/watch?v=IRSJjeX07Xo)
+
+### Додаткові технічні інструменти та бібліотеки
+
+- [TMDbLib for .NET](https://github.com/jellyfin/TMDbLib)
+- [JSON2CSharp](https://json2csharp.com/)
 
 ## Ліцензія
 
