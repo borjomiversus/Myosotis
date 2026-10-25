@@ -13,7 +13,7 @@ public class MediaSearch
         List<Media> results = new List<Media>();
         foreach (var m in library)
         {
-            if (m.Title.ToLower().Contains(title.ToLower()))
+            if (m.Title.Contains(title, StringComparison.OrdinalIgnoreCase))
                 results.Add(m);
         }
         return results;
@@ -24,8 +24,14 @@ public class MediaSearch
         List<Media> results = new List<Media>();
         foreach (var m in library)
         {
-            if (m.Genres.Exists(g => g.ToLower().Contains(genre.ToLower())))
-                results.Add(m);
+            foreach (var g in m.Genres)
+            {
+                if (g.Contains(genre, StringComparison.OrdinalIgnoreCase))
+                {
+                    results.Add(m);
+                    break;
+                }
+            }
         }
         return results;
     }
@@ -35,14 +41,20 @@ public class MediaSearch
         List<Media> results = new List<Media>();
         foreach (var m in library)
         {
-            if (m.Genres.Exists(g => g.ToLower().Contains(genre.ToLower())) &&
-                m.ReleaseYear >= minYear && m.ReleaseYear <= maxYear)
-            {
-                results.Add(m);
+            if (m.ReleaseYear >= minYear && m.ReleaseYear <= maxYear)
+                    {
+                        foreach (var g in m.Genres)
+                        {
+                            if (g.Contains(genre, StringComparison.OrdinalIgnoreCase))
+                            {
+                                results.Add(m);
+                            }
+                        }
+                    }
+                }
+
+                return results;
             }
-        }
-        return results;
-    }
 
     public List<Media> SearchByActor(List<Media> library, string actorName)
     {
@@ -51,7 +63,7 @@ public class MediaSearch
         {
             foreach (var actor in m.Cast)
             {
-                if (actor.FullName.ToLower().Contains(actorName.ToLower()))
+                if (actor.FullName.Contains(actorName, StringComparison.OrdinalIgnoreCase))
                 {
                     results.Add(m);
                     break;
