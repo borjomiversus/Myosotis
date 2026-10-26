@@ -8,84 +8,157 @@
     <TitleContent>
         <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-[24px]">casino</span>
-            <span class="font-headline-md text-on-surface font-serif text-lg">Cinematic Roulette</span>
+            <span class="font-headline-md text-on-surface font-serif text-lg">
+                Cinematic Roulette
+            </span>
         </div>
     </TitleContent>
 
     <DialogContent>
         <div class="flex flex-col gap-4 py-2">
+
             <p class="text-sm text-on-surface-variant font-serif italic">
                 Can't decide what to watch? Let the roulette choose from what you've saved.
             </p>
 
             <div>
-                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">LIST</label>
-                <select @bind="selectedWatchlistName" class="@SelectClass">
-                    <option value="">All lists</option>
+                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">
+                    LIST
+                </label>
+
+                <select @bind="selectedWatchlistName"
+                        class="w-full bg-surface-variant border border-glaucous/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary">
+                    <option value="" class="bg-surface text-on-surface">
+                        All lists
+                    </option>
+
                     @foreach (var wl in Me.Watchlists)
                     {
-                        <option value="@wl.Name">@wl.Name</option>
+                        <option value="@wl.Name" class="bg-surface text-on-surface">
+                            @wl.Name
+                        </option>
                     }
                 </select>
             </div>
 
             <div>
-                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">GENRE</label>
-                <select @bind="selectedGenre" class="@SelectClass">
-                    <option value="">Any genre</option>
+                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">
+                    GENRE
+                </label>
+
+                <select @bind="selectedGenre"
+                        class="w-full bg-surface-variant border border-glaucous/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary">
+                    <option value="" class="bg-surface text-on-surface">
+                        Any genre
+                    </option>
+
                     @foreach (var genre in availableGenres)
                     {
-                        <option value="@genre">@genre</option>
+                        <option value="@genre" class="bg-surface text-on-surface">
+                            @genre
+                        </option>
                     }
                 </select>
             </div>
 
             <div>
-                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">TIME YOU HAVE</label>
-                <select @bind="selectedMaxMinutes" class="@SelectClass">
-                    <option value="90">Up to 1.5 hours</option>
-                    <option value="120">Up to 2 hours</option>
-                    <option value="180">Up to 3 hours</option>
-                    <option value="1000">No limit</option>
+                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">
+                    TIME YOU HAVE
+                </label>
+
+                <select @bind="selectedMaxMinutes"
+                        class="w-full bg-surface-variant border border-glaucous/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary">
+                    <option value="90" class="bg-surface text-on-surface">
+                        Up to 1.5 hours
+                    </option>
+
+                    <option value="120" class="bg-surface text-on-surface">
+                        Up to 2 hours
+                    </option>
+
+                    <option value="180" class="bg-surface text-on-surface">
+                        Up to 3 hours
+                    </option>
+
+                    <option value="1000" class="bg-surface text-on-surface">
+                        No limit
+                    </option>
                 </select>
             </div>
 
             @if (pickedMedia != null)
             {
-                <div class="mt-2 p-4 rounded-xl bg-surface-container-high border border-primary/30 flex items-center gap-4">
+                <div class="mt-2 p-4 rounded-xl bg-surface-variant border border-primary/30 flex items-center gap-4">
+
                     <div class="w-16 h-24 rounded-lg bg-cover bg-center shadow-md shrink-0"
-                         style="@UiHelpers.CardBackground(pickedMedia.PosterUrl)"></div>
+                         style="@UiHelpers.CardBackground(pickedMedia.PosterUrl)">
+                    </div>
+
                     <div class="flex flex-col min-w-0">
-                        <span class="text-[10px] font-label-caps text-primary">TONIGHT'S PICK</span>
-                        <h4 class="font-headline-md text-on-surface text-base font-bold">@pickedMedia.Title</h4>
-                        <span class="text-xs text-on-surface-variant">@pickedMedia.ReleaseYear · @string.Join(", ", pickedMedia.Genres) · @UiHelpers.FormatMinutes(pickedMedia.CalculateTimeDebt())</span>
-                        <button @onclick="MarkPickedWatched" class="mt-2 self-start text-xs text-primary hover:underline">Mark as watched</button>
+
+                        <span class="text-[10px] font-label-caps text-primary">
+                            TONIGHT'S PICK
+                        </span>
+
+                        <h4 class="font-headline-md text-on-surface text-base font-bold">
+                            @pickedMedia.Title
+                        </h4>
+
+                        <span class="text-xs text-on-surface-variant">
+                            @pickedMedia.ReleaseYear
+                            · @string.Join(", ", pickedMedia.Genres)
+                            · @UiHelpers.FormatMinutes(pickedMedia.CalculateTimeDebt())
+                        </span>
+
+                        <button @onclick="MarkPickedWatched"
+                                class="mt-2 self-start text-xs text-primary hover:underline">
+                            Mark as watched
+                        </button>
+
                     </div>
                 </div>
             }
             else if (noResult)
             {
-                <p class="text-sm text-on-surface-variant">Nothing matches these filters. Try more time or another genre.</p>
+                <p class="text-sm text-on-surface-variant">
+                    Nothing matches these filters. Try more time or another genre.
+                </p>
             }
+
         </div>
     </DialogContent>
 
     <DialogActions>
         <div class="flex justify-between w-full items-center pt-2">
-            <button @onclick="Close" class="px-4 py-2 text-sm text-on-surface-variant hover:text-on-surface">Close</button>
-            <button @onclick="Spin" disabled="@isSpinning"
-                    class="px-6 py-2 rounded-full bg-primary-container text-on-primary-container font-title-md font-semibold hover:bg-primary transition-all shadow-[0_0_16px_rgba(132,220,198,0.22)] flex items-center gap-2 disabled:opacity-60">
+
+            <button @onclick="Close"
+                    class="px-4 py-2 text-sm text-on-surface-variant hover:text-on-surface">
+                Close
+            </button>
+
+            <button @onclick="Spin"
+                    disabled="@isSpinning"
+                    class="px-6 py-2 rounded-full bg-primary text-on-primary font-title-md font-semibold hover:opacity-90 transition-all shadow-[0_0_16px_rgba(132,220,198,0.22)] flex items-center gap-2 disabled:opacity-60">
+
                 @if (isSpinning)
                 {
-                    <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    <span class="material-symbols-outlined animate-spin text-[18px]">
+                        progress_activity
+                    </span>
+
                     <span>Spinning…</span>
                 }
                 else
                 {
-                    <span class="material-symbols-outlined text-[18px]">casino</span>
+                    <span class="material-symbols-outlined text-[18px]">
+                        casino
+                    </span>
+
                     <span>Spin</span>
                 }
+
             </button>
+
         </div>
     </DialogActions>
 </MudDialog>
@@ -93,8 +166,6 @@
 @code {
     [CascadingParameter]
     IMudDialogInstance MudDialog { get; set; } = default!;
-
-    private const string SelectClass = "w-full bg-surface-container-low border border-surface-variant/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary-container";
 
     private string selectedWatchlistName = "";
     private string selectedGenre = "";
@@ -117,6 +188,7 @@
                     availableGenres.Add(genre);
             }
         }
+
         availableGenres.Sort();
     }
 
@@ -124,12 +196,16 @@
     {
         foreach (var list in Me.Watchlists)
         {
-            if (list.Name != listName) continue;
+            if (list.Name != listName)
+                continue;
+
             foreach (var entry in list.Entries)
             {
-                if (entry.Item == media) return true;
+                if (entry.Item == media)
+                    return true;
             }
         }
+
         return false;
     }
 
@@ -143,26 +219,41 @@
         await Task.Delay(700);
 
         var pool = new List<Media>();
+
         foreach (var media in Me.GetPlannedMedia())
         {
-            if (!string.IsNullOrEmpty(selectedWatchlistName) && !IsInList(media, selectedWatchlistName))
+            if (!string.IsNullOrEmpty(selectedWatchlistName)
+                && !IsInList(media, selectedWatchlistName))
                 continue;
+
             pool.Add(media);
         }
 
-        string? tag = string.IsNullOrEmpty(selectedGenre) ? null : selectedGenre;
-        pickedMedia = RecService.ChooseByRoulette(pool, new RouletteCriteria(selectedMaxMinutes, tag));
-        noResult = pickedMedia == null;
+        string? tag = string.IsNullOrEmpty(selectedGenre)
+            ? null
+            : selectedGenre;
 
+        pickedMedia = RecService.ChooseByRoulette(
+            pool,
+            new RouletteCriteria(selectedMaxMinutes, tag)
+        );
+
+        noResult = pickedMedia == null;
         isSpinning = false;
     }
 
     private void MarkPickedWatched()
     {
-        if (pickedMedia == null) return;
+        if (pickedMedia == null)
+            return;
 
         Me.CompleteWatching(pickedMedia);
-        Snackbar.Add($"\"{pickedMedia.Title}\" marked as watched", Severity.Success);
+
+        Snackbar.Add(
+            $"\"{pickedMedia.Title}\" marked as watched",
+            Severity.Success
+        );
+
         pickedMedia = null;
     }
 
