@@ -16,7 +16,6 @@
             <p class="font-body-lg text-body-lg text-secondary italic font-serif">Save it now. Figure out what it is later.</p>
         </div>
 
-        <!-- Статистика -->
         <div class="hidden lg:flex items-center gap-2 bg-secondary/10 border border-secondary/20 px-4 py-2 rounded-lg">
             <span class="material-symbols-outlined text-secondary text-[18px]">history_edu</span>
             <span class="font-body-md text-[12px] text-secondary">Total saved:</span>
@@ -84,7 +83,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach (var c in waiting)
                 {
-                    <article class="relative @(IsSearching(c) ? "z-50" : "z-0") flex flex-col justify-between rounded-lg bg-background border-2 border-dashed border-secondary/30 p-6 hover:border-[#C9C0F4]/50 transition-colors shadow-lg group">
+                    <article class="relative flex flex-col justify-between rounded-xl bg-background border-2 border-dashed border-secondary/30 p-6 hover:border-[#C9C0F4]/50 transition-colors shadow-lg group overflow-visible">
                         
                         <div class="flex flex-col gap-4 mb-6">
                             <div class="flex items-center justify-between">
@@ -100,7 +99,6 @@
                                 }
                             </div>
 
-                            <!-- Текст нотатки -->
                             <div class="relative pl-4">
                                 <div class="absolute left-0 top-0 bottom-0 w-1 rounded-full bg-secondary/30"></div>
                                 <p class="font-serif text-[18px] text-[#E2E8F0] leading-snug italic">&ldquo;@c.RawNote&rdquo;</p>
@@ -124,24 +122,33 @@
                             @if (IsSearching(c))
                             {
                                 var matches = GetMatches(c).ToList();
-                                <div class="absolute left-0 right-0 top-full mt-2 bg-background border border-secondary/40 rounded-xl shadow-2xl max-h-48 overflow-y-auto flex flex-col z-[100]">
+                                <div class="absolute left-0 right-0 top-full mt-2 bg-surface-container border border-secondary/40 rounded-2xl shadow-2xl max-h-72 overflow-y-auto flex flex-col z-[999] backdrop-blur-xl">
                                     @if (matches.Count == 0)
                                     {
-                                        <div class="px-4 py-3 text-[13px] text-secondary">No matches found.</div>
+                                        <div class="px-4 py-4 text-[13px] text-secondary text-center italic">No films or series found matching "@GetSearchQuery(c)".</div>
                                     }
-                                    @foreach (var m in matches)
+                                    else
                                     {
-                                        <button @onclick="() => SelectAndLink(c, m)"
-                                                class="text-left px-4 py-3 text-[13px] text-[#E2E8F0] hover:bg-secondary/20 hover:text-primary transition-colors border-b border-secondary/10 last:border-b-0 flex items-center gap-3">
-                                            @if (!string.IsNullOrEmpty(m.PosterUrl))
-                                            {
-                                                <div class="w-8 h-12 rounded bg-cover bg-center shrink-0 border border-secondary/30 shadow-sm" style="@UiHelpers.CardBackground(m.PosterUrl)"></div>
-                                            }
-                                            <div class="flex flex-col truncate">
-                                                <span class="truncate font-bold">@m.Title</span>
-                                                <span class="text-secondary text-[11px]">@m.ReleaseYear</span>
-                                            </div>
-                                        </button>
+                                        @foreach (var m in matches)
+                                        {
+                                            <button @onclick="() => SelectAndLink(c, m)"
+                                                    class="text-left px-4 py-3 text-[13px] text-[#E2E8F0] hover:bg-secondary/20 hover:text-primary transition-colors border-b border-secondary/10 last:border-b-0 flex items-center gap-3 group/item">
+                                                @if (!string.IsNullOrEmpty(m.PosterUrl))
+                                                {
+                                                    <div class="w-10 h-14 rounded-lg bg-cover bg-center shrink-0 border border-secondary/30 shadow-sm" style="@UiHelpers.CardBackground(m.PosterUrl)"></div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="w-10 h-14 rounded-lg bg-secondary/20 flex items-center justify-center shrink-0 text-secondary">
+                                                        <span class="material-symbols-outlined text-[18px]">movie</span>
+                                                    </div>
+                                                }
+                                                <div class="flex flex-col truncate">
+                                                    <span class="truncate font-bold group-hover/item:text-primary">@m.Title</span>
+                                                    <span class="text-secondary text-[11px]">@m.ReleaseYear · @(m is Series ? "Series" : "Movie")</span>
+                                                </div>
+                                            </button>
+                                        }
                                     }
                                 </div>
                             }
@@ -165,9 +172,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach (var c in named)
                 {
-                    <article class="flex flex-col justify-between rounded-lg bg-secondary/10 border border-secondary/20 overflow-hidden hover:bg-secondary/15 hover:border-secondary/40 transition-all duration-300 shadow-xl group">
+                    <article class="flex flex-col justify-between rounded-xl bg-secondary/10 border border-secondary/20 overflow-hidden hover:bg-secondary/15 hover:border-secondary/40 transition-all duration-300 shadow-xl group">
                         
-                        <!-- Візуальний кадр -->
                         @if (c.Kind == CaptureKind.Scene && !string.IsNullOrEmpty(c.ResolvedMedia?.PosterUrl))
                         {
                             <div class="relative h-48 w-full bg-surface-container-lowest overflow-hidden">
@@ -205,13 +211,11 @@
                                 </div>
                             }
 
-                            <!-- Заголовок фільму -->
                             <div class="flex items-baseline justify-between gap-2 border-b border-secondary/20 pb-3">
                                 <h3 class="font-title-md text-[17px] text-[#E2E8F0] group-hover:text-primary transition-colors font-bold truncate">@c.ResolvedMedia?.Title</h3>
                                 <span class="font-label-sm text-[11px] text-secondary shrink-0">@c.ResolvedMedia?.ReleaseYear</span>
                             </div>
 
-                            <!-- Цитата / Нотатка -->
                             <div class="relative pl-4 my-2">
                                 <div class="absolute left-0 top-0 bottom-0 w-[3px] rounded-full bg-gradient-to-b from-primary to-secondary"></div>
                                 <p class="font-serif text-[18px] text-[#E2E8F0]/90 leading-snug italic">&ldquo;@c.RawNote&rdquo;</p>
@@ -224,7 +228,6 @@
                                 </p>
                             }
 
-                            <!-- Нижня панель дій -->
                             <div class="mt-auto pt-4 flex flex-wrap gap-2 items-center justify-between">
                                 @if (Me.Watchlists.Count == 0)
                                 {
@@ -288,7 +291,13 @@
     private void UpdateSearchQuery(CaptureEntry c, string? query) => searchQueries[c] = query ?? "";
     private bool IsSearching(CaptureEntry c) => !string.IsNullOrWhiteSpace(GetSearchQuery(c));
 
-    private IEnumerable<Media> GetMatches(CaptureEntry c) => DataService.SearchLibrary(GetSearchQuery(c));
+private IEnumerable<Media> GetMatches(CaptureEntry c)
+{
+    string q = GetSearchQuery(c)?.Trim() ?? "";
+    if (string.IsNullOrWhiteSpace(q)) return Enumerable.Empty<Media>();
+
+    return DataService.SearchLibrary(q) ?? Enumerable.Empty<Media>();
+}
 
     private void SelectAndLink(CaptureEntry c, Media m)
     {
