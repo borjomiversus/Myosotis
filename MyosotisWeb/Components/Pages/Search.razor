@@ -14,7 +14,7 @@
     <div class="absolute -top-32 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute top-48 right-10 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Header  -->
+    <!-- Header -->
     <section class="relative z-10 flex flex-col gap-space-lg mb-space-xl">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-space-sm">
@@ -109,6 +109,7 @@
             {
                 var containingList = GetContainingWatchlist(m);
                 bool isWatched = Me.IsWatched(m);
+                int searchTimeDebt = m.CalculateTimeDebt();
 
                 <article class="group relative bg-surface-container-low rounded-xl p-space-lg sm:p-space-xl hover:bg-surface-container transition-all duration-300 shadow-md">
                     <div class="flex flex-col lg:flex-row gap-space-lg items-start">
@@ -141,7 +142,7 @@
                                     <span class="px-space-sm py-0.5 rounded bg-surface-container-high font-label-caps text-label-caps text-primary tracking-wider uppercase">
                                         @(m is Series ? "TV Series" : "Feature Film")
                                     </span>
-                                    
+
                                     <!-- TMDB -->
                                     <span class="px-space-sm py-0.5 rounded bg-primary/10 border border-primary/20 font-label-caps text-label-caps text-primary tracking-wider uppercase flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[12px]">database</span>
@@ -149,9 +150,14 @@
                                     </span>
 
                                     <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">@m.ReleaseYear</span>
-                                    <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">
-                                        @UiHelpers.FormatMinutes(m.CalculateTimeDebt())
-                                    </span>
+
+                                    @if (searchTimeDebt > 1)
+                                    {
+                                        <span class="px-space-sm py-0.5 rounded bg-surface-container font-label-caps text-label-caps text-on-surface-variant">
+                                            @UiHelpers.FormatMinutes(searchTimeDebt)
+                                        </span>
+                                    }
+
                                     @if (m.Genres != null && m.Genres.Count > 0)
                                     {
                                         <span class="text-on-surface-variant/40 font-body-md">•</span>
@@ -219,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <!-- actions  -->
+                            <!-- actions -->
                             <div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs border-t border-surface-variant/20">
                                 <div class="flex flex-wrap items-center gap-space-sm">
                                     <a href="/media/@m.Id" class="px-space-md py-space-xs rounded-full bg-primary text-on-primary font-title-md text-title-md hover:bg-primary-fixed transition-all flex items-center gap-1.5 shadow-sm">
@@ -237,7 +243,7 @@
                                                     <option value="@list.Name" class="bg-surface-container text-on-surface">@list.Name</option>
                                                 }
                                             </select>
-                                            <button @onclick="() => AddToList(m)" class="px-space-md py-space-xs rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface hover:text-primary font-title-md text-title-md transition-colors flex items-center gap-1.5 border border-surface-variant/40">
+                                            <button @onclick="async () => await AddToList(m)" class="px-space-md py-space-xs rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface hover:text-primary font-title-md text-title-md transition-colors flex items-center gap-1.5 border border-surface-variant/40">
                                                 <span class="material-symbols-outlined text-[16px] text-primary">bookmark_add</span>
                                                 <span>+ Add</span>
                                             </button>
@@ -309,7 +315,7 @@
     public string? Query { get; set; }
 
     private string searchInput = "";
-    private string selectedFilter = "All"; 
+    private string selectedFilter = "All";
     private List<Media> results = new List<Media>();
     private bool isSearching = false;
     private string? lastLogged;
@@ -352,7 +358,7 @@
         }
         catch
         {
-           
+
         }
 
         isSearching = false;
@@ -478,7 +484,7 @@
         pickedLists[media] = listName ?? "";
     }
 
-    private void AddToList(Media media)
+    private async Task AddToList(Media media)
     {
         string listName;
         if (!pickedLists.TryGetValue(media, out listName!) || string.IsNullOrEmpty(listName))
@@ -488,33 +494,22 @@
             else return;
         }
 
-        Watchlist? targetList = null;
-        foreach (var w in Me.Watchlists)
-        {
-            if (w.Name == listName)
-            {
-                targetList = w;
-                break;
-            }
-        }
-
+        Watchlist? targetList = Me.Watchlists.FirstOrDefault(w => w.Name == listName);
         if (targetList == null) return;
 
-        bool alreadyIn = false;
-        foreach (var entry in targetList.Entries)
-        {
-            if (entry.Item.Id == media.Id)
-            {
-                alreadyIn = true;
-                break;
-            }
-        }
-
+        bool alreadyIn = targetList.Entries.Any(entry => entry.Item.Id == media.Id);
         if (alreadyIn)
         {
             Snackbar.Add($"Already in \"{listName}\"", Severity.Warning);
             return;
         }
+
+        if (media.TmdbId.HasValue)
+        {
+            await TmdbService.EnrichMediaDetailsAsync(media);
+        }
+
+        DataService.GetOrAddToLibrary(media);
 
         Me.AddMediaToWatchlist(targetList, media, null);
         Snackbar.Add($"Added to \"{listName}\"", Severity.Success);
