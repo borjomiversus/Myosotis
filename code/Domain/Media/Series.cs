@@ -29,6 +29,16 @@ public class Series : Media
 
     public override int CalculateTimeDebt()
     {
+        if (Seasons != null && Seasons.Count > 0)
+        {
+            int totalRuntime = 0;
+            foreach (var season in Seasons)
+            {
+                totalRuntime += season.GetTotalRuntime();
+            }
+            if (totalRuntime > 0) return totalRuntime;
+        }
+        
         return AverageEpisodeLength * UnwatchedEpisodes;
     }
 
