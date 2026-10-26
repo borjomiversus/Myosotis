@@ -101,10 +101,15 @@ public abstract class Media : IComparable<Media>
 
     public void AddGenre(string genre)
     {
-        if (string.IsNullOrWhiteSpace(genre))
-            return;
+        if (Genres == null)
+        {
+            Genres = new List<string>();
+        }
 
-        Genres.Add(genre);
+        if (!string.IsNullOrWhiteSpace(genre) && !Genres.Contains(genre, StringComparer.OrdinalIgnoreCase))
+        {
+            Genres.Add(genre);
+        }
     }
 
     public void AddCastMember(Actor actor)
