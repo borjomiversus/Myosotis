@@ -21,8 +21,8 @@
         int monthMinutes = Me.GetMonthlyStats(now.Year, now.Month);
         int monthTitles = Me.GetMonthlyWatchCount(now.Year, now.Month);
 
-        // Групуємо всю активність по днях
         var groupedEntries = Me.WatchHistory
+            .Where(h => h.Action == ActivityAction.Watched)
             .OrderByDescending(h => h.WatchDate)
             .GroupBy(h => h.WatchDate.Date)
             .ToList();
@@ -59,18 +59,17 @@
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">history</span>
             </div>
             <div>
-                <div class="font-serif font-bold text-[32px] text-[#E2E8F0] leading-none mb-1">@Me.WatchHistory.Count</div>
+                <div class="font-serif font-bold text-[32px] text-[#E2E8F0] leading-none mb-1">@Me.WatchHistory.Count(h => h.Action == ActivityAction.Watched)</div>
                 <span class="font-label-sm text-[11px] text-secondary">Total entries</span>
             </div>
         </div>
     </div>
 
-    <!-- Вертикальний Таймлайн Активності -->
     @if (groupedEntries.Count == 0)
     {
         <div class="flex flex-col items-center justify-center py-20 opacity-50">
             <span class="material-symbols-outlined text-[48px] text-secondary mb-4">history_toggle_off</span>
-            <p class="font-body-md text-[#E2E8F0]">Nothing here yet. Search for a title or add to a watchlist.</p>
+            <p class="font-body-md text-[#E2E8F0]">Nothing watched yet. Mark a title as watched from its details page.</p>
         </div>
     }
     else
@@ -92,15 +91,7 @@
                         @foreach (var h in group)
                         {
                             var item = h.WatchedItem;
-
-                            // Динамічний текст залежно від типу дії
-                            string actionText = h.Action switch
-                            {
-                                ActivityAction.Watched => "Watched at",
-                                ActivityAction.ViewedDetails => "Viewed details at",
-                                ActivityAction.AddedToList => "Added to list at",
-                                _ => "Accessed at"
-                            };
+                            int duration = item.TotalDurationMinutes > 0 ? item.TotalDurationMinutes : item.CalculateTimeDebt();
 
                             <div class="bg-secondary/10 hover:bg-secondary/15 rounded-xl p-4 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 border border-secondary/20 group">
 
@@ -115,45 +106,42 @@
 
                                     <div class="flex flex-col min-w-0 gap-1.5">
                                         <div class="flex items-center gap-2 flex-wrap">
-                                            <span class="font-serif font-bold text-[18px] text-[#E2E8F0] group-hover:text-primary transition-colors truncate">@item.Title</span>
+                                            <a href="/media/@item.Id" class="font-serif font-bold text-[18px] text-[#E2E8F0] group-hover:text-primary transition-colors truncate">@item.Title</a>
                                             <span class="font-body-md text-[13px] text-secondary">(@item.ReleaseYear)</span>
                                         </div>
 
                                         <div class="flex items-center gap-2 text-secondary font-label-sm text-[11px] flex-wrap">
                                             <span class="bg-background border border-secondary/30 px-2 py-0.5 rounded text-secondary">
-                                                @(item is Series ? "Series" : "Movie")
+                                                @(item is Series ? "Series" : "Feature Film")
                                             </span>
                                             <span>·</span>
-                                            <span>@UiHelpers.FormatMinutes(item.CalculateTimeDebt())</span>
+                                            <span>@UiHelpers.FormatMinutes(duration)</span>
                                             <span>·</span>
-                                            <span class="text-secondary/60">@actionText @h.WatchDate.ToString("HH:mm")</span>
+                                            <span class="text-secondary/60">Watched at @h.WatchDate.ToString("HH:mm")</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Права частина: Вайб-рейтинг (жовтий акцент) та нотатки -->
+                                <!-- Права частина: Вайб-рейтинг та нотатки -->
                                 <div class="flex items-center justify-between md:justify-end gap-6 flex-shrink-0 pt-2 md:pt-0">
 
                                     <!-- Vibe Rating із жовтою зірочкою -->
                                     @if (item.Vibe != null)
                                     {
-                                        <div class="flex items-center gap-1.5 bg-background/50 border border-secondary/20 px-2.5 py-1 rounded-lg"
-                                             title="Characters: @item.Vibe.Characters, Plot: @item.Vibe.Plot, Visuals: @item.Vibe.Visuals, Pacing: @item.Vibe.Pacing, Vibe: @item.Vibe.Vibe, OST: @item.Vibe.Soundtrack">
+                                        <div class="flex items-center gap-1.5 bg-background/50 border border-secondary/20 px-2.5 py-1 rounded-lg">
                                             <span class="material-symbols-outlined text-[16px] text-[#F5C518]" style="font-variation-settings: 'FILL' 1;">star</span>
                                             <div class="font-title-md text-[14px] text-[#E2E8F0]">
-                                                @item.Vibe.CalculateAverage().ToString("0.0")
+                                                @item.Vibe.CalculateAverage().ToString("0.1", En)
                                                 <span class="text-secondary text-[11px] font-normal">/ 10</span>
                                             </div>
                                         </div>
                                     }
 
-                                    <!-- Кнопка нотаток -->
-                                    <div class="flex items-center">
-                                        <span class="inline-flex items-center gap-1.5 bg-background border border-secondary/30 text-secondary px-3 py-1.5 rounded-lg font-label-sm text-[11px] group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-colors cursor-pointer">
-                                            <span class="material-symbols-outlined text-[14px]">edit_note</span>
-                                            Notes
-                                        </span>
-                                    </div>
+                                    <!-- Кнопка переходу на деталі -->
+                                    <a href="/media/@item.Id" class="inline-flex items-center gap-1.5 bg-background border border-secondary/30 text-secondary px-3 py-1.5 rounded-lg font-label-sm text-[11px] group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-colors">
+                                        <span class="material-symbols-outlined text-[14px]">auto_stories</span>
+                                        Details
+                                    </a>
                                 </div>
                             </div>
                         }
@@ -189,6 +177,5 @@
 
 @code {
     private static readonly CultureInfo En = new CultureInfo("en-US");
-
     private User Me => DataService.CurrentUser;
 }
