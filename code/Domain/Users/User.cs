@@ -76,7 +76,6 @@ public class User
     {
         if (watchlist == null || item == null) return;
         watchlist.AddEntry(item, personalNote);
-        RecordAddedToList(item);
     }
 
     public void LogSearch(string query)
@@ -101,7 +100,7 @@ public class User
 
     public void MarkAsWatched(Media item)
     {
-        WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now));
+        WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.Watched));
     }
 
     public void SetStatus(Media item, WatchStatus status)
@@ -143,12 +142,11 @@ public class User
     public void RecordDetailsView(Media item)
     {
         RecordView(item); 
-        WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.ViewedDetails));
     }
 
     public void RecordAddedToList(Media item)
     {
-        WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.AddedToList));
+
     }
 
     public WatchCheckpoint? GetActiveCheckpoint(Media media)
