@@ -1,0 +1,309 @@
+﻿@page "/watchlists/{ListName}"
+@using MudBlazor
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Myosotis · @DecodedName</PageTitle>
+
+@if (CurrentList == null)
+{
+    <div class="max-w-7xl mx-auto px-margin py-20 text-center text-secondary">
+        <span class="material-symbols-outlined text-[48px] mb-2 text-primary">error</span>
+        <p class="font-headline-md text-on-surface">Watchlist not found.</p>
+        <button @onclick='() => Navigation.NavigateTo("/watchlists")' class="mt-4 px-5 py-2.5 bg-primary text-background rounded-xl font-title-md font-bold shadow-md hover:opacity-90 transition-all">Back to Watchlists</button>
+    </div>
+}
+else
+{
+    var totalCount = CurrentList.Entries.Count;
+    var watchedCount = CurrentList.Entries.Count(e => Me.IsWatched(e.Item));
+    var unwatchedCount = totalCount - watchedCount;
+    int progressPercent = totalCount > 0 ? (int)Math.Round((double)watchedCount / totalCount * 100) : 0;
+
+    var timeDebtMinutes = CurrentList.Entries.Sum(e =>
+    {
+        if (Me.IsWatched(e.Item)) return 0; 
+        int debt = e.Item.CalculateTimeDebt();
+        return debt > 1 ? debt : 0; 
+    });
+
+    <div class="flex flex-col w-full pb-margin" @onclick="CloseAllDropdowns">
+        <!-- Header Hero -->
+        <section class="relative w-full px-margin pt-space-xl pb-space-lg overflow-hidden border-b border-surface-variant/30">
+            <div class="absolute -top-32 -left-20 w-96 h-96 rounded-full bg-secondary-container/20 blur-3xl pointer-events-none"></div>
+            <div class="absolute top-12 right-1/4 w-80 h-80 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 max-w-7xl mx-auto flex flex-col gap-space-lg">
+                <div class="flex items-center justify-between">
+                    <a href="/watchlists" class="group inline-flex items-center gap-space-xs text-on-surface-variant hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[16px] transition-transform group-hover:-translate-x-1">arrow_back</span>
+                        <span class="font-title-md text-title-md">Back to Watchlists</span>
+                    </a>
+                    <div class="flex items-center gap-space-sm">
+                        <span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-label-caps flex items-center gap-1 border border-secondary/20">
+                            <span class="material-symbols-outlined text-[13px] text-primary" style="font-variation-settings: 'FILL' 1;">
+                                @(CurrentList.IsPrivate ? "lock" : "lock_open")
+                            </span>
+                            @(CurrentList.IsPrivate ? "PRIVATE" : "PUBLIC")
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-end">
+                    <div class="lg:col-span-8 flex flex-col gap-space-sm">
+                        <h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight leading-tight">
+                            @CurrentList.Name
+                        </h1>
+                    </div>
+
+                    <div class="lg:col-span-4 flex flex-col sm:flex-row lg:justify-end items-stretch sm:items-center gap-space-sm">
+                        <button @onclick='() => Navigation.NavigateTo("/search")' class="flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-full bg-primary-container text-on-primary-container font-title-md text-title-md hover:bg-primary transition-all shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            <span>Add Title</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Metrics Strip -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm mt-space-sm">
+                    <div class="bg-surface-container-low p-space-md rounded-xl border border-secondary/10 flex flex-col justify-between">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">CATALOG SIZE</span>
+                        <div class="flex items-baseline gap-space-xs mt-space-xs">
+                            <span class="font-stat-metric text-stat-metric text-on-surface">@totalCount</span>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">Titles Total</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-container-low p-space-md rounded-xl border border-secondary/10 flex flex-col justify-between">
+                        <span class="font-label-caps text-label-caps text-primary">WATCH PROGRESS</span>
+                        <div class="flex items-baseline gap-space-xs mt-space-xs">
+                            <span class="font-stat-metric text-stat-metric text-primary">@watchedCount</span>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">Watched (@progressPercent%)</span>
+                        </div>
+                        <div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden mt-space-xs">
+                            <div class="h-full bg-primary-container rounded-full transition-all duration-500" style="width: @progressPercent%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-container-low p-space-md rounded-xl border border-secondary/10 flex flex-col justify-between">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">UNWATCHED</span>
+                        <div class="flex items-baseline gap-space-xs mt-space-xs">
+                            <span class="font-stat-metric text-stat-metric text-on-surface">@unwatchedCount</span>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">Pending</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface-container-low p-space-md rounded-xl border border-secondary/10 flex flex-col justify-between">
+                        <span class="font-label-caps text-label-caps text-secondary">TIME DEBT</span>
+                        <div class="flex items-baseline gap-space-xs mt-space-xs">
+                            <span class="font-stat-metric text-stat-metric text-secondary">@UiHelpers.FormatMinutes(timeDebtMinutes)</span>
+                        </div>
+                        <span class="font-label-sm text-label-sm text-on-surface-variant/70">Remaining shelf</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="w-full px-margin mt-space-lg">
+            <div class="max-w-7xl mx-auto flex flex-col gap-space-md">
+                @if (CurrentList.Entries.Count == 0)
+                {
+                    <div class="p-space-xl flex flex-col items-center justify-center text-center bg-surface-container-low/50 rounded-2xl border border-secondary/20">
+                        <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/60 mb-space-md">
+                            <span class="material-symbols-outlined text-[32px]">movie_filter</span>
+                        </div>
+                        <h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">This watchlist is empty.</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
+                            Add titles from Search or Media Details.
+                        </p>
+                        <button @onclick='() => Navigation.NavigateTo("/search")' class="px-space-md py-space-xs rounded-full bg-primary-container text-on-primary-container font-title-md text-title-md hover:bg-primary transition-colors flex items-center gap-space-xs shadow-sm">
+                            <span class="material-symbols-outlined text-[16px]">search</span>
+                            <span>Browse Catalog</span>
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var entry in CurrentList.Entries.ToList())
+                    {
+                        var item = entry.Item;
+                        var mediaState = Me.MediaStates.FirstOrDefault(s => s.Item.Id == item.Id);
+                        var currentStatus = mediaState?.Status;
+                        bool isOpen = activeDropdownId == item.Id;
+
+                        int itemTimeDebt = item.CalculateTimeDebt();
+
+                        <article class="bg-surface-container-low hover:bg-surface-container rounded-2xl p-space-md transition-all duration-200 shadow-sm relative group border border-secondary/10">
+                            <div class="flex flex-col gap-4">
+                                <div class="flex flex-col md:flex-row gap-space-lg items-start md:items-center justify-between">
+                                    <div class="flex items-start sm:items-center gap-space-md min-w-0 w-full md:w-auto">
+                                        <!-- Poster -->
+                                        <div class="relative w-20 h-28 sm:w-24 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container-high shadow-md border border-secondary/20">
+                                            @if (!string.IsNullOrEmpty(item.PosterUrl))
+                                            {
+                                                <img src="@item.PosterUrl" alt="@item.Title" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                            }
+                                            else
+                                            {
+                                                <div class="w-full h-full flex items-center justify-center text-secondary">
+                                                    <span class="material-symbols-outlined">movie</span>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- Metadata Info -->
+                                        <div class="flex flex-col gap-space-xs min-w-0">
+                                            <div class="flex items-center gap-space-xs flex-wrap">
+                                                @if (currentStatus.HasValue)
+                                                {
+                                                    <span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-caps text-label-caps uppercase tracking-wider border border-primary/20 flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-[12px]">@GetStatusIcon(currentStatus.Value)</span>
+                                                        @currentStatus.Value.ToString()
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-secondary font-label-caps text-label-caps uppercase tracking-wider border border-secondary/20">
+                                                        No Status
+                                                    </span>
+                                                }
+                                                <span class="font-label-caps text-label-caps text-on-surface-variant/80">@(item is Series ? "SERIES" : "FEATURE FILM") • @item.ReleaseYear</span>
+                                                @if (itemTimeDebt > 1)
+                                                {
+                                                    <span class="text-on-surface-variant/40">•</span>
+                                                    <span class="font-label-caps text-label-caps text-on-surface-variant/80">@UiHelpers.FormatMinutes(itemTimeDebt)</span>
+                                                }
+                                            </div>
+
+                                            <h2 class="font-headline-md text-headline-md text-on-surface truncate group-hover:text-primary transition-colors">
+                                                @item.Title
+                                            </h2>
+
+                                            <p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
+                                                @(string.IsNullOrEmpty(item.Description) ? "No description available." : item.Description)
+                                            </p>
+
+                                            <!-- Personal Note -->
+                                            @if (!string.IsNullOrWhiteSpace(entry.PersonalNote) && !entry.PersonalNote.Contains("Added from details page", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <div class="flex items-center gap-space-xs mt-space-xs bg-surface-container-high/60 px-space-sm py-1 rounded-md w-fit border border-secondary/20">
+                                                    <span class="material-symbols-outlined text-[14px] text-tertiary-fixed">format_quote</span>
+                                                    <span class="font-label-sm text-label-sm text-on-surface-variant">“@entry.PersonalNote”</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-space-sm w-full md:w-auto justify-end pt-space-sm md:pt-0 border-t md:border-t-0 border-surface-variant/30">
+                                        <button @onclick:stopPropagation="true" @onclick="() => ToggleDropdown(item.Id)"
+                                                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-secondary/30 text-on-surface font-title-md text-[13px] transition-all">
+                                            @if (currentStatus.HasValue)
+                                            {
+                                                <span class="material-symbols-outlined text-[16px] text-primary">@GetStatusIcon(currentStatus.Value)</span>
+                                                <span>@currentStatus.Value</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="material-symbols-outlined text-[16px] text-secondary">add_circle</span>
+                                                <span class="text-secondary">Status</span>
+                                            }
+                                            <span class="material-symbols-outlined text-[16px] text-secondary ml-1">@(isOpen ? "expand_less" : "expand_more")</span>
+                                        </button>
+
+                                        <button @onclick='() => Navigation.NavigateTo($"/media/{item.Id}")' class="px-space-md py-space-xs rounded-xl bg-surface-container-high text-on-surface font-title-md text-title-md hover:bg-surface-bright transition-colors flex items-center gap-space-xs">
+                                            <span class="material-symbols-outlined text-[16px] text-on-surface-variant">auto_stories</span>
+                                            <span>Details</span>
+                                        </button>
+
+                                        <button @onclick="() => Remove(item)" class="p-space-xs text-on-surface-variant hover:text-error hover:bg-surface-container-high rounded-xl transition-colors" title="Remove">
+                                            <span class="material-symbols-outlined text-[18px]">bookmark_remove</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                @if (isOpen)
+                                {
+                                    <div @onclick:stopPropagation="true"
+                                         class="mt-2 p-3 rounded-xl bg-surface-container border border-secondary/30 flex flex-wrap items-center gap-2 animate-fadeIn">
+                                        <span class="text-[12px] font-label-caps text-secondary mr-2 uppercase tracking-wider">Select status:</span>
+                                        @foreach (WatchStatus st in Enum.GetValues(typeof(WatchStatus)))
+                                        {
+                                            bool isSelected = currentStatus == st;
+                                            <button @onclick="() => ChangeStatus(item, st)"
+                                                    class="px-3.5 py-1.5 rounded-lg text-[12px] font-title-md transition-all flex items-center gap-1.5 @(isSelected ? "bg-primary text-background font-bold shadow-md" : "bg-surface-container-high text-on-surface hover:bg-surface-bright")">
+                                                <span class="material-symbols-outlined text-[14px]">@GetStatusIcon(st)</span>
+                                                <span>@st</span>
+                                                @if (isSelected)
+                                                {
+                                                    <span class="material-symbols-outlined text-[14px] ml-1">check</span>
+                                                }
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </article>
+                    }
+                }
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter] public string ListName { get; set; } = "";
+
+    private string DecodedName => Uri.UnescapeDataString(ListName ?? "");
+    private User Me => DataService.CurrentUser;
+    private Watchlist? CurrentList => Me.Watchlists.FirstOrDefault(w => w.Name.Equals(DecodedName, StringComparison.OrdinalIgnoreCase));
+
+    private Guid? activeDropdownId = null;
+
+    private void ToggleDropdown(Guid itemId)
+    {
+        activeDropdownId = activeDropdownId == itemId ? null : itemId;
+    }
+
+    private void CloseAllDropdowns()
+    {
+        activeDropdownId = null;
+    }
+
+    private string GetStatusIcon(WatchStatus status)
+    {
+        return status switch
+        {
+            WatchStatus.Planned => "schedule",
+            WatchStatus.Watching => "play_circle",
+            WatchStatus.Watched => "check_circle",
+            WatchStatus.Paused => "pause_circle",
+            WatchStatus.Dropped => "cancel",
+            WatchStatus.Rewatching => "replay",
+            _ => "bookmark"
+        };
+    }
+
+    private void ChangeStatus(Media item, WatchStatus newStatus)
+    {
+        if (newStatus == WatchStatus.Watched)
+        {
+            Me.CompleteWatching(item);
+        }
+        else
+        {
+            Me.SetStatus(item, newStatus);
+        }
+        activeDropdownId = null;
+        Snackbar.Add($"Status updated to {newStatus}", Severity.Success);
+        StateHasChanged();
+    }
+
+    private void Remove(Media item)
+    {
+        CurrentList?.RemoveEntry(item);
+        Snackbar.Add("Item removed from list", Severity.Info);
+        StateHasChanged();
+    }
+}
