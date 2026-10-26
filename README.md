@@ -197,6 +197,7 @@ GitHub Copilot використовувався, зокрема, для допо
 - [SmoothUI](https://smoothui.dev/docs/components)
 - [MudBlazor Documentation](https://mudblazor.com/docs/overview)
 - [Design.dev Tools](https://design.dev/tools/)
+- [Concepts](https://www.reddit.com/r/learnprogramming/comments/1sll0yb/what_are_good_places_of_inspo_for_frontend_design/)
 
 ### Офіційна документація
 
@@ -208,6 +209,10 @@ GitHub Copilot використовувався, зокрема, для допо
 - [Blazor Tutorial (Microsoft)](https://dotnet.microsoft.com/en-us/learn/aspnet/blazor-tutorial/intro)
 - [TMDb API: Getting Started](https://developer.themoviedb.org/docs/getting-started)
 - [TMDb API: Movie Details](https://developer.themoviedb.org/reference/movie-details)
+- [C# Player’s Guide](https://csharpplayersguide.com/)
+- [C# language documentation](https://learn.microsoft.com/en-us/dotnet/csharp/)
+- [C# Succinctly](https://www.syncfusion.com/succinctly-free-ebooks/csharp)
+- [freeCodeCamp](https://www.freecodecamp.org/news/tag/csharp/)
 
 ### Навчальні матеріали та відеоуроки
 
