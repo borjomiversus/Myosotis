@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<MediaSearch>();
 builder.Services.AddSingleton<MediaRecommendation>();
 builder.Services.AddMudServices();
-builder.Services.AddSingleton<MyosotisWeb.ServicesWeb.DemoDataService>();
+builder.Services.AddScoped<DemoDataService>();
 builder.Services.AddMudServices();
 builder.Services.AddHttpClient("TmdbClient", client =>
 {
