@@ -15,146 +15,100 @@
             <p class="font-body-lg text-body-lg text-secondary italic font-serif">Everything you meant to watch, sorted your way.</p>
         </div>
 
-        <div class="font-body-md text-[13px] text-secondary mb-1">
-            Total shelves: <span class="text-primary font-bold">@Me.Watchlists.Count</span>
+        
+        <div class="hidden lg:flex items-center gap-2 bg-secondary/10 border border-secondary/20 px-4 py-2 rounded-lg">
+            <span class="material-symbols-outlined text-secondary text-[18px]"></span>
+            <span class="font-body-md text-[12px] text-secondary">Total:</span>
+            <span class="text-primary font-bold">@Me.Watchlists.Count</span>
         </div>
     </header>
 
-    <!-- Рядок створення нового вочліста -->
-    <div class="flex flex-col sm:flex-row gap-3 items-center bg-secondary/10 backdrop-blur-md p-4 rounded-lg border border-secondary/30 shadow-xl">
+    <div class="flex flex-col sm:flex-row gap-3 items-center bg-secondary/10 backdrop-blur-md p-4 rounded-xl border border-secondary/30 shadow-xl">
         <input @bind="newListName"
                @bind:event="oninput"
                @onkeydown="OnNewListKey"
                placeholder="New list name…"
                class="flex-1 w-full bg-background rounded-xl px-4 py-2.5 outline-none text-[#E2E8F0] placeholder:text-secondary/60 border border-secondary/30 focus:border-primary font-body-md" />
 
-        <label class="flex items-center gap-2 text-secondary font-body-md text-[13px] cursor-pointer px-2">
-            <input type="checkbox" @bind="newListPrivate" class="rounded border-secondary/40 bg-background text-primary focus:ring-0" />
-            <span>Private</span>
-        </label>
+        <button type="button" 
+                @onclick="() => newListPrivate = !newListPrivate"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 select-none shrink-0 @(newListPrivate ? "bg-primary/15 border-primary/40 text-primary shadow-[0_0_12px_rgba(78,236,213,0.15)]" : "bg-secondary/10 border-secondary/30 text-secondary hover:text-white")">
+            <span class="material-symbols-outlined text-[18px]">
+                @(newListPrivate ? "lock" : "lock_open")
+            </span>
+            <span class="font-title-md text-[13px]">
+                @(newListPrivate ? "Private" : "Public")
+            </span>
+        </button>
 
-        <button @onclick="CreateList" class="w-full sm:w-auto px-6 py-2.5 bg-primary text-background rounded-lg font-title-md font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(132,220,198,0.2)] whitespace-nowrap">
+        <button @onclick="CreateList" class="w-full sm:w-auto px-6 py-2.5 bg-primary text-background rounded-xl font-title-md font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(132,220,198,0.2)] whitespace-nowrap">
             Create list
         </button>
     </div>
 
-    <!-- Сітка вочлістів у стилі стосу постерів -->
+    <!-- Сітка вочлістів -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach (var list in Me.Watchlists)
         {
-            bool isExpanded = expandedList == list.Name;
+            int totalCount = list.Entries.Count;
+            int watchedCount = list.Entries.Count(e => Me.IsWatched(e.Item));
+            int unwatchedCount = totalCount - watchedCount;
+            int percent = totalCount > 0 ? (int)Math.Round((double)watchedCount / totalCount * 100) : 0;
 
-            <div class="flex flex-col gap-4">
-                <!-- Картка списку -->
-                <div @onclick="() => ToggleList(list.Name)"
-                     class="@($"relative h-[220px] rounded-lg border transition-all duration-300 cursor-pointer overflow-hidden p-6 flex flex-col justify-between shadow-xl group {(isExpanded ? "border-primary bg-secondary/20" : "border-secondary/20 bg-gradient-to-br from-secondary/15 via-background to-secondary/5 hover:border-secondary/40")}")">
+            <a href="/watchlists/@Uri.EscapeDataString(list.Name)"
+               class="relative h-[240px] rounded-2xl border border-secondary/20 bg-gradient-to-br from-secondary/15 via-background to-secondary/5 hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden p-6 flex flex-col justify-between shadow-xl group">
 
-                    <!-- Стос постерів на фоні -->
-                    <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                        <div class="absolute -right-2 -top-2 flex -space-x-10 opacity-75 group-hover:opacity-100 group-hover:-translate-y-1 group-hover:scale-105 transition-all duration-500 pt-6 pr-6">
-                            @if (list.Entries.Any())
-                            {
-                                var topEntries = list.Entries.Take(3).ToList();
-                                for (int i = 0; i < topEntries.Count; i++)
-                                {
-                                    var entry = topEntries[i];
-                                    string rotation = i == 0 ? "-rotate-12 mt-4" : i == 1 ? "-rotate-3 mt-1" : "rotate-12 mt-5";
-                                    string zIndex = i == 0 ? "z-30" : i == 1 ? "z-20" : "z-10";
-
-                                    <div class="@zIndex @rotation w-[80px] h-[115px] rounded-lg bg-cover bg-center border border-secondary/30 shadow-2xl transition-transform duration-300"
-                                         style="@UiHelpers.CardBackground(entry.Item.PosterUrl)">
-                                    </div>
-                                }
-                            }
-                        </div>
-                    </div>
-
-                    <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10 pointer-events-none"></div>
-
-                    <div class="relative z-20 flex items-center justify-between">
-                        <span class="px-2.5 py-1 rounded-full bg-background/80 border border-secondary/30 text-secondary font-label-caps text-[10px] uppercase tracking-wider backdrop-blur-md">
-                            @(list.IsPrivate ? "Private" : "Public")
-                        </span>
-
-                        <div class="w-8 h-8 rounded-full border border-secondary/30 flex items-center justify-center text-secondary group-hover:text-primary group-hover:border-primary transition-colors backdrop-blur-md">
-                            <span class="material-symbols-outlined text-[18px]">
-                                @(isExpanded ? "expand_less" : "expand_more")
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="relative z-20 flex flex-col gap-1">
-                        <h3 class="font-serif text-[22px] text-white group-hover:text-primary transition-colors font-bold truncate">
-                            @list.Name
-                        </h3>
-                        <span class="text-[12px] text-secondary font-body-md">
-                            @list.Entries.Count titles · @UiHelpers.FormatMinutes(list.GetTotalTimeDebt())
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Розгорнутий вміст вочліста -->
-                @if (isExpanded)
-                {
-                    <div class="flex flex-col gap-2 bg-background/80 border border-secondary/30 rounded-lg p-4 shadow-2xl backdrop-blur-md animate-fadeIn mt-2">
-                        @if (list.Entries.Count == 0)
+                <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <div class="absolute -right-2 -top-2 flex -space-x-10 opacity-75 group-hover:opacity-100 group-hover:-translate-y-1 group-hover:scale-105 transition-all duration-500 pt-6 pr-6">
+                        @if (list.Entries.Any())
                         {
-                            <p class="font-body-md text-[13px] text-secondary py-4 text-center">
-                                Empty shelf. Add titles from Captures or Search.
-                            </p>
-                        }
-                        else
-                        {
-                            @foreach (var entry in list.Entries.ToList())
+                            var topEntries = list.Entries.Take(3).ToList();
+                            for (int i = 0; i < topEntries.Count; i++)
                             {
-                                var item = entry.Item;
-                                bool watched = Me.IsWatched(item);
+                                var entry = topEntries[i];
+                                string rotation = i == 0 ? "-rotate-12 mt-4" : i == 1 ? "-rotate-3 mt-1" : "rotate-12 mt-5";
+                                string zIndex = i == 0 ? "z-30" : i == 1 ? "z-20" : "z-10";
 
-                                <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-secondary/10 border border-secondary/20 hover:border-secondary/40 transition-colors">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        @if (!string.IsNullOrEmpty(item.PosterUrl))
-                                        {
-                                            <div class="w-8 h-12 rounded bg-cover bg-center shrink-0 border border-secondary/30"
-                                                 style="@UiHelpers.CardBackground(item.PosterUrl)"></div>
-                                        }
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-[14px] text-[#E2E8F0] font-bold truncate">@item.Title</span>
-                                            <span class="text-[11px] text-secondary">
-                                                @item.ReleaseYear · @(item is Series ? "Series" : "Movie") · @UiHelpers.FormatMinutes(item.CalculateTimeDebt())
-                                            </span>
-                                            @if (!string.IsNullOrWhiteSpace(entry.PersonalNote))
-                                            {
-                                                <span class="text-[11px] text-secondary/80 italic truncate mt-0.5">&ldquo;@entry.PersonalNote&rdquo;</span>
-                                            }
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center gap-2 shrink-0">
-                                        @if (watched)
-                                        {
-                                            <span class="flex items-center gap-1 text-primary font-body-md text-[11px] bg-primary/10 px-2 py-1 rounded-lg border border-primary/20">
-                                                <span class="material-symbols-outlined text-[14px]">task_alt</span> watched
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <button @onclick="() => MarkWatched(item)"
-                                                    class="px-3 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-background transition-all text-[11px] font-bold">
-                                                Watched
-                                            </button>
-                                        }
-
-                                        <button @onclick="() => Remove(list, item)"
-                                                class="w-7 h-7 rounded-lg text-secondary hover:text-white hover:bg-secondary/20 transition-colors flex items-center justify-center">
-                                            <span class="material-symbols-outlined text-[16px]">close</span>
-                                        </button>
-                                    </div>
+                                <div class="@zIndex @rotation w-[80px] h-[115px] rounded-lg bg-cover bg-center border border-secondary/30 shadow-2xl transition-transform duration-300"
+                                     style="@UiHelpers.CardBackground(entry.Item.PosterUrl)">
                                 </div>
                             }
                         }
                     </div>
-                }
-            </div>
+                </div>
+
+                <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10 pointer-events-none"></div>
+
+                <div class="relative z-20 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/80 border border-secondary/30 text-secondary font-label-caps text-[10px] uppercase tracking-wider backdrop-blur-md">
+                        <span class="material-symbols-outlined text-[12px]">@(list.IsPrivate ? "lock" : "lock_open")</span>
+                        @(list.IsPrivate ? "Private" : "Public")
+                    </span>
+                </div>
+
+                <div class="relative z-20 flex flex-col gap-3">
+                    <div class="flex flex-col gap-1">
+                        <h3 class="font-serif text-[22px] text-white group-hover:text-primary transition-colors font-bold truncate">
+                            @list.Name
+                        </h3>
+                        <span class="text-[12px] text-secondary font-body-md">
+                            @totalCount titles · <span class="text-secondary/80">@unwatchedCount unwatched</span>
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col gap-1.5 pt-1">
+                        <div class="w-full h-1.5 rounded-full bg-secondary/20 overflow-hidden">
+                            <div class="h-full bg-primary rounded-full transition-all duration-500" style="width: @percent%;"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-[12px]">
+                            <span class="text-primary font-bold">@percent% watched</span>
+                            <span class="text-secondary group-hover:text-primary font-semibold flex items-center gap-1 transition-colors">
+                                Open <span class="material-symbols-outlined text-[14px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
         }
     </div>
 
@@ -163,14 +117,8 @@
 @code {
     private string newListName = "";
     private bool newListPrivate = true;
-    private string? expandedList = null;
 
     private User Me => DataService.CurrentUser;
-
-    private void ToggleList(string name)
-    {
-        expandedList = expandedList == name ? null : name;
-    }
 
     private void OnNewListKey(KeyboardEventArgs e)
     {
@@ -191,17 +139,5 @@
         Me.CreateWatchlist(name, newListPrivate);
         Snackbar.Add($"List \"{name}\" created", Severity.Success);
         newListName = "";
-        expandedList = name; // Автоматично розгортаємо новий список
-    }
-
-    private void MarkWatched(Media item)
-    {
-        Me.CompleteWatching(item);
-        Snackbar.Add($"\"{item.Title}\" marked as watched", Severity.Success);
-    }
-
-    private void Remove(Watchlist list, Media item)
-    {
-        list.RemoveEntry(item);
     }
 }
