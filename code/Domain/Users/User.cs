@@ -108,12 +108,12 @@ public class User
         var state = MediaStates.FirstOrDefault(s => s.Item.Id == media.Id);
         if (state == null)
         {
-            state = new UserMediaState { Item = media, Status = status };
+            state = new UserMediaState(media, status);
             MediaStates.Add(state);
         }
         else
         {
-            state.Status = status;
+            state.ChangeStatus(status);
         }
 
         if (status != WatchStatus.Watched)
@@ -142,22 +142,17 @@ public class User
     public void CompleteWatching(Media media)
     {
         SetStatus(media, WatchStatus.Watched);
-        
+
         var today = DateTime.Now.Date;
-        
-        bool alreadyWatchedToday = WatchHistory.Any(h => 
-            h.WatchedItem.Id == media.Id && 
-            h.WatchDate.Date == today && 
+
+        bool alreadyWatchedToday = WatchHistory.Any(h =>
+            h.WatchedItem.Id == media.Id &&
+            h.WatchDate.Date == today &&
             h.Action == ActivityAction.Watched);
 
         if (!alreadyWatchedToday)
         {
-            WatchHistory.Add(new ActivityLog 
-            { 
-                WatchedItem = media, 
-                WatchDate = DateTime.Now, 
-                Action = ActivityAction.Watched 
-            });
+            WatchHistory.Add(new WatchHistoryEntry(media, DateTime.Now, ActivityAction.Watched));
         }
     }
 
