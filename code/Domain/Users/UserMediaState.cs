@@ -7,7 +7,8 @@ public enum WatchStatus
     Watched,
     Paused,
     Dropped,
-    Rewatching
+    Rewatching, 
+    None
 }
 
 // Статус перегляду конкретного User для конкретного Media
@@ -19,6 +20,7 @@ public class UserMediaState
     public WatchStatus Status { get; private set; }
     public DateTime? StartedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    public bool IsFavorite { get;  private set; } = false;
 
     public UserMediaState(Media item, WatchStatus status)
     {
@@ -51,9 +53,13 @@ public class UserMediaState
         Status = newStatus;
     }
 
-    // чи зараз це дивимося
     public bool IsActive()
     {
         return Status == WatchStatus.Watching || Status == WatchStatus.Rewatching;
+    }
+
+    public void ToggleFavorite()
+    {
+        IsFavorite = !IsFavorite;
     }
 }

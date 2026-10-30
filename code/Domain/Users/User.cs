@@ -128,6 +128,26 @@ public class User
         WatchHistory.RemoveAll(h => h.WatchedItem.Id == media.Id && h.Action == ActivityAction.Watched);
     }
 
+    public void ToggleFavorite(Media media)
+    {
+        if (media == null) return;
+
+        var state = MediaStates.FirstOrDefault(s => s.Item.Id == media.Id);
+
+        if (state == null)
+        {
+            state = new UserMediaState(media, WatchStatus.None);
+            MediaStates.Add(state);
+        }
+
+        state.ToggleFavorite();
+    }
+
+    public bool IsFavorite(Media media)
+    {
+        if (media == null) return false;
+        return MediaStates.Any(s => s.Item.Id == media.Id && s.IsFavorite);
+    }
     public bool IsWatched(Media item)
     {
         foreach (var s in MediaStates)
