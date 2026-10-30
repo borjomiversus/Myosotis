@@ -1,163 +1,169 @@
-﻿@using MudBlazor
+﻿@using System.Globalization
 @using MyosotisWeb.ServicesWeb
 @inject DemoDataService DataService
 @inject MediaRecommendation RecService
+@inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
 <MudDialog>
     <TitleContent>
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[24px]">casino</span>
-            <span class="font-headline-md text-on-surface font-serif text-lg">
-                Cinematic Roulette
-            </span>
+        <div class="flex items-center justify-between w-full pr-4">
+            <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-primary text-[24px]">casino</span>
+                <div class="flex flex-col">
+                    <span class="font-headline-md text-on-surface font-serif text-lg">Cinematic Roulette</span>
+                    <span class="font-body-md text-[11px] text-secondary italic font-serif">Release decision fatigue. Let the projectionist choose tonight's story.</span>
+                </div>
+            </div>
         </div>
     </TitleContent>
 
     <DialogContent>
-        <div class="flex flex-col gap-4 py-2">
 
-            <p class="text-sm text-on-surface-variant font-serif italic">
-                Can't decide what to watch? Let the roulette choose from what you've saved.
-            </p>
+        <div class="flex flex-col gap-4 py-2 w-[560px] overflow-hidden">
 
-            <div>
-                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">
-                    LIST
-                </label>
-
-                <select @bind="selectedWatchlistName"
-                        class="w-full bg-surface-variant border border-glaucous/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary">
-                    <option value="" class="bg-surface text-on-surface">
-                        All lists
-                    </option>
-
-                    @foreach (var wl in Me.Watchlists)
-                    {
-                        <option value="@wl.Name" class="bg-surface text-on-surface">
-                            @wl.Name
-                        </option>
-                    }
-                </select>
-            </div>
-
-            <div>
-                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">
-                    GENRE
-                </label>
-
-                <select @bind="selectedGenre"
-                        class="w-full bg-surface-variant border border-glaucous/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary">
-                    <option value="" class="bg-surface text-on-surface">
-                        Any genre
-                    </option>
-
-                    @foreach (var genre in availableGenres)
-                    {
-                        <option value="@genre" class="bg-surface text-on-surface">
-                            @genre
-                        </option>
-                    }
-                </select>
-            </div>
-
-            <div>
-                <label class="text-xs font-label-caps text-on-surface-variant mb-1.5 block">
-                    TIME YOU HAVE
-                </label>
-
-                <select @bind="selectedMaxMinutes"
-                        class="w-full bg-surface-variant border border-glaucous/40 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary">
-                    <option value="90" class="bg-surface text-on-surface">
-                        Up to 1.5 hours
-                    </option>
-
-                    <option value="120" class="bg-surface text-on-surface">
-                        Up to 2 hours
-                    </option>
-
-                    <option value="180" class="bg-surface text-on-surface">
-                        Up to 3 hours
-                    </option>
-
-                    <option value="1000" class="bg-surface text-on-surface">
-                        No limit
-                    </option>
-                </select>
-            </div>
-
-            @if (pickedMedia != null)
-            {
-                <div class="mt-2 p-4 rounded-xl bg-surface-variant border border-primary/30 flex items-center gap-4">
-
-                    <div class="w-16 h-24 rounded-lg bg-cover bg-center shadow-md shrink-0"
-                         style="@UiHelpers.CardBackground(pickedMedia.PosterUrl)">
-                    </div>
-
-                    <div class="flex flex-col min-w-0">
-
-                        <span class="text-[10px] font-label-caps text-primary">
-                            TONIGHT'S PICK
-                        </span>
-
-                        <h4 class="font-headline-md text-on-surface text-base font-bold">
-                            @pickedMedia.Title
-                        </h4>
-
-                        <span class="text-xs text-on-surface-variant">
-                            @pickedMedia.ReleaseYear
-                            · @string.Join(", ", pickedMedia.Genres)
-                            · @UiHelpers.FormatMinutes(pickedMedia.CalculateTimeDebt())
-                        </span>
-
-                        <button @onclick="MarkPickedWatched"
-                                class="mt-2 self-start text-xs text-primary hover:underline">
-                            Mark as watched
-                        </button>
-
-                    </div>
+            <div class="grid grid-cols-3 gap-3">
+                
+                <!-- Watchlist -->
+                <div class="flex flex-col gap-1 bg-surface-container-low p-3 rounded-xl border border-secondary/20">
+                    <label class="font-label-caps text-[10px] text-secondary uppercase tracking-wider">Watchlist</label>
+                    <select @bind="selectedWatchlistName"
+                            style="background-color: #1A2235; color: #E2E8F0;"
+                            class="w-full border border-secondary/30 rounded-lg px-2.5 py-1.5 text-on-surface outline-none focus:border-primary font-body-md text-[12px] cursor-pointer truncate">
+                        <option value="" style="background-color: #1A2235; color: #E2E8F0;">All Lists</option>
+                        @foreach (var wl in Me.Watchlists)
+                        {
+                            <option value="@wl.Name" style="background-color: #1A2235; color: #E2E8F0;">@wl.Name</option>
+                        }
+                    </select>
                 </div>
-            }
-            else if (noResult)
-            {
-                <p class="text-sm text-on-surface-variant">
-                    Nothing matches these filters. Try more time or another genre.
-                </p>
-            }
+
+                <!-- Genre -->
+                <div class="flex flex-col gap-1 bg-surface-container-low p-3 rounded-xl border border-secondary/20">
+                    <label class="font-label-caps text-[10px] text-secondary uppercase tracking-wider">Genre</label>
+                    <select @bind="selectedGenre"
+                            style="background-color: #1A2235; color: #E2E8F0;"
+                            class="w-full border border-secondary/30 rounded-lg px-2.5 py-1.5 text-on-surface outline-none focus:border-primary font-body-md text-[12px] cursor-pointer truncate">
+                        <option value="" style="background-color: #1A2235; color: #E2E8F0;">Any Genre</option>
+                        @foreach (var genre in availableGenres)
+                        {
+                            <option value="@genre" style="background-color: #1A2235; color: #E2E8F0;">@genre</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Time -->
+                <div class="flex flex-col gap-1 bg-surface-container-low p-3 rounded-xl border border-secondary/20">
+                    <label class="font-label-caps text-[10px] text-secondary uppercase tracking-wider">Time</label>
+                    <select @bind="selectedMaxMinutes"
+                            style="background-color: #1A2235; color: #E2E8F0;"
+                            class="w-full border border-secondary/30 rounded-lg px-2.5 py-1.5 text-on-surface outline-none focus:border-primary font-body-md text-[12px] cursor-pointer truncate">
+                        <option value="90" style="background-color: #1A2235; color: #E2E8F0;">≤ 1.5 hrs</option>
+                        <option value="120" style="background-color: #1A2235; color: #E2E8F0;">≤ 2 hrs</option>
+                        <option value="180" style="background-color: #1A2235; color: #E2E8F0;">≤ 3 hrs</option>
+                        <option value="1000" style="background-color: #1A2235; color: #E2E8F0;">No limit</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="relative w-full h-[250px] rounded-2xl overflow-hidden border border-secondary/30 bg-surface-container-lowest shadow-2xl flex flex-col justify-end p-5 group">
+                
+                @if (noResult)
+                {
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-surface-container text-secondary gap-2 p-6 text-center">
+                        <span class="material-symbols-outlined text-[36px] text-tertiary">error_outline</span>
+                        <h4 class="font-headline-md text-on-surface text-[16px]">Could not load selection</h4>
+                        <p class="font-body-md text-[12px] text-secondary italic">No titles match these filters in your planned list. Try loosening your criteria.</p>
+                    </div>
+                }
+                else if (displayMedia != null)
+                {
+                    <div class="absolute inset-0 bg-cover bg-center transition-all duration-500 @(isSpinning ? "blur-sm scale-105 opacity-60" : "opacity-80")"
+                         style="@UiHelpers.CardBackground(displayMedia.PosterUrl)">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+
+                    <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-primary/20 backdrop-blur-md border border-primary/30 text-primary font-label-caps text-[10px] uppercase tracking-wider font-bold z-10">
+                        @(isSpinning ? "Selecting..." : (pickedMedia != null ? "Tonight's Selection" : "Loaded on Spool"))
+                    </div>
+
+                    @if (!isSpinning && pickedMedia != null)
+                    {
+                        <div class="absolute top-3 right-3 flex items-center gap-1 z-10">
+                            @if (Me.IsFavorite(pickedMedia))
+                            {
+                                <span class="material-symbols-outlined text-[18px] text-tertiary" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                            }
+                        </div>
+                    }
+
+                    <div class="relative z-10 flex flex-col gap-1 animate-fadeIn">
+                        <div class="font-body-md text-[11px] text-secondary flex items-center gap-2">
+                            <span>@displayMedia.ReleaseYear</span>
+                            <span>·</span>
+                            <span>@(displayMedia is Series ? "TV Series" : "Feature Film")</span>
+                            @if (displayMedia.Genres != null && displayMedia.Genres.Count > 0)
+                            {
+                                <span>·</span>
+                                <span>@string.Join(", ", displayMedia.Genres)</span>
+                            }
+                        </div>
+
+                        <h3 class="font-serif text-[24px] text-on-surface font-bold leading-tight drop-shadow-md">
+                            @displayMedia.Title
+                        </h3>
+
+                        <p class="font-body-md text-[12px] text-on-surface-variant line-clamp-2 italic font-serif">
+                            @(string.IsNullOrWhiteSpace(displayMedia.Description) ? "An immersive cinematic experience selected from your personal sanctuary archive." : displayMedia.Description)
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-secondary gap-2">
+                        <span class="material-symbols-outlined text-[36px]">movie_filter</span>
+                        <p class="font-body-md text-[13px] italic">Spin the reel to reveal your next feature.</p>
+                    </div>
+                }
+            </div>
 
         </div>
     </DialogContent>
 
     <DialogActions>
-        <div class="flex justify-between w-full items-center pt-2">
+        <div class="flex justify-between w-full items-center pt-2 px-2">
 
             <button @onclick="Close"
-                    class="px-4 py-2 text-sm text-on-surface-variant hover:text-on-surface">
+                    class="px-4 py-2 font-body-md text-sm text-secondary hover:text-on-surface transition-colors">
                 Close
             </button>
 
-            <button @onclick="Spin"
-                    disabled="@isSpinning"
-                    class="px-6 py-2 rounded-full bg-primary text-on-primary font-title-md font-semibold hover:opacity-90 transition-all shadow-[0_0_16px_rgba(132,220,198,0.22)] flex items-center gap-2 disabled:opacity-60">
-
-                @if (isSpinning)
+            <div class="flex items-center gap-3">
+                @if (pickedMedia != null && !isSpinning)
                 {
-                    <span class="material-symbols-outlined animate-spin text-[18px]">
-                        progress_activity
-                    </span>
-
-                    <span>Spinning…</span>
-                }
-                else
-                {
-                    <span class="material-symbols-outlined text-[18px]">
-                        casino
-                    </span>
-
-                    <span>Spin</span>
+                    <button @onclick="OpenDetails"
+                            class="px-4 py-2 rounded-xl bg-surface-container-high text-on-surface hover:text-primary font-title-md text-[13px] transition-all border border-secondary/30 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">info</span>
+                        <span>Open Details</span>
+                    </button>
                 }
 
-            </button>
+                <button @onclick="Spin"
+                        disabled="@isSpinning"
+                        class="px-6 py-2 rounded-full bg-primary text-background font-title-md font-bold hover:opacity-90 transition-all shadow-[0_0_16px_rgba(132,220,198,0.3)] flex items-center gap-2 disabled:opacity-60">
+                    @if (isSpinning)
+                    {
+                        <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span>Selecting…</span>
+                    }
+                    else
+                    {
+                        <span class="material-symbols-outlined text-[18px]">movie</span>
+                        <span>Spin the Reel</span>
+                    }
+                </button>
+            </div>
 
         </div>
     </DialogActions>
@@ -173,14 +179,15 @@
     private bool isSpinning;
     private bool noResult;
     private Media? pickedMedia;
+    private Media? displayMedia;
     private List<string> availableGenres = new List<string>();
 
     private User Me => DataService.CurrentUser;
 
     protected override void OnInitialized()
     {
-        // у підбірці і не переглянуто
-        foreach (var media in Me.GetPlannedMedia())
+        var planned = Me.GetPlannedMedia();
+        foreach (var media in planned)
         {
             foreach (var genre in media.Genres)
             {
@@ -188,73 +195,84 @@
                     availableGenres.Add(genre);
             }
         }
-
         availableGenres.Sort();
+
+        if (planned.Count > 0)
+        {
+            displayMedia = planned[new Random().Next(planned.Count)];
+        }
+        else
+        {
+            var all = DataService.GetAllMedia();
+            if (all.Count > 0) displayMedia = all[new Random().Next(all.Count)];
+        }
     }
 
     private bool IsInList(Media media, string listName)
     {
         foreach (var list in Me.Watchlists)
         {
-            if (list.Name != listName)
-                continue;
-
+            if (list.Name != listName) continue;
             foreach (var entry in list.Entries)
             {
-                if (entry.Item == media)
-                    return true;
+                if (entry.Item == media) return true;
             }
         }
-
         return false;
     }
 
     private async Task Spin()
     {
-        isSpinning = true;
-        pickedMedia = null;
-        noResult = false;
-        StateHasChanged();
-
-        await Task.Delay(700);
-
         var pool = new List<Media>();
-
         foreach (var media in Me.GetPlannedMedia())
         {
-            if (!string.IsNullOrEmpty(selectedWatchlistName)
-                && !IsInList(media, selectedWatchlistName))
+            if (!string.IsNullOrEmpty(selectedWatchlistName) && !IsInList(media, selectedWatchlistName))
+                continue;
+
+            if (!string.IsNullOrEmpty(selectedGenre) && !media.Genres.Contains(selectedGenre))
+                continue;
+
+            int duration = media.TotalDurationMinutes > 0 ? media.TotalDurationMinutes : media.CalculateTimeDebt();
+            if (selectedMaxMinutes < 1000 && duration > selectedMaxMinutes)
                 continue;
 
             pool.Add(media);
         }
 
-        string? tag = string.IsNullOrEmpty(selectedGenre)
-            ? null
-            : selectedGenre;
+        if (pool.Count == 0)
+        {
+            noResult = true;
+            pickedMedia = null;
+            displayMedia = null;
+            return;
+        }
 
-        pickedMedia = RecService.ChooseByRoulette(
-            pool,
-            new RouletteCriteria(selectedMaxMinutes, tag)
-        );
+        isSpinning = true;
+        noResult = false;
+        pickedMedia = null;
+        StateHasChanged();
 
-        noResult = pickedMedia == null;
+        var rnd = new Random();
+        for (int i = 0; i < 12; i++)
+        {
+            displayMedia = pool[rnd.Next(pool.Count)];
+            StateHasChanged();
+            await Task.Delay(120);
+        }
+
+        pickedMedia = pool[rnd.Next(pool.Count)];
+        displayMedia = pickedMedia;
         isSpinning = false;
+        StateHasChanged();
     }
 
-    private void MarkPickedWatched()
+    private void OpenDetails()
     {
-        if (pickedMedia == null)
-            return;
-
-        Me.CompleteWatching(pickedMedia);
-
-        Snackbar.Add(
-            $"\"{pickedMedia.Title}\" marked as watched",
-            Severity.Success
-        );
-
-        pickedMedia = null;
+        if (pickedMedia != null)
+        {
+            MudDialog.Close();
+            Navigation.NavigateTo($"/media/{pickedMedia.Id}");
+        }
     }
 
     private void Close()
