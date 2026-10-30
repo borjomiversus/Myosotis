@@ -63,9 +63,20 @@ else
                     <!-- Title -->
                     <div class="flex flex-col gap-2.5">
                         <div class="flex flex-wrap items-baseline gap-3">
-                            <h1 class="font-headline-xl text-[36px] md:text-[42px] text-white font-serif font-bold tracking-tight drop-shadow-md">
-                                @MediaItem.Title
-                            </h1>
+                            <div class="flex items-center gap-3">
+                                <h1 class="font-headline-xl text-[36px] md:text-[36px] text-white font-serif font-bold tracking-tight drop-shadow-md">
+                                    @MediaItem.Title
+                                </h1>
+
+                                <button @onclick="ToggleFavorite"
+                                        class="flex items-center justify-center p-2 rounded-full transition-all duration-300 @(IsFav ? "text-tertiary bg-tertiary/10" : "text-secondary hover:text-tertiary hover:bg-surface-variant")"
+                                        title="@(IsFav ? "Remove from Favorites" : "Add to Favorites")">
+                                    <span class="material-symbols-outlined text-[28px] transition-all"
+                                          style="font-variation-settings: 'FILL' @(IsFav ? "1" : "0");">
+                                        favorite
+                                    </span>
+                                </button>
+                            </div>
                             <span class="font-headline-md text-[24px] text-secondary/70 font-serif">(@MediaItem.ReleaseYear)</span>
                         </div>
 
@@ -347,6 +358,15 @@ else
                                     <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
                                 }
                             </button>
+
+                            @if (CurrentMediaState != null)
+                            {
+                                <button @onclick="ClearUserStatus"
+                                        class="col-span-2 mt-2 px-3 py-2 rounded-lg text-[12px] font-title-md transition-all text-center flex items-center justify-center gap-2 bg-surface-variant text-tertiary hover:bg-secondary/20 border border-tertiary/30">
+                                    <span class="material-symbols-outlined text-[16px]">delete_outline</span>
+                                    <span>Remove Status & History</span>
+                                </button>
+                            }
                         </div>
                     </div>
 
@@ -394,7 +414,7 @@ else
                                 <span class="text-on-surface font-bold">@vibeCharacters / 10</span>
                             </div>
                             <input type="range" min="1" max="10" @bind="vibeCharacters" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #4eecd5 @(vibeCharacters * 10)%, rgba(255, 255, 255, 0.12) @(vibeCharacters * 10)%);"
+                                   style="background: linear-gradient(90deg, #84DCC6 @(vibeCharacters * 10)%, rgba(92, 128, 188, 0.2) @(vibeCharacters * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                         </div>
 
@@ -404,7 +424,7 @@ else
                                 <span class="text-on-surface font-bold">@vibePlot / 10</span>
                             </div>
                             <input type="range" min="1" max="10" @bind="vibePlot" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #4eecd5 @(vibePlot * 10)%, rgba(255, 255, 255, 0.12) @(vibePlot * 10)%);"
+                                   style="background: linear-gradient(90deg, #84DCC6 @(vibePlot * 10)%, rgba(92, 128, 188, 0.2) @(vibePlot * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                         </div>
 
@@ -414,7 +434,7 @@ else
                                 <span class="text-on-surface font-bold">@vibeVisuals / 10</span>
                             </div>
                             <input type="range" min="1" max="10" @bind="vibeVisuals" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #4eecd5 @(vibeVisuals * 10)%, rgba(255, 255, 255, 0.12) @(vibeVisuals * 10)%);"
+                                   style="background: linear-gradient(90deg, #84DCC6 @(vibeVisuals * 10)%, rgba(92, 128, 188, 0.2) @(vibeVisuals * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                         </div>
 
@@ -424,7 +444,7 @@ else
                                 <span class="text-on-surface font-bold">@vibePacing / 10</span>
                             </div>
                             <input type="range" min="1" max="10" @bind="vibePacing" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #5c80bc @(vibePacing * 10)%, rgba(255, 255, 255, 0.12) @(vibePacing * 10)%);"
+                                   style="background: linear-gradient(90deg, #5C80BC @(vibePacing * 10)%, rgba(92, 128, 188, 0.2) @(vibePacing * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                         </div>
 
@@ -434,7 +454,7 @@ else
                                 <span class="text-on-surface font-bold">@vibeVibe / 10</span>
                             </div>
                             <input type="range" min="1" max="10" @bind="vibeVibe" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #5c80bc @(vibeVibe * 10)%, rgba(255, 255, 255, 0.12) @(vibeVibe * 10)%);"
+                                   style="background: linear-gradient(90deg, #5C80BC @(vibeVibe * 10)%, rgba(92, 128, 188, 0.2) @(vibeVibe * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                         </div>
 
@@ -444,11 +464,11 @@ else
                                 <span class="text-on-surface font-bold">@vibeSoundtrack / 10</span>
                             </div>
                             <input type="range" min="1" max="10" @bind="vibeSoundtrack" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #5c80bc @(vibeSoundtrack * 10)%, rgba(255, 255, 255, 0.12) @(vibeSoundtrack * 10)%);"
+                                   style="background: linear-gradient(90deg, #5C80BC @(vibeSoundtrack * 10)%, rgba(92, 128, 188, 0.2) @(vibeSoundtrack * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                         </div>
                     </div>
-                </div>
+                  </div>
 
                 <div class="md:col-span-4 rounded-xl bg-surface-container p-6 flex flex-col justify-between shadow-sm border border-secondary/10 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300">
                     <div class="flex flex-col gap-3">
@@ -479,50 +499,48 @@ else
                 <!-- Seasons for Series -->
                 @if (MediaItem is Series currentSeries && currentSeries.Seasons.Count > 0)
                 {
-                    <div class="flex flex-col gap-4">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-container-highest pb-3">
-                            <div class="flex items-center gap-4">
-                                <span class="font-headline-lg text-headline-lg text-on-surface">Seasons & Catalog</span>
-                
-                                <div class="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg overflow-x-auto max-w-full">
-                                    @for (int i = 0; i < currentSeries.Seasons.Count; i++)
-                                    {
-                                        int seasonIdx = i;
-                                        var season = currentSeries.Seasons[i];
-                                        <button @onclick="() => activeSeasonIndex = seasonIdx"
-                                                class="px-4 py-1.5 rounded font-title-md text-title-md whitespace-nowrap transition-colors @(activeSeasonIndex == seasonIdx ? "bg-surface text-primary shadow-xs" : "text-on-surface-variant hover:text-on-surface")">
-                                            Season @season.Number (@season.Episodes.Count Ep)
-                                        </button>
-                                    }
-                                </div>
+                    <div class="flex flex-col gap-4 mt-6">
+                        <div class="flex flex-col gap-3 border-b border-secondary/20 pb-4">
+                            <span class="font-headline-lg text-[22px] text-on-surface font-serif">Seasons & Episodes</span>
+            
+                            <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                                @for (int i = 0; i < currentSeries.Seasons.Count; i++)
+                                {
+                                    int seasonIdx = i;
+                                    var season = currentSeries.Seasons[i];
+                                    <button @onclick="() => activeSeasonIndex = seasonIdx"
+                                            class="px-4 py-2 rounded-xl font-title-md text-[13px] whitespace-nowrap transition-all border @(activeSeasonIndex == seasonIdx ? "bg-primary text-background font-bold border-primary shadow-md" : "bg-surface-container-high text-secondary border-secondary/20 hover:text-white hover:border-secondary/40")">
+                                        Season @season.Number <span class="opacity-75 text-[11px]">(@season.Episodes.Count Ep)</span>
+                                    </button>
+                                }
                             </div>
                         </div>
 
                         @if (activeSeasonIndex < currentSeries.Seasons.Count)
                         {
                             var selectedSeason = currentSeries.Seasons[activeSeasonIndex];
-   
+
                             <div class="flex flex-col gap-2.5 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar">
                                 @foreach (var ep in selectedSeason.Episodes)
                                 {
                                     bool isCheckpointEp = ActiveCheckpoint != null && ActiveCheckpoint.Season == selectedSeason.Number && ActiveCheckpoint.Episode == ep.Number;
 
-                                    <div class="flex flex-col md:flex-row md:items-center justify-between p-3.5 rounded-xl transition-colors gap-4 shrink-0 @(isCheckpointEp ? "bg-surface-container-high border-l-4 border-primary" : "bg-surface-container hover:bg-surface-container-high")">
+                                    <div class="flex flex-col md:flex-row md:items-center justify-between p-3.5 rounded-xl transition-colors gap-4 shrink-0 @(isCheckpointEp ? "bg-surface-container-high border-l-4 border-primary" : "bg-surface-container/60 hover:bg-surface-container border border-secondary/10")">
                                         <div class="flex items-center gap-4 min-w-0">
-                                            <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 @(isCheckpointEp ? "bg-primary-container text-on-primary-container" : "bg-surface-container-high text-primary")">
+                                            <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 @(isCheckpointEp ? "bg-primary text-background" : "bg-surface-container-high text-primary border border-secondary/20")">
                                                 <span class="material-symbols-outlined text-[18px]">@(isCheckpointEp ? "pause" : "play_arrow")</span>
                                             </div>
                                             <div class="flex flex-col min-w-0">
                                                 <div class="flex items-center gap-2">
-                                                    <span class="font-label-caps text-[11px] uppercase @(isCheckpointEp ? "text-primary font-bold" : "text-outline")">
+                                                    <span class="font-label-caps text-[11px] uppercase @(isCheckpointEp ? "text-primary font-bold" : "text-secondary")">
                                                         EPISODE @ep.Number.ToString("D2") @(isCheckpointEp ? "— Active Checkpoint" : "")
                                                     </span>
-                                                    <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
-                                                    <span class="font-label-sm text-[12px] text-on-surface-variant">@ep.RuntimeMinutes mins</span>
+                                                    <span class="w-1 h-1 rounded-full bg-secondary/40"></span>
+                                                    <span class="font-label-sm text-[12px] text-secondary">@ep.RuntimeMinutes mins</span>
                                                     @if (ep.AirDate.HasValue)
                                                     {
-                                                        <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
-                                                        <span class="font-label-sm text-[12px] text-on-surface-variant">@ep.AirDate.Value.ToString("dd.MM.yyyy")</span>
+                                                        <span class="w-1 h-1 rounded-full bg-secondary/40"></span>
+                                                        <span class="font-label-sm text-[12px] text-secondary">@ep.AirDate.Value.ToString("dd.MM.yyyy")</span>
                                                     }
                                                 </div>
                                                 <span class="font-title-md text-[15px] text-on-surface truncate">@ep.Title</span>
@@ -533,7 +551,7 @@ else
                             </div>
                         }
                     </div>
-                }
+                }       
             <!-- Soundtracks -->
             @if (MediaItem.Soundtracks != null && MediaItem.Soundtracks.Count > 0)
             {
@@ -792,6 +810,24 @@ else
         }
     }
 
+    private bool IsFav => Me.IsFavorite(MediaItem);
+
+    private void ToggleFavorite()
+    {
+        if (MediaItem != null)
+        {
+            Me.ToggleFavorite(MediaItem);
+            StateHasChanged();
+        }
+    }
+
+    private void ClearUserStatus()
+    {
+        if (MediaItem == null) return;
+        Me.ClearStatus(MediaItem);
+        StateHasChanged();
+    }
+
     private void SaveVibeRating()
     {
         if (MediaItem == null) return;
@@ -899,7 +935,7 @@ else
     }
 
     private UserMediaState? CurrentMediaState => MediaItem != null ? Me.MediaStates.FirstOrDefault(s => s.Item.Id == MediaItem.Id) : null;
-    private WatchStatus CurrentWatchStatus => CurrentMediaState?.Status ?? WatchStatus.Planned;
+    private WatchStatus? CurrentWatchStatus => CurrentMediaState?.Status;
 
     private void ChangeUserStatus(WatchStatus newStatus)
     {

@@ -176,10 +176,15 @@ else
                                                     <span class="font-label-caps text-label-caps text-on-surface-variant/80">@UiHelpers.FormatMinutes(itemTimeDebt)</span>
                                                 }
                                             </div>
-
+                                            <div class="flex items-center gap-2">
                                             <h2 class="font-headline-md text-headline-md text-on-surface truncate group-hover:text-primary transition-colors">
                                                 @item.Title
                                             </h2>
+                                            @if (Me.IsFavorite(item))
+                                                {
+                                                    <span class="material-symbols-outlined text-[16px] text-tertiary" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                                                }
+                                            </div>
 
                                             <p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
                                                 @(string.IsNullOrEmpty(item.Description) ? "No description available." : item.Description)
@@ -225,11 +230,13 @@ else
 
                                 @if (isOpen)
                                 {
-                                    <div @onclick:stopPropagation="true"
+                                        <div @onclick:stopPropagation="true"
                                          class="mt-2 p-3 rounded-xl bg-surface-container border border-secondary/30 flex flex-wrap items-center gap-2 animate-fadeIn">
                                         <span class="text-[12px] font-label-caps text-secondary mr-2 uppercase tracking-wider">Select status:</span>
                                         @foreach (WatchStatus st in Enum.GetValues(typeof(WatchStatus)))
                                         {
+                                            if (st == WatchStatus.None) continue; 
+                                            
                                             bool isSelected = currentStatus == st;
                                             <button @onclick="() => ChangeStatus(item, st)"
                                                     class="px-3.5 py-1.5 rounded-lg text-[12px] font-title-md transition-all flex items-center gap-1.5 @(isSelected ? "bg-primary text-background font-bold shadow-md" : "bg-surface-container-high text-on-surface hover:bg-surface-bright")">
@@ -239,6 +246,16 @@ else
                                                 {
                                                     <span class="material-symbols-outlined text-[14px] ml-1">check</span>
                                                 }
+                                            </button>
+                                        }
+                                        
+                                        @if (currentStatus.HasValue && currentStatus != WatchStatus.None)
+                                        {
+                                            <div class="w-px h-6 bg-secondary/30 mx-1"></div>
+                                            <button @onclick="() => ClearItemStatus(item)" 
+                                                    class="px-3.5 py-1.5 rounded-lg text-[12px] font-title-md text-tertiary hover:bg-surface-container-highest transition-all flex items-center gap-1.5" title="Clear status">
+                                                <span class="material-symbols-outlined text-[14px]">delete</span>
+                                                <span>Clear</span>
                                             </button>
                                         }
                                     </div>
@@ -306,4 +323,13 @@ else
         Snackbar.Add("Item removed from list", Severity.Info);
         StateHasChanged();
     }
+    
+    private void ClearItemStatus(Media item)
+    {
+        Me.ClearStatus(item);
+        activeDropdownId = null;
+        Snackbar.Add("Status cleared", Severity.Info);
+        StateHasChanged();
+    }
+
 }
