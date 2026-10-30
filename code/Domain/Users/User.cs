@@ -103,22 +103,29 @@ public class User
         WatchHistory.Add(new WatchHistoryEntry(item, DateTime.Now, ActivityAction.Watched));
     }
 
-    public void SetStatus(Media item, WatchStatus status)
+    public void SetStatus(Media media, WatchStatus status)
     {
-        UserMediaState? existing = null;
-        foreach (var s in MediaStates)
+        var state = MediaStates.FirstOrDefault(s => s.Item.Id == media.Id);
+        if (state == null)
         {
-            if (s.Item == item)
-            {
-                existing = s;
-                break;
-            }
+            state = new UserMediaState { Item = media, Status = status };
+            MediaStates.Add(state);
+        }
+        else
+        {
+            state.Status = status;
         }
 
-        if (existing == null)
-            MediaStates.Add(new UserMediaState(item, status));
-        else
-            existing.ChangeStatus(status);
+        if (status != WatchStatus.Watched)
+        {
+            WatchHistory.RemoveAll(h => h.WatchedItem.Id == media.Id && h.Action == ActivityAction.Watched);
+        }
+    }
+
+    public void ClearStatus(Media media)
+    {
+        MediaStates.RemoveAll(s => s.Item.Id == media.Id);
+        WatchHistory.RemoveAll(h => h.WatchedItem.Id == media.Id && h.Action == ActivityAction.Watched);
     }
 
     public bool IsWatched(Media item)
@@ -132,11 +139,26 @@ public class User
     }
 
     // Watched + запис в історію
-    public void CompleteWatching(Media item)
+    public void CompleteWatching(Media media)
     {
-        if (IsWatched(item)) return;
-        SetStatus(item, WatchStatus.Watched);
-        MarkAsWatched(item);
+        SetStatus(media, WatchStatus.Watched);
+        
+        var today = DateTime.Now.Date;
+        
+        bool alreadyWatchedToday = WatchHistory.Any(h => 
+            h.WatchedItem.Id == media.Id && 
+            h.WatchDate.Date == today && 
+            h.Action == ActivityAction.Watched);
+
+        if (!alreadyWatchedToday)
+        {
+            WatchHistory.Add(new ActivityLog 
+            { 
+                WatchedItem = media, 
+                WatchDate = DateTime.Now, 
+                Action = ActivityAction.Watched 
+            });
+        }
     }
 
     public void RecordDetailsView(Media item)
