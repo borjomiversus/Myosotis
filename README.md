@@ -219,6 +219,7 @@ GitHub Copilot використовувався, зокрема, для допо
 - [C# language documentation](https://learn.microsoft.com/en-us/dotnet/csharp/)
 - [C# Succinctly](https://www.syncfusion.com/succinctly-free-ebooks/csharp)
 - [freeCodeCamp](https://www.freecodecamp.org/news/tag/csharp/)
+- [Google Icons](https://fonts.google.com/icons)
 
 ### Навчальні матеріали та відеоуроки
 
