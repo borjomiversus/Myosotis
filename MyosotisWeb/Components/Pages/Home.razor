@@ -10,12 +10,12 @@
 
 <PageTitle>Myosotis · Overview</PageTitle>
 
-<div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-10">
+<div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-10 transition-all duration-500 animate-fade-in">
 
     <!-- БАНЕР -->
     @if (isLoading)
     {
-        <div class="w-full h-[340px] rounded-lg border border-secondary/20 bg-gradient-to-br from-secondary/10 to-background flex flex-col items-center justify-center gap-3">
+        <div class="w-full h-[340px] rounded-lg border border-secondary/20 bg-gradient-to-br from-secondary/10 to-background flex flex-col items-center justify-center gap-3 animate-pulse">
             <span class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
             <span class="text-secondary font-body-md text-[13px]">Loading TMDB Trends...</span>
         </div>
@@ -44,12 +44,12 @@
 
                     <div class="flex items-center gap-2 mb-4">
                         <span class="px-2 py-1 rounded bg-primary/15 text-primary font-label-caps tracking-widest text-[10px] w-fit border border-primary/30 backdrop-blur-sm">
-                            TRENDING RECOMMENDATION (@(currentIndex + 1)/@trendingList.Count)
+                            FEATURED RECOMMENDATION (@(currentIndex + 1)/@trendingList.Count)
                         </span>
                         @if (FeaturedMedia.TmdbRating.HasValue)
                         {
                             <span class="text-primary font-title-md text-[12px] font-bold">
-                                ★ @FeaturedMedia.TmdbRating.Value.ToString("0.0")
+                                ★ @FeaturedMedia.TmdbRating.Value.ToString("0.0", En)
                             </span>
                         }
                     </div>
@@ -139,7 +139,7 @@
             @foreach (var list in Me.Watchlists)
             {
                 <div @onclick="() => OpenList(list.Name)"
-                     class="snap-start shrink-0 w-[340px] h-[200px] rounded-lg border border-secondary/20 shadow-lg cursor-pointer group relative overflow-hidden flex flex-col justify-end p-6 bg-gradient-to-br from-secondary/15 via-background to-secondary/5">
+                     class="snap-start shrink-0 w-[340px] h-[200px] rounded-lg border border-secondary/20 shadow-lg cursor-pointer group relative overflow-hidden flex flex-col justify-end p-6 bg-gradient-to-br from-secondary/15 via-background to-secondary/5 transition-all hover:scale-[1.01]">
 
                     <div class="absolute inset-0 z-0 overflow-hidden">
                         <div class="absolute -right-4 -top-2 flex -space-x-12 opacity-80 group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-500 pt-6 pr-6">
@@ -216,7 +216,7 @@
         <div class="bg-gradient-to-b from-secondary/15 via-secondary/5 to-background rounded-lg border border-secondary/20 p-6 flex flex-col shadow-lg">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-[18px] text-white">
-                    For your next evening
+                    For your movie night
                 </h3>
                 <a href="/search" class="text-[12px] text-secondary hover:text-primary transition-colors flex items-center font-body-md">
                     See all
@@ -262,16 +262,11 @@
                     @foreach (var capture in RecentCaptures)
                     {
                         <div class="flex flex-col gap-1 pb-3 border-b border-secondary/20 last:border-b-0">
-                            <p class="text-[13px] text-white font-title-md font-medium">
+                            <p class="text-[13px] text-white font-title-md font-medium line-clamp-3 break-all">
                                 "@capture.RawNote"
                             </p>
                             <div class="flex items-center gap-1.5 text-[11px] text-secondary font-body-md">
-                                @if (!string.IsNullOrWhiteSpace(capture.Source))
-                                {
-                                    <span class="text-primary">@capture.Source</span>
-                                    <span>·</span>
-                                }
-                                <span>@capture.CapturedAt.ToString("MMM d, yyyy")</span>
+                                <span>@capture.CapturedAt.ToString("MMM d, yyyy", En)</span>
                             </div>
                         </div>
                     }
@@ -279,7 +274,7 @@
                 else
                 {
                     <p class="text-[13px] text-secondary font-body-md">
-                        No captures logged yet.
+                        No captures saved yet.
                     </p>
                 }
             </div>
@@ -397,6 +392,7 @@
     private int currentIndex = 0;
     private bool isLoading = true;
     private string selectedWatchlist = "";
+    private static readonly CultureInfo En = new CultureInfo("en-US");
 
     private User Me => DataService.CurrentUser;
 

@@ -69,10 +69,10 @@ else
                 <!-- Metrics Strip -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm mt-space-sm">
                     <div class="bg-surface-container-low p-space-md rounded-xl border border-secondary/10 flex flex-col justify-between">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant">CATALOG SIZE</span>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">COLLECTION SIZE</span>
                         <div class="flex items-baseline gap-space-xs mt-space-xs">
                             <span class="font-stat-metric text-stat-metric text-on-surface">@totalCount</span>
-                            <span class="font-label-sm text-label-sm text-on-surface-variant">Titles Total</span>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">Titles</span>
                         </div>
                     </div>
 
@@ -91,16 +91,16 @@ else
                         <span class="font-label-caps text-label-caps text-on-surface-variant">UNWATCHED</span>
                         <div class="flex items-baseline gap-space-xs mt-space-xs">
                             <span class="font-stat-metric text-stat-metric text-on-surface">@unwatchedCount</span>
-                            <span class="font-label-sm text-label-sm text-on-surface-variant">Pending</span>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">To watch</span>
                         </div>
                     </div>
 
                     <div class="bg-surface-container-low p-space-md rounded-xl border border-secondary/10 flex flex-col justify-between">
-                        <span class="font-label-caps text-label-caps text-secondary">TIME DEBT</span>
+                        <span class="font-label-caps text-label-caps text-secondary">UNWATCHED TIME</span>
                         <div class="flex items-baseline gap-space-xs mt-space-xs">
                             <span class="font-stat-metric text-stat-metric text-secondary">@UiHelpers.FormatMinutes(timeDebtMinutes)</span>
                         </div>
-                        <span class="font-label-sm text-label-sm text-on-surface-variant/70">Remaining shelf</span>
+                        <span class="font-label-sm text-label-sm text-on-surface-variant/70">Left to watch</span>
                     </div>
                 </div>
             </div>
@@ -166,7 +166,7 @@ else
                                                 else
                                                 {
                                                     <span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-secondary font-label-caps text-label-caps uppercase tracking-wider border border-secondary/20">
-                                                        No Status
+                                                        UNWATCHED
                                                     </span>
                                                 }
                                                 <span class="font-label-caps text-label-caps text-on-surface-variant/80">@(item is Series ? "SERIES" : "FEATURE FILM") • @item.ReleaseYear</span>

@@ -352,7 +352,7 @@ else
 
                             <button @onclick="() => ChangeUserStatus(WatchStatus.Rewatching)"
                                     class="px-3 py-2 rounded-lg text-[12px] font-title-md transition-all text-left flex items-center justify-between @(CurrentWatchStatus == WatchStatus.Rewatching ? "bg-primary/20 text-primary border border-primary/40" : "bg-surface-container-high text-secondary hover:text-white")">
-                                <span>Rewatch</span>
+                                <span>Rewatching</span>
                                 @if (CurrentWatchStatus == WatchStatus.Rewatching)
                                 {
                                     <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
@@ -364,7 +364,7 @@ else
                                 <button @onclick="ClearUserStatus"
                                         class="col-span-2 mt-2 px-3 py-2 rounded-lg text-[12px] font-title-md transition-all text-center flex items-center justify-center gap-2 bg-surface-variant text-tertiary hover:bg-secondary/20 border border-tertiary/30">
                                     <span class="material-symbols-outlined text-[16px]">delete_outline</span>
-                                    <span>Remove Status & History</span>
+                                    <span>Clear Status</span>
                                 </button>
                             }
                         </div>
@@ -472,7 +472,10 @@ else
 
                 <div class="md:col-span-4 rounded-xl bg-surface-container p-6 flex flex-col justify-between shadow-sm border border-secondary/10 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300">
                     <div class="flex flex-col gap-3">
-                        <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Watchlists</span>
+                        <div class="flex items-center justify-between">
+                            <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Watchlists</span>
+                            <span class="material-symbols-outlined text-primary text-[20px]">collections_bookmark</span>
+                        </div>
                         <div class="flex flex-col gap-2">
                             @foreach (var list in Me.Watchlists)
                             {
@@ -686,11 +689,10 @@ else
 {
     <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-surface-container border border-secondary/20 rounded-2xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-5">
+
+            <!-- Шапка без хрестика -->
             <div class="flex items-center justify-between border-b border-secondary/20 pb-3">
                 <h3 class="font-headline-md text-headline-md text-white font-serif">Set Watch Checkpoint</h3>
-                <button @onclick="() => showCheckpointModal = false" class="text-secondary hover:text-white">
-                    <span class="material-symbols-outlined text-[20px]">close</span>
-                </button>
             </div>
 
             <div class="flex flex-col gap-4">
@@ -699,29 +701,34 @@ else
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="font-label-sm text-secondary mb-1 block">Season</label>
-                            <input type="number" min="1" @bind="inputSeason" class="w-full bg-surface-container-high text-white p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary" />
+                            <input type="number" min="1" @bind="inputSeason" class="w-full bg-background text-white p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary shadow-inner" />
                         </div>
                         <div>
                             <label class="font-label-sm text-secondary mb-1 block">Episode</label>
-                            <input type="number" min="1" @bind="inputEpisode" class="w-full bg-surface-container-high text-white p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary" />
+                            <input type="number" min="1" @bind="inputEpisode" class="w-full bg-background text-white p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary shadow-inner" />
                         </div>
                     </div>
                 }
 
                 <div>
-                    <label class="font-label-sm text-secondary mb-1 block">Timecode (e.g. 32:14)</label>
-                    <input type="text" placeholder="32:14" @bind="inputTimecode" class="w-full bg-surface-container-high text-white placeholder:text-secondary/50 p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary" />
+                    <label class="font-label-sm text-secondary mb-1 block">Timecode</label>
+                    <input type="text"
+                           placeholder="00:00 or 00:00:00"
+                           value="@inputTimecode"
+                           @oninput="FormatCheckpointTimecode"
+                           maxlength="8"
+                           class="w-full bg-background text-white placeholder:text-secondary/50 p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary shadow-inner" />
                 </div>
 
                 <div>
                     <label class="font-label-sm text-secondary mb-1 block">Reason / Note (optional)</label>
-                    <input type="text" placeholder="Late night session..." @bind="inputReason" class="w-full bg-surface-container-high text-white placeholder:text-secondary/50 p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary" />
+                    <input type="text" placeholder="Late night session..." @bind="inputReason" class="w-full bg-background text-white placeholder:text-secondary/50 p-2.5 rounded-lg border border-secondary/30 focus:outline-none focus:border-primary shadow-inner" />
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-2">
                 <button @onclick="() => showCheckpointModal = false" class="px-4 py-2 rounded-lg bg-secondary/15 border border-secondary/30 text-secondary font-title-md hover:bg-secondary/25 transition-colors">Cancel</button>
-                <button @onclick="SaveCheckpoint" class="px-5 py-2 rounded-lg bg-primary text-background font-bold font-title-md hover:opacity-90 transition-colors">Save</button>
+                <button @onclick="SaveCheckpoint" class="px-5 py-2 rounded-lg bg-primary text-background font-bold font-title-md hover:opacity-90 transition-colors shadow-[0_0_15px_rgba(132,220,198,0.2)]">Save</button>
             </div>
         </div>
     </div>
@@ -950,5 +957,33 @@ else
             Me.SetStatus(MediaItem, newStatus);
         }
         StateHasChanged();
+    }
+
+    private void FormatCheckpointTimecode(ChangeEventArgs e)
+    {
+        var rawInput = e.Value?.ToString() ?? "";
+        var digits = new string(rawInput.Where(char.IsDigit).ToArray());
+
+        if (digits.Length > 6)
+        {
+            digits = digits.Substring(0, 6);
+        }
+
+        if (digits.Length >= 5)
+        {
+            inputTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2, 2)}:{digits.Substring(4)}";
+        }
+        else if (digits.Length == 4)
+        {
+            inputTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2, 2)}";
+        }
+        else if (digits.Length == 3)
+        {
+            inputTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2)}";
+        }
+        else
+        {
+            inputTimecode = digits;
+        }
     }
 }
