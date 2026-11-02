@@ -192,6 +192,12 @@ GitHub Copilot використовувався, зокрема, для допо
 - [Abstract Star Logo Concept](http://dribbble.com/shots/26983428-Abstract-Star-Logo-Concept-Modern-Gradient-Logo-Concept-for-App)
 - [Dribbble, Movie Site](https://dribbble.com/search/movie-site)
 - [Dribbble, Raycast](https://dribbble.com/search/raycast)
+- [Tracksaga](https://tracksaga.com/en)
+- [Letterboxd](https://letterboxd.com/)
+- [Serializd](https://serializd.com/discover)
+- [Trakt](https://app.trakt.tv/)
+- [IMDB](https://www.imdb.com/)
+- [Pinterest](https://www.pinterest.com/search/pins/?q=movie%20tracker%20app%20ui&rs=ac&len=17&source_id=ac_KqpeUwYz&eq=movie%20tracker%20app&etslf=8663)
 - [Glassmorphism (Dribbble)](https://dribbble.com/tags/glassmorphism)
 - [OriginKit](https://www.originkit.dev/)
 - [SmoothUI](https://smoothui.dev/docs/components)
@@ -213,6 +219,7 @@ GitHub Copilot використовувався, зокрема, для допо
 - [C# language documentation](https://learn.microsoft.com/en-us/dotnet/csharp/)
 - [C# Succinctly](https://www.syncfusion.com/succinctly-free-ebooks/csharp)
 - [freeCodeCamp](https://www.freecodecamp.org/news/tag/csharp/)
+- [Google Icons](https://fonts.google.com/icons)
 
 ### Навчальні матеріали та відеоуроки
 
@@ -222,6 +229,7 @@ GitHub Copilot використовувався, зокрема, для допо
 - [Tailwind CSS Tutorial (YouTube)](https://www.youtube.com/watch?v=xS4ISh6ZehU)
 - [C# Tutorials (YouTube Playlist)](https://www.youtube.com/watch?v=03YGv7Myb3o&list=PLbDsRCGLbN1_-ZWS6G5ionKox0Ahrdv_H)
 - [Deploying a Blazor Application to Azure App Services Using Visual Studio 2026 (YouTube)](https://www.youtube.com/watch?v=IRSJjeX07Xo)
+- [Dou Forum Blazor](https://dou.ua/forums/topic/53130/)
 
 ### Додаткові технічні інструменти та бібліотеки
 
