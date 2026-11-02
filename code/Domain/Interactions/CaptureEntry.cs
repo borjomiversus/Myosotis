@@ -14,8 +14,6 @@ public enum CaptureKind
     Scene,
     Note
 }
-
-// Розбір таймкоду "mm:ss" або "h:mm:ss" у кількість секунд.
 public static class TimecodeParser
 {
     public static bool TryParse(string? text, out int seconds)
