@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 class Program
 {
@@ -65,7 +66,7 @@ class Program
             Console.Write("Введіть запит: ");
             string query = Console.ReadLine() ?? "";
 
-            me.LogSearch(query); 
+            me.LogSearch(query);
 
             List<Media> found = new List<Media>();
             if (subChoice == "1") found = searchService.SearchByTitle(library, query);
@@ -243,7 +244,9 @@ class Program
             me.RecordView(target);
 
             Console.WriteLine($"\n=== {target.Title} ({target.ReleaseYear}) ===");
-            Console.WriteLine($"Режисер: {(target.MediaDirector != null ? target.MediaDirector.FullName : "Невідомо")}");
+
+            var mainDirector = target.Directors?.FirstOrDefault();
+            Console.WriteLine($"Режисер: {(mainDirector != null ? mainDirector.FullName : "Невідомо")}");
             Console.WriteLine($"Вікове обмеження: {(target.AgeRestriction.HasValue ? target.AgeRestriction.Value.ToString() + "+" : "Немає")}");
             Console.WriteLine($"Опис: {target.Description ?? "Немає"}");
 
@@ -296,10 +299,11 @@ class Program
         if (choice == "1")
         {
             var bill = library.Find(m => m.Title.Contains("Kill Bill"));
-            if (bill?.MediaDirector != null)
+            var director = bill?.Directors?.FirstOrDefault();
+            if (director != null)
             {
-                int? directorAge = bill.MediaDirector.GetAge(DateTime.Now.Year);
-                Console.WriteLine($"Режисер {bill.MediaDirector.FullName}: {directorAge} років у поточному році.");
+                int? directorAge = director.GetAge(DateTime.Now.Year);
+                Console.WriteLine($"Режисер {director.FullName}: {directorAge} років у поточному році.");
             }
         }
         else if (choice == "2")
@@ -314,7 +318,7 @@ class Program
     }
 
     static void PrintList(List<Media> list)
-    {   
+    {
         if (list.Count == 0)
         {
             Console.WriteLine("Нічого не знайдено.");
@@ -331,7 +335,7 @@ class Program
     {
         Director dir = new Director("Eric Kripke", "Satire", 1974);
         Director dir1 = new Director("Quentin Tarantino", "Non-linear storytelling", 1963);
-        Director dir2 = new Director("Wong Kar-wai", "Romantic visual storytelling", 1958); 
+        Director dir2 = new Director("Wong Kar-wai", "Romantic visual storytelling", 1958);
 
         Series theBoys = new Series("The Boys", 2019, 60, 8, dir);
         theBoys.SetVibeRating(new VibeRating(8, 7, 5, 6, 9, 4));
