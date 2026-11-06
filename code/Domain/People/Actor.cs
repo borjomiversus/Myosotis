@@ -5,7 +5,8 @@ public class Actor : Person
     public string RoleName { get; private set; }
     public List<string> Filmography { get; private set; }
 
-    public Actor(string fullName, string roleName, int? birthYear = null) : base(fullName, birthYear)
+    public Actor(string fullName, string roleName, int? birthYear = null, int? tmdbId = null, string? photoUrl = null) 
+        : base(fullName, birthYear, tmdbId, photoUrl)
     {
         if (string.IsNullOrWhiteSpace(roleName))
             throw new ArgumentException("Назва ролі не може бути порожньою.");

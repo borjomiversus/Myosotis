@@ -6,9 +6,10 @@ public class Person
     public string FullName { get; private set; }
     public int? BirthYear { get; private set; }
     public string? Biography { get; private set; }
-    public string? PhotoUrl { get; private set; }   
+    public string? PhotoUrl { get; set; } 
+    public int? TmdbId { get; set; }
 
-    public Person(string fullName, int? birthYear = null)
+    public Person(string fullName, int? birthYear = null, int? tmdbId = null, string? photoUrl = null)
     {
         if (string.IsNullOrWhiteSpace(fullName))
             throw new ArgumentException("Ім'я не може бути порожнім.");
@@ -17,9 +18,10 @@ public class Person
 
         FullName = fullName;
         BirthYear = birthYear;
+        TmdbId = tmdbId;
+        PhotoUrl = photoUrl;
     }
 
-    // скільки років
     public int? GetAge(int currentYear)
     {
         if (!BirthYear.HasValue) return null;
