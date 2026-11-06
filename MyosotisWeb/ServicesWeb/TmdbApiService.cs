@@ -20,21 +20,22 @@ namespace MyosotisWeb.ServicesWeb
             _httpClientFactory = httpClientFactory;
         }
 
-        private List<Media> MapTmdbResultsToMedia(IEnumerable<TmdbItemDto> results)
+        private List<Media> MapTmdbResultsToMedia(IEnumerable<TmdbItemDto> results, string? fallbackMediaType = null)
         {
             var list = new List<Media>();
             foreach (var item in results)
             {
                 int releaseYear = ParseYear(item.ReleaseDate ?? item.FirstAirDate);
                 string title = item.Title ?? item.Name ?? "Untitled";
+                string mediaType = item.MediaType ?? fallbackMediaType ?? "movie";
 
-                if (item.MediaType == "movie" || item.MediaType == null)
+                if (mediaType == "movie")
                 {
                     var movie = new Movie(title, releaseYear, 1, null);
                     PopulateBasicMedia(movie, item);
                     list.Add(movie);
                 }
-                else if (item.MediaType == "tv")
+                else if (mediaType == "tv")
                 {
                     var series = new Series(title, releaseYear, 1, 1, null);
                     PopulateBasicMedia(series, item);
@@ -84,23 +85,161 @@ namespace MyosotisWeb.ServicesWeb
             }
         }
 
-        public async Task<List<Media>> SearchMediaAsync(string query)
+        public async Task<PagedMediaResult> SearchMediaPagedAsync(string query, int page = 1)
         {
-            if (string.IsNullOrWhiteSpace(query)) return new List<Media>();
+            if (string.IsNullOrWhiteSpace(query)) return new PagedMediaResult();
 
             try
             {
                 await EnsureGenresLoadedAsync();
                 var client = _httpClientFactory.CreateClient("TmdbClient");
-                var response = await client.GetFromJsonAsync<TmdbSearchResponse>(
-                    $"search/multi?query={Uri.EscapeDataString(query)}&include_adult=false&language=en-US&page=1");
+                var encodedQuery = Uri.EscapeDataString(query);
 
-                return response?.Results != null ? MapTmdbResultsToMedia(response.Results) : new List<Media>();
+                var multiTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/multi?query={encodedQuery}&include_adult=false&language=en-US&page={page}");
+                var movieTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/movie?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+                var tvTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/tv?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+                var personTask = client.GetFromJsonAsync<TmdbPersonSearchResponse>($"search/person?query={encodedQuery}&include_adult=false&language=en-US&page={page}");
+
+                await Task.WhenAll(multiTask, movieTask, tvTask, personTask);
+
+                var response = await multiTask;
+                var movieResp = await movieTask;
+                var tvResp = await tvTask;
+                var personResp = await personTask;
+
+                return new PagedMediaResult
+                {
+                    Results = response?.Results != null ? MapTmdbResultsToMedia(response.Results) : new List<Media>(),
+                    People = personResp?.Results ?? new List<TmdbPersonSearchDto>(),
+                    CurrentPage = response?.Page ?? 1,
+                    TotalPages = response?.TotalPages ?? 1,
+                    TotalResults = response?.TotalResults ?? 0,
+                    TotalMovies = movieResp?.TotalResults ?? 0,
+                    TotalSeries = tvResp?.TotalResults ?? 0,
+                    TotalPeople = personResp?.TotalResults ?? 0
+                };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[TMDB Search Error]: {ex.Message}");
-                return new List<Media>();
+                Console.WriteLine($"[TMDB Multi Search Error]: {ex.Message}");
+                return new PagedMediaResult();
+            }
+        }
+
+        public async Task<PagedMediaResult> SearchMoviesPagedAsync(string query, int page = 1)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return new PagedMediaResult();
+
+            try
+            {
+                await EnsureGenresLoadedAsync();
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                var encodedQuery = Uri.EscapeDataString(query);
+
+                var movieTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/movie?query={encodedQuery}&include_adult=false&language=en-US&page={page}");
+                var tvTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/tv?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+                var personTask = client.GetFromJsonAsync<TmdbPersonSearchResponse>($"search/person?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+
+                await Task.WhenAll(movieTask, tvTask, personTask);
+
+                var movieResp = await movieTask;
+                var tvResp = await tvTask;
+                var personResp = await personTask;
+
+                return new PagedMediaResult
+                {
+                    Results = movieResp?.Results != null ? MapTmdbResultsToMedia(movieResp.Results, "movie") : new List<Media>(),
+                    People = new List<TmdbPersonSearchDto>(),
+                    CurrentPage = movieResp?.Page ?? 1,
+                    TotalPages = movieResp?.TotalPages ?? 1,
+                    TotalResults = movieResp?.TotalResults ?? 0,
+                    TotalMovies = movieResp?.TotalResults ?? 0,
+                    TotalSeries = tvResp?.TotalResults ?? 0,
+                    TotalPeople = personResp?.TotalResults ?? 0
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Movies Search Error]: {ex.Message}");
+                return new PagedMediaResult();
+            }
+        }
+
+        public async Task<PagedMediaResult> SearchTvPagedAsync(string query, int page = 1)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return new PagedMediaResult();
+
+            try
+            {
+                await EnsureGenresLoadedAsync();
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                var encodedQuery = Uri.EscapeDataString(query);
+
+                var tvTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/tv?query={encodedQuery}&include_adult=false&language=en-US&page={page}");
+                var movieTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/movie?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+                var personTask = client.GetFromJsonAsync<TmdbPersonSearchResponse>($"search/person?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+
+                await Task.WhenAll(tvTask, movieTask, personTask);
+
+                var tvResp = await tvTask;
+                var movieResp = await movieTask;
+                var personResp = await personTask;
+
+                return new PagedMediaResult
+                {
+                    Results = tvResp?.Results != null ? MapTmdbResultsToMedia(tvResp.Results, "tv") : new List<Media>(),
+                    People = new List<TmdbPersonSearchDto>(),
+                    CurrentPage = tvResp?.Page ?? 1,
+                    TotalPages = tvResp?.TotalPages ?? 1,
+                    TotalResults = tvResp?.TotalResults ?? 0,
+                    TotalMovies = movieResp?.TotalResults ?? 0,
+                    TotalSeries = tvResp?.TotalResults ?? 0,
+                    TotalPeople = personResp?.TotalResults ?? 0
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB TV Search Error]: {ex.Message}");
+                return new PagedMediaResult();
+            }
+        }
+
+        public async Task<PagedMediaResult> SearchPeoplePagedAsync(string query, int page = 1)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return new PagedMediaResult();
+
+            try
+            {
+                await EnsureGenresLoadedAsync();
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                var encodedQuery = Uri.EscapeDataString(query);
+
+                var personTask = client.GetFromJsonAsync<TmdbPersonSearchResponse>($"search/person?query={encodedQuery}&include_adult=false&language=en-US&page={page}");
+                var movieTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/movie?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+                var tvTask = client.GetFromJsonAsync<TmdbSearchResponse>($"search/tv?query={encodedQuery}&include_adult=false&language=en-US&page=1");
+
+                await Task.WhenAll(personTask, movieTask, tvTask);
+
+                var personResp = await personTask;
+                var movieResp = await movieTask;
+                var tvResp = await tvTask;
+
+                return new PagedMediaResult
+                {
+                    Results = new List<Media>(),
+                    People = personResp?.Results ?? new List<TmdbPersonSearchDto>(),
+                    CurrentPage = personResp?.Page ?? 1,
+                    TotalPages = personResp?.TotalPages ?? 1,
+                    TotalResults = personResp?.TotalResults ?? 0,
+                    TotalMovies = movieResp?.TotalResults ?? 0,
+                    TotalSeries = tvResp?.TotalResults ?? 0,
+                    TotalPeople = personResp?.TotalResults ?? 0
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Person Search Error]: {ex.Message}");
+                return new PagedMediaResult();
             }
         }
 
@@ -116,7 +255,8 @@ namespace MyosotisWeb.ServicesWeb
                 int releaseYear = ParseYear(dto.ReleaseDate);
                 string title = dto.Title ?? "Untitled";
 
-                var movie = new Movie(title, releaseYear, dto.Runtime, null);
+                int? runtime = dto.Runtime > 0 ? dto.Runtime : null;
+                var movie = new Movie(title, releaseYear, runtime, null);
                 movie.SetTmdbId(dto.Id);
 
                 PopulateFullMedia(movie, dto.Overview, dto.VoteAverage, dto.PosterPath,
@@ -143,7 +283,10 @@ namespace MyosotisWeb.ServicesWeb
 
                 int releaseYear = ParseYear(dto.FirstAirDate);
                 string title = dto.Name ?? "Untitled";
-                int avgRuntime = dto.EpisodeRunTime?.FirstOrDefault() ?? 0;
+                int? avgRuntime = dto.EpisodeRunTime?
+                .Where(runtime => runtime > 0)
+                .Select(runtime => (int?)runtime)
+                .FirstOrDefault();
 
                 var series = new Series(title, releaseYear, avgRuntime, dto.NumberOfSeasons, null);
                 series.SetTmdbId(dto.Id);
@@ -198,9 +341,11 @@ namespace MyosotisWeb.ServicesWeb
                     }
                     else if (media is Series seriesObj)
                     {
-                        int rawLength = response.EpisodeRunTime?.FirstOrDefault() ?? 0;
-                        int avgLength = rawLength > 0 ? rawLength : 45;
-                        seriesObj.UpdateRuntimeInfo(avgLength);
+                        int? avgLength = response.EpisodeRunTime?
+                            .FirstOrDefault(runtime => runtime > 0);
+
+                        if (avgLength.HasValue)
+                            seriesObj.UpdateRuntimeInfo(avgLength.Value);
 
                         await PopulateSeriesSeasonsAndEpisodesAsync(seriesObj, seriesObj.TmdbId.Value);
                     }
@@ -217,16 +362,34 @@ namespace MyosotisWeb.ServicesWeb
                         if (response.Credits.Cast != null)
                         {
                             media.Cast.Clear();
-                            foreach (var c in response.Credits.Cast.Take(5))
+                            foreach (var c in response.Credits.Cast.Take(24))
                             {
-                                media.AddCastMember(new Actor(c.Name, string.IsNullOrEmpty(c.Character) ? "Unknown" : c.Character));
+                                string? photoUrl = !string.IsNullOrEmpty(c.ProfilePath)
+                                    ? $"https://image.tmdb.org/t/p/w185{c.ProfilePath}"
+                                    : null;
+
+                                media.AddCastMember(new Actor(
+                                    fullName: c.Name,
+                                    roleName: string.IsNullOrEmpty(c.Character) ? "Unknown" : c.Character,
+                                    tmdbId: c.Id,
+                                    photoUrl: photoUrl
+                                ));
                             }
                         }
 
                         var directorDto = response.Credits.Crew?.FirstOrDefault(c => c.Job == "Director" || c.Job == "Executive Producer");
                         if (directorDto != null)
                         {
-                            media.SetDirector(new Director(directorDto.Name, "Classic"));
+                            string? photoUrl = !string.IsNullOrEmpty(directorDto.ProfilePath)
+                                ? $"https://image.tmdb.org/t/p/w185{directorDto.ProfilePath}"
+                                : null;
+
+                            media.SetDirector(new Director(
+                                fullName: directorDto.Name,
+                                signatureStyle: "Classic",
+                                tmdbId: directorDto.Id,
+                                photoUrl: photoUrl
+                            ));
                         }
                     }
                 }
@@ -306,7 +469,7 @@ namespace MyosotisWeb.ServicesWeb
                     {
                         foreach (var epDto in seasonDto.Episodes)
                         {
-                            int runtime = epDto.Runtime ?? series.AverageEpisodeLength;
+                            int runtime = epDto.Runtime ?? series.AverageEpisodeLength ?? 45;
                             if (runtime <= 0) runtime = 45;
 
                             DateTime? airDate = null;
@@ -400,15 +563,90 @@ namespace MyosotisWeb.ServicesWeb
             }
             return DateTime.Now.Year;
         }
+
+        public async Task<TmdbPersonDetailsDto?> GetPersonDetailsAsync(int personId)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                return await client.GetFromJsonAsync<TmdbPersonDetailsDto>($"person/{personId}?language=en-US");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Person Details Error]: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<TmdbCombinedCreditsDto?> GetPersonCombinedCreditsAsync(int personId)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+                return await client.GetFromJsonAsync<TmdbCombinedCreditsDto>($"person/{personId}/combined_credits?language=en-US");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Person Credits Error]: {ex.Message}");
+                return null;
+            }
+        }
+
     }
 
-    // ==========================================
-    // СКОРОЧЕНІ ТА ЗГРУПОВАНІ DTO-КЛАСИ
-    // ==========================================
-
-    public class TmdbSearchResponse { [JsonPropertyName("results")] public List<TmdbItemDto>? Results { get; set; } }
     public class TmdbGenreListResponseDto { [JsonPropertyName("genres")] public List<TmdbGenreDto>? Genres { get; set; } }
     public class TmdbReviewsResponseDto { [JsonPropertyName("results")] public List<TmdbReviewItemDto>? Results { get; set; } }
+
+    public class TmdbSearchResponse
+    {
+        [JsonPropertyName("page")] public int Page { get; set; }
+        [JsonPropertyName("results")] public List<TmdbItemDto>? Results { get; set; }
+        [JsonPropertyName("total_pages")] public int TotalPages { get; set; }
+        [JsonPropertyName("total_results")] public int TotalResults { get; set; }
+    }
+
+    public class TmdbPersonSearchResponse
+    {
+        [JsonPropertyName("page")] public int Page { get; set; }
+        [JsonPropertyName("results")] public List<TmdbPersonSearchDto>? Results { get; set; }
+        [JsonPropertyName("total_pages")] public int TotalPages { get; set; }
+        [JsonPropertyName("total_results")] public int TotalResults { get; set; }
+    }
+
+    public class TmdbPersonSearchDto
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("profile_path")] public string? ProfilePath { get; set; }
+        [JsonPropertyName("known_for_department")] public string? KnownForDepartment { get; set; }
+        [JsonPropertyName("known_for")] public List<TmdbItemDto>? KnownFor { get; set; }
+
+        public string ProfileUrl => !string.IsNullOrEmpty(ProfilePath)
+            ? $"https://image.tmdb.org/t/p/w500{ProfilePath}"
+            : string.Empty;
+
+        public string KnownForTitles
+        {
+            get
+            {
+                if (KnownFor == null || !KnownFor.Any()) return string.Empty;
+                var titles = KnownFor.Select(k => k.Title ?? k.Name).Where(t => !string.IsNullOrWhiteSpace(t)).Take(3);
+                return string.Join(", ", titles);
+            }
+        }
+    }
+
+    public class PagedMediaResult
+    {
+        public List<Media> Results { get; set; } = new();
+        public List<TmdbPersonSearchDto> People { get; set; } = new();
+        public int CurrentPage { get; set; } = 1;
+        public int TotalPages { get; set; } = 1;
+        public int TotalResults { get; set; } = 0;
+        public int TotalMovies { get; set; } = 0;
+        public int TotalSeries { get; set; } = 0;
+        public int TotalPeople { get; set; } = 0;
+    }
 
     public class TmdbItemDto
     {
@@ -433,7 +671,7 @@ namespace MyosotisWeb.ServicesWeb
         [JsonPropertyName("poster_path")] public string? PosterPath { get; set; }
         [JsonPropertyName("release_date")] public string? ReleaseDate { get; set; }
         [JsonPropertyName("vote_average")] public double VoteAverage { get; set; }
-        [JsonPropertyName("runtime")] public int Runtime { get; set; }
+        [JsonPropertyName("runtime")] public int? Runtime { get; set; }
         [JsonPropertyName("adult")] public bool Adult { get; set; }
         [JsonPropertyName("status")] public string? Status { get; set; }
         [JsonPropertyName("genres")] public List<TmdbGenreDto>? Genres { get; set; }
@@ -514,13 +752,74 @@ namespace MyosotisWeb.ServicesWeb
 
     public class TmdbCast
     {
+        [JsonPropertyName("id")] public int Id { get; set; }
         [JsonPropertyName("name")] public string Name { get; set; } = "";
         [JsonPropertyName("character")] public string Character { get; set; } = "";
+        [JsonPropertyName("profile_path")] public string? ProfilePath { get; set; }
     }
 
     public class TmdbCrew
     {
+        [JsonPropertyName("id")] public int Id { get; set; }
         [JsonPropertyName("name")] public string Name { get; set; } = "";
         [JsonPropertyName("job")] public string Job { get; set; } = "";
+        [JsonPropertyName("profile_path")] public string? ProfilePath { get; set; }
+    }
+
+    public class TmdbPersonDetailsDto
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("biography")] public string? Biography { get; set; }
+        [JsonPropertyName("birthday")] public string? Birthday { get; set; }
+        [JsonPropertyName("deathday")] public string? Deathday { get; set; }
+        [JsonPropertyName("gender")] public int Gender { get; set; }
+        [JsonPropertyName("place_of_birth")] public string? PlaceOfBirth { get; set; }
+        [JsonPropertyName("profile_path")] public string? ProfilePath { get; set; }
+        [JsonPropertyName("known_for_department")] public string? KnownForDepartment { get; set; }
+        [JsonPropertyName("imdb_id")] public string? ImdbId { get; set; }
+
+        public string ProfileUrl => !string.IsNullOrEmpty(ProfilePath)
+            ? $"https://image.tmdb.org/t/p/w500{ProfilePath}"
+            : string.Empty;
+    }
+
+    public class TmdbCombinedCreditsDto
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("cast")] public List<TmdbCreditItemDto> Cast { get; set; } = new();
+        [JsonPropertyName("crew")] public List<TmdbCreditItemDto> Crew { get; set; } = new();
+    }
+
+    public class TmdbCreditItemDto
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("media_type")] public string MediaType { get; set; } = "movie";
+        [JsonPropertyName("title")] public string? Title { get; set; }
+        [JsonPropertyName("name")] public string? Name { get; set; }
+        [JsonPropertyName("character")] public string? Character { get; set; }
+        [JsonPropertyName("job")] public string? Job { get; set; }
+        [JsonPropertyName("department")] public string? Department { get; set; }
+        [JsonPropertyName("poster_path")] public string? PosterPath { get; set; }
+        [JsonPropertyName("release_date")] public string? ReleaseDate { get; set; }
+        [JsonPropertyName("first_air_date")] public string? FirstAirDate { get; set; }
+        [JsonPropertyName("vote_average")] public double? VoteAverage { get; set; }
+
+        public string DisplayTitle => !string.IsNullOrEmpty(Title) ? Title : (Name ?? "Untitled");
+
+        public string? DisplayYear
+        {
+            get
+            {
+                var date = !string.IsNullOrEmpty(ReleaseDate) ? ReleaseDate : FirstAirDate;
+                return !string.IsNullOrEmpty(date) && date.Length >= 4 ? date.Substring(0, 4) : null;
+            }
+        }
+
+        public string PosterUrl => !string.IsNullOrEmpty(PosterPath)
+            ? $"https://image.tmdb.org/t/p/w342{PosterPath}"
+            : string.Empty;
+
+        public string IconName => MediaType == "tv" ? "live_tv" : "movie";
     }
 }
