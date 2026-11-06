@@ -483,21 +483,94 @@
         NextPick();
     }
 
+    
     private List<Media> SuggestedMedia
     {
         get
         {
             var result = new List<Media>();
-            for (int i = 0; i < trendingList.Count && result.Count < 2; i++)
+            var recommender = new MediaRecommendation();
+
+            var userLibrary = new List<Media>();
+
+            void AddUnique(Media? item)
             {
-                if (trendingList[i] != FeaturedMedia)
+                if (item == null) return;
+
+                if (!userLibrary.Any(x => x.Id == item.Id))
+                    userLibrary.Add(item);
+            }
+
+            if (Me.Watchlists != null)
+            {
+                foreach (var watchlist in Me.Watchlists)
                 {
-                    result.Add(trendingList[i]);
+                    if (watchlist.Entries == null) continue;
+
+                    foreach (var entry in watchlist.Entries)
+                        AddUnique(entry.Item);
                 }
             }
+
+            if (Me.RecentlyViewed != null)
+            {
+                foreach (var item in Me.RecentlyViewed)
+                    AddUnique(item);
+            }
+
+            if (Me.WatchHistory != null)
+            {
+                foreach (var entry in Me.WatchHistory)
+                    AddUnique(entry.WatchedItem);
+            }
+
+            if (userLibrary.Count > 1 && Me.RecentlyViewed != null)
+            {
+                foreach (var viewed in Me.RecentlyViewed)
+                {
+                    var similar = recommender.FindSimilar(userLibrary, viewed, 2);
+
+                    foreach (var item in similar)
+                    {
+                        if (!result.Any(x => x.Id == item.Id))
+                            result.Add(item);
+
+                        if (result.Count >= 2) break;
+                    }
+
+                    if (result.Count >= 2) break;
+                }
+            }
+
+
+            if (result.Count < 2 && userLibrary.Count > 0)
+            {
+                var topRated = recommender.GetTopRated(userLibrary, userLibrary.Count);
+
+                foreach (var item in topRated)
+                {
+                    if (!result.Any(x => x.Id == item.Id))
+                        result.Add(item);
+
+                    if (result.Count >= 2) break;
+                }
+            }
+
+            if (result.Count < 2 && userLibrary.Count == 0)
+            {
+                foreach (var item in trendingList)
+                {
+                    if (item != FeaturedMedia && !result.Any(x => x.Id == item.Id))
+                        result.Add(item);
+
+                    if (result.Count >= 2) break;
+                }
+            }
+
             return result;
         }
     }
+
 
     private List<CaptureEntry> RecentCaptures
     {

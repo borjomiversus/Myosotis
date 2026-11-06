@@ -105,9 +105,23 @@ public abstract class Media : IComparable<Media>
             Genres = new List<string>();
         }
 
-        if (!string.IsNullOrWhiteSpace(genre) && !Genres.Contains(genre, StringComparer.OrdinalIgnoreCase))
+        string trimmed = genre?.Trim() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(trimmed))
         {
-            Genres.Add(genre);
+            bool exists = false;
+            for (int i = 0; i < Genres.Count; i++)
+            {
+                if (string.Equals(Genres[i]?.Trim(), trimmed, StringComparison.OrdinalIgnoreCase))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists)
+            {
+                Genres.Add(trimmed);
+            }
         }
     }
 
@@ -166,15 +180,25 @@ public abstract class Media : IComparable<Media>
 
     public int CountSharedGenres(Media other)
     {
-        if (other == null)
+        if (other == null || this.Genres == null || other.Genres == null)
             return 0;
 
         int sharedCount = 0;
 
-        foreach (var genre in Genres)
+        for (int i = 0; i < this.Genres.Count; i++)
         {
-            if (other.Genres.Contains(genre))
-                sharedCount++;
+            string g1 = this.Genres[i]?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(g1)) continue;
+
+            for (int j = 0; j < other.Genres.Count; j++)
+            {
+                string g2 = other.Genres[j]?.Trim() ?? string.Empty;
+                if (string.Equals(g1, g2, StringComparison.OrdinalIgnoreCase))
+                {
+                    sharedCount++;
+                    break;
+                }
+            }
         }
 
         return sharedCount;
