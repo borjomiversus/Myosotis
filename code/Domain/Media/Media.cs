@@ -18,7 +18,7 @@ public abstract class Media : IComparable<Media>
     public List<TmdbReview> TmdbReviews { get; private set; } = new List<TmdbReview>();
     public int? TmdbId { get; private set; }    
     public VibeRating? Vibe { get; private set; }
-    public Director? MediaDirector { get; private set; }
+    public List<Director> Directors { get; private set; } = new();
     public List<Actor> Cast { get; private set; }
     public List<Review> Reviews { get; private set; }
     public List<Song> Soundtracks { get; private set; }
@@ -35,8 +35,7 @@ public abstract class Media : IComparable<Media>
         Title = title;
         ReleaseYear = releaseYear;
 
-        MediaDirector = director;
-
+        Directors = new List<Director>();
         Cast = new List<Actor>();
         Reviews = new List<Review>();
         Soundtracks = new List<Song>();
@@ -136,9 +135,12 @@ public abstract class Media : IComparable<Media>
         Reviews.Add(review);
     }
 
-    public void SetDirector(Director director)
+    public void AddDirector(Director director)
     {
-        MediaDirector = director;
+        if (director != null && !Directors.Any(d => d.TmdbId == director.TmdbId))
+        {
+            Directors.Add(director);
+        }
     }
 
     public bool IsAgeAppropriate(int viewerAge)

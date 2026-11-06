@@ -211,9 +211,11 @@
                                             }
                                         </div>
 
-                                        @if (m.MediaDirector != null)
+                                        @if (m.Directors != null && m.Directors.Count > 0)
                                         {
-                                            <span class="font-body-md text-body-md text-on-surface-variant italic">Dir. @m.MediaDirector.FullName</span>
+                                            <span class="font-body-md text-body-md text-on-surface-variant italic">
+                                                Dir. @string.Join(", ", m.Directors.Select(d => d.FullName))
+                                            </span>
                                         }
                                     </div>
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
@@ -377,19 +378,62 @@ namespace MyosotisWeb.ServicesWeb
                             }
                         }
 
-                        var directorDto = response.Credits.Crew?.FirstOrDefault(c => c.Job == "Director" || c.Job == "Executive Producer");
-                        if (directorDto != null)
-                        {
-                            string? photoUrl = !string.IsNullOrEmpty(directorDto.ProfilePath)
-                                ? $"https://image.tmdb.org/t/p/w185{directorDto.ProfilePath}"
-                                : null;
+                        media.Directors.Clear();
+                        var directorsList = new List<Director>();
 
-                            media.SetDirector(new Director(
-                                fullName: directorDto.Name,
-                                signatureStyle: "Classic",
-                                tmdbId: directorDto.Id,
-                                photoUrl: photoUrl
-                            ));
+                        if (response.Credits?.Crew != null)
+                        {
+                            var keyCrew = response.Credits.Crew.Where(c =>
+                                c.Job == "Director" ||
+                                c.Job == "Series Director" ||
+                                c.Job == "Showrunner" ||
+                                c.Job == "Screenplay" ||
+                                c.Job == "Writer" ||
+                                c.Job == "Producer" ||
+                                c.Job == "Executive Producer" ||
+                                c.Job == "Director of Photography" ||
+                                c.Job == "Original Music Composer" ||
+                                c.Department == "Directing" ||
+                                c.Department == "Writing" ||
+                                c.Department == "Production"
+                            ).Take(24); 
+                            foreach (var person in keyCrew)
+                            {
+                                string? photoUrl = !string.IsNullOrEmpty(person.ProfilePath)
+                                    ? $"https://image.tmdb.org/t/p/w185{person.ProfilePath}"
+                                    : null;
+
+                                string jobRole = !string.IsNullOrEmpty(person.Job) ? person.Job : person.Department;
+
+                                directorsList.Add(new Director(
+                                    fullName: person.Name,
+                                    signatureStyle: jobRole,
+                                    tmdbId: person.Id,
+                                    photoUrl: photoUrl
+                                ));
+                            }
+                        }
+
+                        if (response.CreatedBy != null)
+                        {
+                            foreach (var creator in response.CreatedBy)
+                            {
+                                string? photoUrl = !string.IsNullOrEmpty(creator.ProfilePath)
+                                    ? $"https://image.tmdb.org/t/p/w185{creator.ProfilePath}"
+                                    : null;
+
+                                directorsList.Add(new Director(
+                                    fullName: creator.Name,
+                                    signatureStyle: "Creator",
+                                    tmdbId: creator.Id,
+                                    photoUrl: photoUrl
+                                ));
+                            }
+                        }
+
+                        foreach (var dir in directorsList.DistinctBy(d => d.FullName))
+                        {
+                            media.AddDirector(dir);
                         }
                     }
                 }
@@ -696,6 +740,14 @@ namespace MyosotisWeb.ServicesWeb
         [JsonPropertyName("genres")] public List<TmdbGenreDto>? Genres { get; set; }
         [JsonPropertyName("production_companies")] public List<TmdbCompanyDto>? ProductionCompanies { get; set; }
         [JsonPropertyName("production_countries")] public List<TmdbCountryDto>? ProductionCountries { get; set; }
+        [JsonPropertyName("created_by")] public List<TmdbCreatorDto>? CreatedBy { get; set; }
+    }
+
+    public class TmdbCreatorDto
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+        [JsonPropertyName("profile_path")] public string? ProfilePath { get; set; }
     }
 
     public class TmdbSeasonBriefDto
@@ -742,6 +794,7 @@ namespace MyosotisWeb.ServicesWeb
         [JsonPropertyName("production_countries")] public List<TmdbCountryDto>? ProductionCountries { get; set; }
         [JsonPropertyName("production_companies")] public List<TmdbCompanyDto>? ProductionCompanies { get; set; }
         [JsonPropertyName("credits")] public TmdbCredits? Credits { get; set; }
+        [JsonPropertyName("created_by")] public List<TmdbCreatorDto>? CreatedBy { get; set; }
     }
 
     public class TmdbCredits
@@ -763,6 +816,7 @@ namespace MyosotisWeb.ServicesWeb
         [JsonPropertyName("id")] public int Id { get; set; }
         [JsonPropertyName("name")] public string Name { get; set; } = "";
         [JsonPropertyName("job")] public string Job { get; set; } = "";
+        [JsonPropertyName("department")] public string Department { get; set; } = "";
         [JsonPropertyName("profile_path")] public string? ProfilePath { get; set; }
     }
 

@@ -287,13 +287,15 @@ public class User
         {
             if (h.WatchDate.Year != year || h.WatchDate.Month != month) continue;
 
-            var director = h.WatchedItem.MediaDirector;
-            if (director == null) continue;
+            if (h.WatchedItem.Directors == null) continue;
 
-            if (counts.ContainsKey(director.FullName))
-                counts[director.FullName]++;
-            else
-                counts[director.FullName] = 1;
+            foreach (var director in h.WatchedItem.Directors)
+            {
+                if (counts.ContainsKey(director.FullName))
+                    counts[director.FullName]++;
+                else
+                    counts[director.FullName] = 1;
+            }
         }
 
         string? best = null;

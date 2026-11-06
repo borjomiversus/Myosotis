@@ -100,7 +100,10 @@ else
                                 <span class="opacity-40">·</span>
                                 <div class="flex items-center gap-1.5 text-primary font-bold">
                                     <span class="font-label-caps text-[10px] bg-primary/20 border border-primary/30 px-1.5 py-0.5 rounded text-primary">TMDB</span>
-                                    <span>★ @MediaItem.TmdbRating.Value.ToString("0.0", En)</span>
+                                    <div class="flex items-center gap-1 text-primary">
+                                        <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                        <span>@MediaItem.TmdbRating.Value.ToString("0.0", En)</span>
+                                    </div>
                                 </div>
                             }
                         </div>
@@ -178,14 +181,12 @@ else
                                 @if (MediaItem.Cast != null && MediaItem.Cast.Count > 0)
                                 {
                                     <div class="flex flex-col gap-3 pt-2">
-                                        <!-- Сітка карток: у згорнутому стані беремо лише перші 6 акторів -->
                                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                                             @foreach (var actor in (isCastExpanded ? MediaItem.Cast : MediaItem.Cast.Take(6)))
                                             {
                                                 <div @onclick="() => NavigateToPerson(actor.TmdbId)"
                                                      class="cursor-pointer group flex flex-col items-center bg-surface-container-low/60 hover:bg-surface-container-high p-3 rounded-xl border border-secondary/15 hover:border-primary/40 transition-all duration-300">
 
-                                                    <!-- Аватарка -->
                                                     <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden bg-surface-container-highest mb-2 border border-secondary/20 group-hover:border-primary/50 transition-colors shrink-0 shadow-sm">
                                                         @if (!string.IsNullOrEmpty(actor.PhotoUrl))
                                                         {
@@ -198,21 +199,16 @@ else
                                                             </div>
                                                         }
                                                     </div>
-
-                                                    <!-- Ім'я -->
                                                     <span class="font-title-md text-[13px] text-on-surface text-center font-medium group-hover:text-primary transition-colors line-clamp-1 w-full" title="@actor.FullName">
                                                         @actor.FullName
                                                     </span>
 
-                                                    <!-- Чітка та контрастна роль -->
                                                     <span class="font-body-md text-[11px] text-primary/90 text-center italic line-clamp-1 w-full mt-0.5" title="@actor.RoleName">
                                                         as <span class="text-white/90 not-italic font-medium">@actor.RoleName</span>
                                                     </span>
                                                 </div>
                                             }
                                         </div>
-
-                                        <!-- Кнопка Show All / Show Less -->
                                         @if (MediaItem.Cast.Count > 6)
                                         {
                                             <div class="flex justify-end pt-1">
@@ -233,26 +229,55 @@ else
 
                             @if (activeTab == "crew")
                             {
-                                <div class="flex flex-col gap-2.5 text-[13px] font-body-md pt-2">
-                                    <div class="flex items-center gap-4">
-                                        <span class="text-secondary/70 font-label-caps text-[11px] tracking-wider uppercase w-24 shrink-0">Director</span>
-                                        @if (MediaItem.MediaDirector != null)
+                            @if (MediaItem.Directors != null && MediaItem.Directors.Count > 0)
+                            {
+                                <div class="flex flex-col gap-3 pt-2">
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                                        @foreach (var director in (isCrewExpanded ? MediaItem.Directors : MediaItem.Directors.Take(6)))
                                         {
-                                            <button @onclick="() => NavigateToPerson(MediaItem.MediaDirector.TmdbId)"
-                                                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface hover:text-primary font-medium border border-secondary/15 hover:border-primary/40 transition-all">
-                                                @if (!string.IsNullOrEmpty(MediaItem.MediaDirector.PhotoUrl))
-                                                {
-                                                    <img src="@MediaItem.MediaDirector.PhotoUrl" alt="@MediaItem.MediaDirector.FullName" class="w-6 h-6 rounded-full object-cover" />
-                                                }
-                                                <span>@MediaItem.MediaDirector.FullName</span>
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <span class="px-3 py-1 rounded-lg bg-surface-container-high text-on-surface-variant font-medium border border-secondary/10">Unknown</span>
+                                            <div @onclick="() => NavigateToPerson(director.TmdbId)"
+                                                 class="cursor-pointer group flex flex-col items-center bg-surface-container-low/60 hover:bg-surface-container-high p-3 rounded-xl border border-secondary/15 hover:border-primary/40 transition-all duration-300">
+
+                                                <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden bg-surface-container-highest mb-2 border border-secondary/20 group-hover:border-primary/50 transition-colors shrink-0 shadow-sm">
+                                                    @if (!string.IsNullOrEmpty(director.PhotoUrl))
+                                                    {
+                                                        <img src="@director.PhotoUrl" alt="@director.FullName" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="w-full h-full flex items-center justify-center text-secondary/50">
+                                                            <span class="material-symbols-outlined text-[28px]">person</span>
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                                <span class="font-title-md text-[13px] text-on-surface text-center font-medium group-hover:text-primary transition-colors line-clamp-1 w-full" title="@director.FullName">
+                                                    @director.FullName
+                                                </span>
+
+                                                <span class="font-body-md text-[11px] text-primary/90 text-center line-clamp-1 w-full mt-0.5" title="@director.SignatureStyle">
+                                                    @director.SignatureStyle
+                                                </span>
+                                            </div>
                                         }
                                     </div>
+
+                                    @if (MediaItem.Directors.Count > 6)
+                                    {
+                                        <div class="flex justify-end pt-1">
+                                            <button @onclick="() => isCrewExpanded = !isCrewExpanded"
+                                                    class="text-primary hover:text-primary/80 font-title-md text-[12px] flex items-center gap-1 transition-colors">
+                                                <span>@(isCrewExpanded ? "Show Less" : $"Show All Crew ({MediaItem.Directors.Count})")</span>
+                                                <span class="material-symbols-outlined text-[16px]">@(isCrewExpanded ? "expand_less" : "expand_more")</span>
+                                            </button>
+                                        </div>
+                                    }
                                 </div>
+                            }
+                            else
+                            {
+                                <p class="text-secondary/70 text-[13px] italic pt-2">No crew information available.</p>
+                            }
                             }
 
                             @if (activeTab == "details")
@@ -833,7 +858,8 @@ else
     private int inputEpisode = 1;
 
     private string activeTab = "cast";
-    private bool isCastExpanded = false;    
+    private bool isCastExpanded = false; 
+    private bool isCrewExpanded = false;
 
     private void SetActiveTab(string tab)
     {
@@ -848,6 +874,7 @@ else
         reviewPageIndex = 0;
         expandedReviews.Clear();
         isCastExpanded = false;
+        isCrewExpanded = false;
         MediaItem = DataService.GetById(Id);
 
         if (MediaItem == null) return;

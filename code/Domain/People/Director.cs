@@ -5,7 +5,7 @@ public class Director : Person
     public string SignatureStyle { get; private set; }
     public List<string> DirectedWorks { get; private set; }
 
-    public Director(string fullName, string signatureStyle, int? birthYear = null, int? tmdbId = null, string? photoUrl = null) 
+    public Director(string fullName, string signatureStyle = "Unknown", int? birthYear = null, int? tmdbId = null, string? photoUrl = null) 
         : base(fullName, birthYear, tmdbId, photoUrl)
     {
         SignatureStyle = signatureStyle;
