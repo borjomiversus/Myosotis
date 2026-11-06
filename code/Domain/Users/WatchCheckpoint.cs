@@ -70,8 +70,8 @@ public class WatchCheckpoint
 
         int totalMinutes = PausedMedia switch
         {
-            Movie movie => movie.DurationMinutes,
-            Series series => series.AverageEpisodeLength,
+            Movie movie => movie.DurationMinutes ?? 0,
+            Series series => series.AverageEpisodeLength ?? 0,
             _ => PausedMedia.CalculateTimeDebt()
         };
 

@@ -47,12 +47,18 @@ public class MediaRecommendation
 
         foreach (var media in library)
         {
-            int duration = media switch
+            int? duration = media switch
             {
                 Movie movie => movie.DurationMinutes,
                 Series series => series.AverageEpisodeLength,
                 _ => media.CalculateTimeDebt()
             };
+
+            if (!duration.HasValue)
+                continue;
+
+            if (duration.Value > criteria.MaxMinutes)
+                continue;
 
             if (duration > criteria.MaxMinutes)
                 continue;
