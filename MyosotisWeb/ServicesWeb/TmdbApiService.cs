@@ -476,6 +476,8 @@ namespace MyosotisWeb.ServicesWeb
                         }
                     }
                 }
+
+                await FetchAndApplyKeywordsAsync(media);
             }
             catch (Exception ex)
             {
@@ -633,6 +635,49 @@ namespace MyosotisWeb.ServicesWeb
             {
                 Console.WriteLine($"[TMDB Person Credits Error]: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task FetchAndApplyKeywordsAsync(Media media)
+        {
+            if (!media.TmdbId.HasValue) return;
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+
+                if (media is Movie)
+                {
+                    var response = await client.GetFromJsonAsync<TmdbMovieKeywordsResponseDto>($"movie/{media.TmdbId}/keywords");
+                    if (response?.Keywords != null)
+                    {
+                        foreach (var kw in response.Keywords)
+                        {
+                            if (!string.IsNullOrWhiteSpace(kw.Name))
+                            {
+                                media.AddTag(kw.Name);
+                            }
+                        }
+                    }
+                }
+                else if (media is Series)
+                {
+                    var response = await client.GetFromJsonAsync<TmdbTvKeywordsResponseDto>($"tv/{media.TmdbId}/keywords");
+                    if (response?.Results != null)
+                    {
+                        foreach (var kw in response.Results)
+                        {
+                            if (!string.IsNullOrWhiteSpace(kw.Name))
+                            {
+                                media.AddTag(kw.Name);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Keywords Fetch Error]: {ex.Message}");
             }
         }
 
@@ -875,5 +920,26 @@ namespace MyosotisWeb.ServicesWeb
             : string.Empty;
 
         public string IconName => MediaType == "tv" ? "live_tv" : "movie";
+    }
+
+    public class TmdbMovieKeywordsResponseDto
+    {
+        [JsonPropertyName("keywords")]
+        public List<TmdbKeywordItemDto>? Keywords { get; set; }
+    }
+
+    public class TmdbTvKeywordsResponseDto
+    {
+        [JsonPropertyName("results")]
+        public List<TmdbKeywordItemDto>? Results { get; set; }
+    }
+
+    public class TmdbKeywordItemDto
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
     }
 }
