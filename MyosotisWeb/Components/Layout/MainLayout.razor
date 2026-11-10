@@ -45,10 +45,8 @@
 
     <div class="pl-[240px]">
 
-        <!-- ШАПКА -->
         <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-secondary/30 z-40 flex items-center justify-between px-margin">
             
-            <!-- Пошук у вигляді плашки -->
             <div class="flex items-center gap-space-sm w-80 bg-surface-container-low px-space-md py-space-xs rounded-xl border border-secondary/30 focus-within:border-primary focus-within:bg-surface-container transition-all shadow-sm">
                 <span class="material-symbols-outlined text-[18px] text-secondary">search</span>
                 <input @bind="searchText"
@@ -60,7 +58,6 @@
 
         </header>
 
-        <!-- СТОРІНКИ -->
         <main class="relative pt-16 bg-surface min-h-screen">
             @Body
         </main>
@@ -70,6 +67,7 @@
 @code {
     private readonly (string Href, string Icon, string Label)[] navItems =
     {
+        ("/search", "search", "Search"),
         ("/", "dashboard", "Overview"),
         ("/watchlists", "bookmark", "Watchlists"),
         ("/captures", "format_quote", "Captures"),
