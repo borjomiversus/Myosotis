@@ -895,6 +895,35 @@ namespace MyosotisWeb.ServicesWeb
             }
         }
 
+        public async Task<List<Media>> GetSimilarMediaAsync(Media media, int page = 1)
+        {
+            if (!media.TmdbId.HasValue) return new List<Media>();
+
+            try
+            {
+                await EnsureGenresLoadedAsync();
+                var client = _httpClientFactory.CreateClient("TmdbClient");
+
+                string endpoint = media is Movie
+                    ? $"movie/{media.TmdbId.Value}/similar?language=en-US&page={page}"
+                    : $"tv/{media.TmdbId.Value}/similar?language=en-US&page={page}";
+
+                var response = await client.GetFromJsonAsync<TmdbSearchResponse>(endpoint);
+
+                if (response?.Results != null && response.Results.Count > 0)
+                {
+                    string fallbackType = media is Movie ? "movie" : "tv";
+                    return MapTmdbResultsToMedia(response.Results, fallbackType);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TMDB Similar Fetch Error]: {ex.Message}");
+            }
+
+            return new List<Media>();
+        }
+
     }
 
     public class TmdbGenreListResponseDto { [JsonPropertyName("genres")] public List<TmdbGenreDto>? Genres { get; set; } }
