@@ -44,9 +44,6 @@ else
                                 </div>
                             }
                             <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-transparent"></div>
-                            <div class="absolute top-3 left-3 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-secondary/20">
-                                <span class="font-label-caps text-[10px] text-primary tracking-widest uppercase">ID: #@MediaItem.Id.ToString().Substring(0, 8)</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -514,71 +511,99 @@ else
                     <div class="flex items-center justify-between mb-4">
                         <span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">MY RATING</span>
                         <div class="flex items-baseline gap-1">
-                            <span class="font-serif text-3xl md:text-4xl text-primary font-normal">
-                                @CurrentVibeAverage.ToString("0.0", En)
-                            </span>
-                            <span class="font-label-sm text-label-sm text-on-surface-variant">/10</span>
+                            @if (CurrentVibeAverage > 0)
+                            {
+                                <span class="font-serif text-3xl md:text-4xl text-primary font-normal">
+                                    @CurrentVibeAverage.ToString("0.0", En)
+                                </span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">/10</span>
+                            }
+                            else
+                            {
+                                <span class="font-serif text-3xl md:text-4xl text-on-surface-variant/40 font-normal">
+                                    —
+                                </span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant/40">/10</span>
+                            }
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-3">
+                        <!-- Characters -->
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between font-label-sm text-label-sm">
                                 <span class="text-on-surface font-medium">Characters</span>
-                                <span class="text-on-surface font-bold">@vibeCharacters / 10</span>
+                                <span class="@(vibeCharacters > 0 ? "text-on-surface font-bold" : "text-on-surface-variant/40 font-medium")">
+                                    @(vibeCharacters > 0 ? $"{vibeCharacters} / 10" : "— / 10")
+                                </span>
                             </div>
-                            <input type="range" min="1" max="10" @bind="vibeCharacters" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #84DCC6 @(vibeCharacters * 10)%, rgba(92, 128, 188, 0.2) @(vibeCharacters * 10)%);"
+                            <input type="range" min="0" max="10" @bind="vibeCharacters" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                   style="background: linear-gradient(90deg, #84DCC6 @(vibeCharacters * 10)%, rgba(92, 128, 188, 0.15) @(vibeCharacters * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                         </div>
 
+                        <!-- Plot -->
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between font-label-sm text-label-sm">
                                 <span class="text-on-surface font-medium">Plot</span>
-                                <span class="text-on-surface font-bold">@vibePlot / 10</span>
+                                <span class="@(vibePlot > 0 ? "text-on-surface font-bold" : "text-on-surface-variant/40 font-medium")">
+                                    @(vibePlot > 0 ? $"{vibePlot} / 10" : "— / 10")
+                                </span>
                             </div>
-                            <input type="range" min="1" max="10" @bind="vibePlot" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #84DCC6 @(vibePlot * 10)%, rgba(92, 128, 188, 0.2) @(vibePlot * 10)%);"
+                            <input type="range" min="0" max="10" @bind="vibePlot" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                   style="background: linear-gradient(90deg, #84DCC6 @(vibePlot * 10)%, rgba(92, 128, 188, 0.15) @(vibePlot * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                         </div>
 
+                        <!-- Visuals -->
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between font-label-sm text-label-sm">
                                 <span class="text-on-surface font-medium">Visuals</span>
-                                <span class="text-on-surface font-bold">@vibeVisuals / 10</span>
+                                <span class="@(vibeVisuals > 0 ? "text-on-surface font-bold" : "text-on-surface-variant/40 font-medium")">
+                                    @(vibeVisuals > 0 ? $"{vibeVisuals} / 10" : "— / 10")
+                                </span>
                             </div>
-                            <input type="range" min="1" max="10" @bind="vibeVisuals" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #84DCC6 @(vibeVisuals * 10)%, rgba(92, 128, 188, 0.2) @(vibeVisuals * 10)%);"
+                            <input type="range" min="0" max="10" @bind="vibeVisuals" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                   style="background: linear-gradient(90deg, #84DCC6 @(vibeVisuals * 10)%, rgba(92, 128, 188, 0.15) @(vibeVisuals * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary" />
                         </div>
 
+                        <!-- Pacing -->
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between font-label-sm text-label-sm">
                                 <span class="text-on-surface font-medium">Pacing</span>
-                                <span class="text-on-surface font-bold">@vibePacing / 10</span>
+                                <span class="@(vibePacing > 0 ? "text-on-surface font-bold" : "text-on-surface-variant/40 font-medium")">
+                                    @(vibePacing > 0 ? $"{vibePacing} / 10" : "— / 10")
+                                </span>
                             </div>
-                            <input type="range" min="1" max="10" @bind="vibePacing" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #5C80BC @(vibePacing * 10)%, rgba(92, 128, 188, 0.2) @(vibePacing * 10)%);"
+                            <input type="range" min="0" max="10" @bind="vibePacing" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                   style="background: linear-gradient(90deg, #5C80BC @(vibePacing * 10)%, rgba(92, 128, 188, 0.15) @(vibePacing * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                         </div>
 
+                        <!-- Vibe -->
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between font-label-sm text-label-sm">
                                 <span class="text-on-surface font-medium">Vibe</span>
-                                <span class="text-on-surface font-bold">@vibeVibe / 10</span>
+                                <span class="@(vibeVibe > 0 ? "text-on-surface font-bold" : "text-on-surface-variant/40 font-medium")">
+                                    @(vibeVibe > 0 ? $"{vibeVibe} / 10" : "— / 10")
+                                </span>
                             </div>
-                            <input type="range" min="1" max="10" @bind="vibeVibe" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #5C80BC @(vibeVibe * 10)%, rgba(92, 128, 188, 0.2) @(vibeVibe * 10)%);"
+                            <input type="range" min="0" max="10" @bind="vibeVibe" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                   style="background: linear-gradient(90deg, #5C80BC @(vibeVibe * 10)%, rgba(92, 128, 188, 0.15) @(vibeVibe * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                         </div>
 
+                        <!-- Soundtrack -->
                         <div class="flex flex-col gap-1">
                             <div class="flex justify-between font-label-sm text-label-sm">
                                 <span class="text-on-surface font-medium">Soundtrack</span>
-                                <span class="text-on-surface font-bold">@vibeSoundtrack / 10</span>
+                                <span class="@(vibeSoundtrack > 0 ? "text-on-surface font-bold" : "text-on-surface-variant/40 font-medium")">
+                                    @(vibeSoundtrack > 0 ? $"{vibeSoundtrack} / 10" : "— / 10")
+                                </span>
                             </div>
-                            <input type="range" min="1" max="10" @bind="vibeSoundtrack" @bind:event="oninput" @bind:after="SaveVibeRating"
-                                   style="background: linear-gradient(90deg, #5C80BC @(vibeSoundtrack * 10)%, rgba(92, 128, 188, 0.2) @(vibeSoundtrack * 10)%);"
+                            <input type="range" min="0" max="10" @bind="vibeSoundtrack" @bind:event="oninput" @bind:after="SaveVibeRating"
+                                   style="background: linear-gradient(90deg, #5C80BC @(vibeSoundtrack * 10)%, rgba(92, 128, 188, 0.15) @(vibeSoundtrack * 10)%);"
                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-secondary" />
                         </div>
                     </div>
@@ -618,8 +643,7 @@ else
             {
                 <div class="flex flex-col gap-4 mt-6">
                     <div class="flex flex-col gap-3 border-b border-secondary/20 pb-4">
-                        <span class="font-headline-lg text-[22px] text-on-surface font-serif">Seasons & Episodes</span>
-
+                        <span class="font-headline-lg text-headline-lg text-on-surface">Seasons & Episodes</span>
                         <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
                             @for (int i = 0; i < currentSeries.Seasons.Count; i++)
                             {
@@ -775,22 +799,53 @@ else
             @if (SimilarTitles.Count > 0)
             {
                 <div class="flex flex-col gap-4 pb-12">
-                    <span class="font-headline-lg text-headline-lg text-on-surface">Similar Titles</span>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        @foreach (var sim in SimilarTitles)
+                    <div class="flex items-center justify-between">
+                        <span class="font-headline-lg text-headline-lg text-on-surface">Similar Titles</span>
+
+                        @if (SimilarTitles.Count > 6)
                         {
-                            <a href="/media/@sim.Id" class="rounded-xl bg-surface-container overflow-hidden group hover:bg-surface-container-high transition-all">
-                                <div class="aspect-[16/10] w-full overflow-hidden relative bg-surface-container-highest">
+                            <div class="flex items-center gap-3 text-secondary">
+                                <button @onclick="PrevSimilarPage" class="p-1.5 rounded-lg hover:text-primary hover:bg-secondary/10 transition-all flex items-center justify-center border border-secondary/20">
+                                    <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                                </button>
+                                <span class="text-[13px] font-body-md select-none">
+                                    @(similarPageIndex + 1) / @(Math.Ceiling(SimilarTitles.Count / 6.0))
+                                </span>
+                                <button @onclick="NextSimilarPage" class="p-1.5 rounded-lg hover:text-primary hover:bg-secondary/10 transition-all flex items-center justify-center border border-secondary/20">
+                                    <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        @foreach (var sim in VisibleSimilarTitles)
+                        {
+                            <div @onclick="() => NavigateToMedia(sim.Id)"
+                                 class="cursor-pointer rounded-xl bg-surface-container overflow-hidden group hover:bg-surface-container-high border border-secondary/10 hover:border-primary/40 transition-all duration-300 shadow-sm flex flex-col justify-between">
+
+                                <div class="aspect-[2/3] w-full overflow-hidden relative bg-surface-container-highest">
                                     @if (!string.IsNullOrEmpty(sim.PosterUrl))
                                     {
                                         <img src="@sim.PosterUrl" alt="@sim.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center justify-center text-secondary/40">
+                                            <span class="material-symbols-outlined text-[32px]">movie</span>
+                                        </div>
+                                    }
                                 </div>
-                                <div class="p-3 flex flex-col gap-1">
-                                    <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors truncate">@sim.Title</span>
-                                    <span class="font-label-sm text-label-sm text-on-surface-variant">@sim.ReleaseYear</span>
+
+                                <div class="p-2.5 flex flex-col gap-0.5">
+                                    <span class="font-title-md text-[13px] text-on-surface group-hover:text-primary transition-colors truncate font-medium" title="@sim.Title">
+                                        @sim.Title
+                                    </span>
+                                    <span class="font-label-sm text-[11px] text-on-surface-variant/70">
+                                        @sim.ReleaseYear
+                                    </span>
                                 </div>
-                            </a>
+                            </div>
                         }
                     </div>
                 </div>
@@ -880,12 +935,12 @@ else
     private int reviewPageIndex = 0;
     private HashSet<TmdbReview> expandedReviews = new();
 
-    private int vibeCharacters = 8;
-    private int vibePlot = 8;
-    private int vibeVisuals = 8;
-    private int vibePacing = 8;
-    private int vibeVibe = 8;
-    private int vibeSoundtrack = 8;
+    private int vibeCharacters = 0;
+    private int vibePlot = 0;
+    private int vibeVisuals = 0;
+    private int vibePacing = 0;
+    private int vibeVibe = 0;
+    private int vibeSoundtrack = 0;
 
     private double CurrentVibeAverage => (vibeCharacters + vibePlot + vibeVisuals + vibePacing + vibeVibe + vibeSoundtrack) / 6.0;
 
@@ -899,6 +954,7 @@ else
     private bool isCastExpanded = false;
     private bool isCrewExpanded = false;
 
+    private int similarPageIndex = 0;
     private void SetActiveTab(string tab)
     {
         activeTab = tab;
@@ -910,15 +966,17 @@ else
         SimilarTitles.Clear();
         activeSeasonIndex = 0;
         reviewPageIndex = 0;
+        similarPageIndex = 0;
         expandedReviews.Clear();
         isCastExpanded = false;
         isCrewExpanded = false;
-        activeTab = "tags"; 
+        activeTab = "tags";
         MediaItem = DataService.GetById(Id);
 
         if (MediaItem == null) return;
 
         Me.RecordDetailsView(MediaItem);
+
         if (MediaItem.Vibe != null)
         {
             vibeCharacters = MediaItem.Vibe.Characters;
@@ -928,14 +986,36 @@ else
             vibeVibe = MediaItem.Vibe.Vibe;
             vibeSoundtrack = MediaItem.Vibe.Soundtrack;
         }
+        else
+        {
+            vibeCharacters = 0;
+            vibePlot = 0;
+            vibeVisuals = 0;
+            vibePacing = 0;
+            vibeVibe = 0;
+            vibeSoundtrack = 0;
+        }
 
         if (MediaItem.TmdbId.HasValue)
         {
             await TmdbService.EnrichMediaDetailsAsync(MediaItem);
-        }
+            SimilarTitles = await TmdbService.GetSimilarMediaAsync(MediaItem);
 
-        var recEngine = new MediaRecommendation();
-        SimilarTitles = recEngine.FindSimilar(DataService.GetAllMedia(), MediaItem, 4);
+            if (SimilarTitles != null)
+            {
+                foreach (var sim in SimilarTitles)
+                {
+                    bool existsInLibrary = DataService.Library.Any(libItem =>
+                        (libItem.TmdbId.HasValue && sim.TmdbId.HasValue && libItem.TmdbId == sim.TmdbId) ||
+                        (libItem.Title.Equals(sim.Title, StringComparison.OrdinalIgnoreCase) && libItem.ReleaseYear == sim.ReleaseYear));
+
+                    if (!existsInLibrary)
+                    {
+                        DataService.GetOrAddToLibrary(sim);
+                    }
+                }
+            }
+        }
 
         StateHasChanged();
     }
@@ -1116,5 +1196,37 @@ else
         {
             inputTimecode = digits;
         }
+    }
+
+    private List<Media> VisibleSimilarTitles
+    {
+        get
+        {
+            if (SimilarTitles == null || SimilarTitles.Count == 0) return new List<Media>();
+            return SimilarTitles.Skip(similarPageIndex * 6).Take(6).ToList();
+        }
+    }
+
+    private void NextSimilarPage()
+    {
+        if (SimilarTitles.Count == 0) return;
+        int maxPages = (int)Math.Ceiling(SimilarTitles.Count / 6.0);
+
+        similarPageIndex++;
+        if (similarPageIndex >= maxPages) similarPageIndex = 0;
+    }
+
+    private void PrevSimilarPage()
+    {
+        if (SimilarTitles.Count == 0) return;
+        int maxPages = (int)Math.Ceiling(SimilarTitles.Count / 6.0);
+
+        similarPageIndex--;
+        if (similarPageIndex < 0) similarPageIndex = maxPages - 1;
+    }
+
+    private void NavigateToMedia(Guid mediaId)
+    {
+        Navigation.NavigateTo($"/media/{mediaId}");
     }
 }
