@@ -15,14 +15,14 @@
             <p class="font-body-lg text-body-lg text-secondary italic font-serif">Everything you meant to watch, sorted your way.</p>
         </div>
 
-        
         <div class="hidden lg:flex items-center gap-2 bg-secondary/10 border border-secondary/20 px-4 py-2 rounded-lg">
-            <span class="material-symbols-outlined text-secondary text-[18px]"></span>
+            <span class="material-symbols-outlined text-secondary text-[18px]">collections_bookmark</span>
             <span class="font-body-md text-[12px] text-secondary">Total:</span>
             <span class="text-primary font-bold">@Me.Watchlists.Count</span>
         </div>
     </header>
 
+    <!-- Форма створення -->
     <div class="flex flex-col sm:flex-row gap-3 items-center bg-secondary/10 backdrop-blur-md p-4 rounded-xl border border-secondary/30 shadow-xl">
         <input @bind="newListName"
                @bind:event="oninput"
@@ -30,7 +30,7 @@
                placeholder="New list name…"
                class="flex-1 w-full bg-background rounded-xl px-4 py-2.5 outline-none text-[#E2E8F0] placeholder:text-secondary/60 border border-secondary/30 focus:border-primary font-body-md" />
 
-        <button type="button" 
+        <button type="button"
                 @onclick="() => newListPrivate = !newListPrivate"
                 class="flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 select-none shrink-0 @(newListPrivate ? "bg-primary/15 border-primary/40 text-primary shadow-[0_0_12px_rgba(78,236,213,0.15)]" : "bg-secondary/10 border-secondary/30 text-secondary hover:text-white")">
             <span class="material-symbols-outlined text-[18px]">
@@ -55,8 +55,9 @@
             int unwatchedCount = totalCount - watchedCount;
             int percent = totalCount > 0 ? (int)Math.Round((double)watchedCount / totalCount * 100) : 0;
 
-            <a href="/watchlists/@Uri.EscapeDataString(list.Name)"
-               class="relative h-[240px] rounded-2xl border border-secondary/20 bg-gradient-to-br from-secondary/15 via-background to-secondary/5 hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden p-6 flex flex-col justify-between shadow-xl group">
+            <div class="relative h-[240px] rounded-2xl border border-secondary/20 bg-gradient-to-br from-secondary/15 via-background to-secondary/5 hover:border-primary/50 transition-all duration-300 overflow-hidden shadow-xl group">
+
+                <a href="/watchlists/@Uri.EscapeDataString(list.Name)" class="absolute inset-0 z-10"></a>
 
                 <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                     <div class="absolute -right-2 -top-2 flex -space-x-10 opacity-75 group-hover:opacity-100 group-hover:-translate-y-1 group-hover:scale-105 transition-all duration-500 pt-6 pr-6">
@@ -79,39 +80,50 @@
 
                 <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10 pointer-events-none"></div>
 
-                <div class="relative z-20 flex items-center justify-between">
-                    <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/80 border border-secondary/30 text-secondary font-label-caps text-[10px] uppercase tracking-wider backdrop-blur-md">
-                        <span class="material-symbols-outlined text-[12px]">@(list.IsPrivate ? "lock" : "lock_open")</span>
-                        @(list.IsPrivate ? "Private" : "Public")
-                    </span>
-                </div>
-
-                <div class="relative z-20 flex flex-col gap-3">
-                    <div class="flex flex-col gap-1">
-                        <h3 class="font-serif text-[22px] text-white group-hover:text-primary transition-colors font-bold truncate">
-                            @list.Name
-                        </h3>
-                        <span class="text-[12px] text-secondary font-body-md">
-                            @totalCount titles · <span class="text-secondary/80">@unwatchedCount unwatched</span>
+                <div class="relative z-20 h-full p-6 flex flex-col justify-between pointer-events-none">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/80 border border-secondary/30 text-secondary font-label-caps text-[10px] uppercase tracking-wider backdrop-blur-md">
+                            <span class="material-symbols-outlined text-[12px]">@(list.IsPrivate ? "lock" : "lock_open")</span>
+                            @(list.IsPrivate ? "Private" : "Public")
                         </span>
+
+                        <!-- видалення  -->
+                        <button type="button"
+                                @onclick="() => DeleteWatchlist(list)"
+                                @onclick:stopPropagation="true"
+                                @onclick:preventDefault="true"
+                                class="pointer-events-auto p-1.5 rounded-lg bg-background/80 text-secondary hover:text-tertiary hover:bg-tertiary/10 border border-secondary/20 hover:border-tertiary/40 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
+                                title="Delete watchlist">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
                     </div>
 
-                    <div class="flex flex-col gap-1.5 pt-1">
-                        <div class="w-full h-1.5 rounded-full bg-secondary/20 overflow-hidden">
-                            <div class="h-full bg-primary rounded-full transition-all duration-500" style="width: @percent%;"></div>
-                        </div>
-                        <div class="flex items-center justify-between text-[12px]">
-                            <span class="text-primary font-bold">@percent% watched</span>
-                            <span class="text-secondary group-hover:text-primary font-semibold flex items-center gap-1 transition-colors">
-                                Open <span class="material-symbols-outlined text-[14px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex flex-col gap-1">
+                            <h3 class="font-serif text-[22px] text-white group-hover:text-primary transition-colors font-bold truncate">
+                                @list.Name
+                            </h3>
+                            <span class="text-[12px] text-secondary font-body-md">
+                                @totalCount titles · <span class="text-secondary/80">@unwatchedCount unwatched</span>
                             </span>
                         </div>
+
+                        <div class="flex flex-col gap-1.5 pt-1">
+                            <div class="w-full h-1.5 rounded-full bg-secondary/20 overflow-hidden">
+                                <div class="h-full bg-primary rounded-full transition-all duration-500" style="width: @percent%;"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-[12px]">
+                                <span class="text-primary font-bold">@percent% watched</span>
+                                <span class="text-secondary group-hover:text-primary font-semibold flex items-center gap-1 transition-colors">
+                                    Open <span class="material-symbols-outlined text-[14px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </a>
+            </div>
         }
     </div>
-
 </div>
 
 @code {
@@ -139,5 +151,15 @@
         Me.CreateWatchlist(name, newListPrivate);
         Snackbar.Add($"List \"{name}\" created", Severity.Success);
         newListName = "";
+    }
+
+    private void DeleteWatchlist(Watchlist list)
+    {
+        bool success = Me.RemoveWatchlist(list.Id);
+        if (success)
+        {
+            Snackbar.Add($"Watchlist \"{list.Name}\" removed", Severity.Info);
+            StateHasChanged();
+        }
     }
 }
