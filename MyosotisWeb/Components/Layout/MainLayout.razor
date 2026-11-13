@@ -13,17 +13,17 @@
     <!-- БІЧНЕ МЕНЮ -->
     <aside class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-low border-r border-secondary/30 z-50 flex flex-col justify-between">
         <div class="flex flex-col">
-            <div class="h-16 px-space-md flex items-center gap-space-sm border-b border-secondary/20">
+            <div class="h-16 px-4 flex items-center gap-3 border-b border-secondary/20">
                 <img src="images/logo-icon.png" alt="Myosotis" class="w-7 h-7 object-contain drop-shadow-[0_0_8px_rgba(132,220,198,0.4)]" />
                 <span class="font-headline-md text-headline-md text-primary tracking-wide">Myosotis</span>
             </div>
 
-            <nav class="flex flex-col gap-space-xs px-space-sm pt-space-lg">
+            <nav class="flex flex-col gap-1 px-3 pt-6">
                 @foreach (var item in navItems)
                 {
                     <NavLink href="@item.Href"
                              Match="@(item.Href == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                             class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-secondary/15 hover:text-on-surface transition-all"
+                             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-secondary/15 hover:text-on-surface transition-all"
                              ActiveClass="bg-secondary/20 text-white font-medium">
                         <span class="material-symbols-outlined text-[18px]">@item.Icon</span>
                         <span>@item.Label</span>
@@ -32,8 +32,8 @@
             </nav>
         </div>
 
-        <div class="p-space-md border-t border-secondary/20 bg-surface-container-lowest/40">
-            <div class="flex items-center gap-space-sm">
+        <div class="p-4 border-t border-secondary/20 bg-surface-container-lowest/40">
+            <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full bg-secondary text-on-primary-container flex items-center justify-center font-title-md text-title-md font-bold">@Initial</div>
                 <div class="flex flex-col min-w-0">
                     <span class="font-title-md text-title-md text-on-surface truncate">@Me.Username</span>
@@ -45,9 +45,8 @@
 
     <div class="pl-[240px]">
 
-        <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-secondary/30 z-40 flex items-center justify-between px-margin">
-            
-            <div class="flex items-center gap-space-sm w-80 bg-surface-container-low px-space-md py-space-xs rounded-xl border border-secondary/30 focus-within:border-primary focus-within:bg-surface-container transition-all shadow-sm">
+        <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-secondary/30 z-40 flex items-center justify-between px-8">
+            <div class="flex items-center gap-3 w-80 bg-surface-container-low px-4 py-2 rounded-xl border border-secondary/30 focus-within:border-primary focus-within:bg-surface-container transition-all shadow-sm">
                 <span class="material-symbols-outlined text-[18px] text-secondary">search</span>
                 <input @bind="searchText"
                        @bind:event="oninput"
@@ -55,7 +54,6 @@
                        placeholder="Search your library…"
                        class="bg-transparent outline-none w-full text-on-surface placeholder:text-on-surface-variant/60" />
             </div>
-
         </header>
 
         <main class="relative pt-16 bg-surface min-h-screen">
@@ -67,7 +65,7 @@
 @code {
     private readonly (string Href, string Icon, string Label)[] navItems =
     {
-        ("/search", "search", "Search"),
+        ("/search", "search", "Catalog"),
         ("/", "dashboard", "Overview"),
         ("/watchlists", "bookmark", "Watchlists"),
         ("/captures", "format_quote", "Captures"),
@@ -99,4 +97,13 @@
             TextSecondary = "#5C80BC"
         }
     };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await DataService.InitializeAsync();
+            StateHasChanged();
+        }
+    }
 }

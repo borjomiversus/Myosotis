@@ -308,7 +308,7 @@ else
         };
     }
 
-    private void ChangeStatus(Media item, WatchStatus newStatus)
+    private async Task ChangeStatus(Media item, WatchStatus newStatus)
     {
         if (newStatus == WatchStatus.Watched)
         {
@@ -319,26 +319,29 @@ else
             Me.SetStatus(item, newStatus);
         }
         activeDropdownId = null;
+        await DataService.SaveStateAsync();
         Snackbar.Add($"Status updated to {newStatus}", Severity.Success);
         StateHasChanged();
     }
 
-    private void Remove(Media item)
+    private async Task Remove(Media item)
     {
         CurrentList?.RemoveEntry(item);
+        await DataService.SaveStateAsync();
         Snackbar.Add("Item removed from list", Severity.Info);
         StateHasChanged();
     }
 
-    private void ClearItemStatus(Media item)
+    private async Task ClearItemStatus(Media item)
     {
         Me.ClearStatus(item);
         activeDropdownId = null;
+        await DataService.SaveStateAsync();
         Snackbar.Add("Status cleared", Severity.Info);
         StateHasChanged();
     }
 
-    private void DeleteCurrentWatchlist()
+    private async Task DeleteCurrentWatchlist()
     {
         if (CurrentList == null) return;
 
@@ -347,6 +350,7 @@ else
 
         if (success)
         {
+            await DataService.SaveStateAsync();
             Snackbar.Add($"Watchlist \"{name}\" deleted", Severity.Info);
             Navigation.NavigateTo("/watchlists");
         }

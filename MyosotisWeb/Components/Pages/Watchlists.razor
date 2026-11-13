@@ -52,8 +52,8 @@
         {
             int totalCount = list.Entries.Count;
             int watchedCount = list.Entries.Count(e => Me.IsWatched(e.Item));
-            int unwatchedCount = totalCount - watchedCount;
-            int percent = totalCount > 0 ? (int)Math.Round((double)watchedCount / totalCount * 100) : 0;
+            int unwatchedCount = totalCount - watchedCount; 
+            int percent = totalCount > 0 ? (int)Math.Round((double)watchedCount / totalCount * 100) : 0; 
 
             <div class="relative h-[240px] rounded-2xl border border-secondary/20 bg-gradient-to-br from-secondary/15 via-background to-secondary/5 hover:border-primary/50 transition-all duration-300 overflow-hidden shadow-xl group">
 
@@ -87,7 +87,7 @@
                             @(list.IsPrivate ? "Private" : "Public")
                         </span>
 
-                        <!-- видалення  -->
+                        <!-- видалення -->
                         <button type="button"
                                 @onclick="() => DeleteWatchlist(list)"
                                 @onclick:stopPropagation="true"
@@ -132,32 +132,37 @@
 
     private User Me => DataService.CurrentUser;
 
-    private void OnNewListKey(KeyboardEventArgs e)
+    private async Task OnNewListKey(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter") CreateList();
+        if (e.Key == "Enter") await CreateList();
     }
 
-    private void CreateList()
+    private async Task CreateList()
     {
         string name = newListName.Trim();
-        if (name == "") return;
+        if (string.IsNullOrEmpty(name)) return;
 
-        if (Me.Watchlists.Any(w => w.Name == name))
+        if (Me.Watchlists.Any(w => w.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
         {
             Snackbar.Add("A list with this name already exists", Severity.Warning);
             return;
         }
 
         Me.CreateWatchlist(name, newListPrivate);
+
+        await DataService.SaveStateAsync();
+
         Snackbar.Add($"List \"{name}\" created", Severity.Success);
         newListName = "";
     }
 
-    private void DeleteWatchlist(Watchlist list)
+    private async Task DeleteWatchlist(Watchlist list)
     {
         bool success = Me.RemoveWatchlist(list.Id);
         if (success)
         {
+            await DataService.SaveStateAsync();
+
             Snackbar.Add($"Watchlist \"{list.Name}\" removed", Severity.Info);
             StateHasChanged();
         }

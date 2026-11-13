@@ -408,12 +408,12 @@
 
     private User Me => DataService.CurrentUser;
 
-    private void OnCaptureKey(KeyboardEventArgs e)
+    private async Task OnCaptureKey(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter") AddCapture();
+        if (e.Key == "Enter") await AddCapture();
     }
 
-    private void AddCapture()
+    private async Task AddCapture()
     {
         if (string.IsNullOrWhiteSpace(newCaptureText)) return;
 
@@ -423,6 +423,8 @@
 
         newCaptureText = customSource = newTimecode = "";
         selectedKind = CaptureKind.Thought;
+
+        await DataService.SaveStateAsync();
     }
 
     private string GetSearchQuery(CaptureEntry c) => searchQueries.TryGetValue(c, out var q) ? q : "";
@@ -437,16 +439,18 @@
         return DataService.SearchLibrary(q) ?? Enumerable.Empty<Media>();
     }
 
-    private void SelectAndLink(CaptureEntry c, Media m)
+    private async Task SelectAndLink(CaptureEntry c, Media m)
     {
         searchQueries[c] = "";
         c.Resolve(m);
         Snackbar.Add($"Recognized as \"{m.Title}\"", Severity.Success);
+
+        await DataService.SaveStateAsync();
     }
 
     private void PickList(CaptureEntry c, string? listName) => pickedLists[c] = listName ?? "";
 
-    private void AddToList(CaptureEntry c)
+    private async Task AddToList(CaptureEntry c)
     {
         if (c.ResolvedMedia == null) return;
 
@@ -458,6 +462,8 @@
         {
             Me.AddMediaToWatchlist(list, c.ResolvedMedia, c.RawNote);
             Snackbar.Add($"Added \"{c.ResolvedMedia.Title}\" to \"{list.Name}\"", Severity.Success);
+
+            await DataService.SaveStateAsync();
             StateHasChanged();
         }
     }
@@ -470,10 +476,12 @@
             expandedCaptures.Add(c);
     }
 
-    private void Delete(Guid captureId)
+    private async Task Delete(Guid captureId)
     {
         Me.DeleteCapture(captureId);
         Snackbar.Add("Note deleted", Severity.Info);
+
+        await DataService.SaveStateAsync();
         StateHasChanged();
     }
 
@@ -484,7 +492,7 @@
         else
             expandedSources.Add(captureId);
     }
-    
+
     private void OnTimecodeInput(ChangeEventArgs e)
     {
         string? val = e.Value?.ToString();
@@ -495,7 +503,7 @@
             return;
         }
 
-        if (digits.Length > 6) digits = digits.Substring(0, 6); 
+        if (digits.Length > 6) digits = digits.Substring(0, 6);
 
         if (digits.Length > 4)
         {

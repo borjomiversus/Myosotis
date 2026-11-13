@@ -972,6 +972,7 @@ else
         isCrewExpanded = false;
         activeTab = "tags";
         MediaItem = DataService.GetById(Id);
+        await DataService.SaveStateAsync();
 
         if (MediaItem == null) return;
 
@@ -1022,42 +1023,47 @@ else
 
     private bool IsFav => Me.IsFavorite(MediaItem);
 
-    private void ToggleFavorite()
+    private async void ToggleFavorite()
     {
         if (MediaItem != null)
         {
             Me.ToggleFavorite(MediaItem);
+            await DataService.SaveStateAsync();
             StateHasChanged();
         }
     }
 
-    private void ClearUserStatus()
+    private async void ClearUserStatus()
     {
         if (MediaItem == null) return;
         Me.ClearStatus(MediaItem);
+        await DataService.SaveStateAsync();
         StateHasChanged();
     }
 
-    private void SaveVibeRating()
+    private async void SaveVibeRating()
     {
         if (MediaItem == null) return;
         var newVibe = new VibeRating(vibeCharacters, vibePlot, vibeVisuals, vibePacing, vibeVibe, vibeSoundtrack);
         MediaItem.SetVibeRating(newVibe);
+        await DataService.SaveStateAsync();
     }
 
-    private void ToggleWatched()
+    private async void ToggleWatched()
     {
         if (MediaItem == null) return;
         if (!IsWatched)
         {
             Me.CompleteWatching(MediaItem);
+            await DataService.SaveStateAsync();
         }
     }
 
-    private void AddToList(Watchlist watchlist)
+    private async void AddToList(Watchlist watchlist)
     {
         if (MediaItem == null) return;
         Me.AddMediaToWatchlist(watchlist, MediaItem, "Added from details page");
+        await DataService.SaveStateAsync();
     }
 
     private void OpenCheckpointModal()
@@ -1119,7 +1125,7 @@ else
             expandedReviews.Add(rev);
     }
 
-    private void SaveCheckpoint()
+    private async void SaveCheckpoint()
     {
         if (MediaItem == null || string.IsNullOrWhiteSpace(inputTimecode)) return;
 
@@ -1135,13 +1141,15 @@ else
         else return;
 
         Me.SetCheckpoint(cp);
+        await DataService.SaveStateAsync();
         showCheckpointModal = false;
     }
 
-    private void ClearCheckpoint()
+    private async void ClearCheckpoint()
     {
         if (MediaItem == null) return;
         Me.ClearCheckpoint(MediaItem);
+        await DataService.SaveStateAsync();
     }
 
     private void NavigateToPerson(int? tmdbId)
@@ -1155,7 +1163,7 @@ else
     private UserMediaState? CurrentMediaState => MediaItem != null ? Me.MediaStates.FirstOrDefault(s => s.Item.Id == MediaItem.Id) : null;
     private WatchStatus? CurrentWatchStatus => CurrentMediaState?.Status;
 
-    private void ChangeUserStatus(WatchStatus newStatus)
+    private async void ChangeUserStatus(WatchStatus newStatus)
     {
         if (MediaItem == null) return;
 
@@ -1167,7 +1175,9 @@ else
         {
             Me.SetStatus(MediaItem, newStatus);
         }
+        await DataService.SaveStateAsync();
         StateHasChanged();
+
     }
 
     private void FormatCheckpointTimecode(ChangeEventArgs e)
