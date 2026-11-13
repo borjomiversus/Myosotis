@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Series : Media
 {
@@ -86,5 +87,10 @@ public class Series : Media
             : "тривалість невідома";
 
         return $"{TotalSeasons} сезонів, залишилось {UnwatchedEpisodes} серій ({CalculateTimeDebt()} хв; {runtimeInfo})";
+    }
+
+    public void RestoreSeasons(IEnumerable<Season> seasons)
+    {
+        Seasons = seasons?.ToList() ?? new List<Season>();
     }
 }

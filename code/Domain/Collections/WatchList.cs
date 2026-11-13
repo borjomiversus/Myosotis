@@ -63,4 +63,12 @@ public class Watchlist
         foreach (var entry in Entries)
             Console.WriteLine(entry.GetSummary());
     }
+
+    public void RestoreId(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Watchlist ID cannot be empty.");
+
+        Id = id;
+    }
 }

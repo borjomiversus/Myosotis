@@ -30,4 +30,12 @@ public class Season
         }
         return total;
     }
+
+    public void RestoreId(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Season ID cannot be empty.");
+
+        Id = id;
+    }
 }

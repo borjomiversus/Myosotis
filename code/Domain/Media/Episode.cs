@@ -13,10 +13,17 @@ public class Episode
         if (number <= 0) throw new ArgumentOutOfRangeException(nameof(number));
         if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
         if (runtimeMinutes <= 0) throw new ArgumentOutOfRangeException(nameof(runtimeMinutes));
-    
+
         Number = number;
         Title = title;
         RuntimeMinutes = runtimeMinutes;
         AirDate = airDate;
+    }
+    public void RestoreId(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Episode ID cannot be empty.");
+
+        Id = id;
     }
 }

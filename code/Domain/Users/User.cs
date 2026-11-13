@@ -35,9 +35,13 @@ public class User
         return list;
     }
 
-    public IEnumerable<CaptureEntry> ActiveCaptures =>
-        Captures.Where(c => c.Status != CaptureStatus.Archived)
-                .OrderByDescending(c => c.CapturedAt);
+    public List<CaptureEntry> GetActiveCaptures()
+    {
+        return Captures
+            .Where(c => c.Status != CaptureStatus.Archived)
+            .OrderByDescending(c => c.CapturedAt)
+            .ToList();
+    }
 
     public CaptureEntry AddCapture(string note, string? source, CaptureKind kind = CaptureKind.Thought, string? timecode = null)
     {

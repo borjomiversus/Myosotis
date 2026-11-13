@@ -21,4 +21,11 @@ public class WatchlistEntry
     }
 
     public string GetSummary() => $"{Item.Title} — {PersonalNote} (додано {AddedAt:d})";
+
+    public void RestoreStorageData(Guid id, DateTime addedAt)
+    {
+        if (id == Guid.Empty) throw new ArgumentException("Entry ID cannot be empty.");
+        Id = id;
+        AddedAt = addedAt;
+    }
 }

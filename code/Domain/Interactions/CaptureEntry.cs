@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 public enum CaptureStatus
 {
     Unresolved,
@@ -109,6 +109,28 @@ public class CaptureEntry
         if (Status == CaptureStatus.Archived)
             return "[архів] " + RawNote;
         return "Не розпізнано: " + RawNote + " (джерело: " + Source + ")";
+    }
+
+    public void RestoreStorageData(
+    Guid id,
+    DateTime capturedAt,
+    CaptureStatus status,
+    IEnumerable<string>? tags)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Capture ID cannot be empty.");
+
+        Id = id;
+        CapturedAt = capturedAt;
+        Status = status;
+
+        Tags = new List<string>();
+
+        if (tags != null)
+        {
+            foreach (var tag in tags)
+                AddTag(tag);
+        }
     }
 }
 

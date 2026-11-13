@@ -20,4 +20,11 @@ public class WatchHistoryEntry
         WatchDate = watchDate;
         Action = action;
     }
+    public void RestoreStorageData(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("History entry ID cannot be empty.");
+
+        Id = id;
+    }
 }

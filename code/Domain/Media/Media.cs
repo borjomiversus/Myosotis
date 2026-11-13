@@ -222,6 +222,31 @@ public abstract class Media : IComparable<Media>
         return $"{Title} ({ReleaseYear}) - {Description}";
     }
 
+    public void RestoreId(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Media ID cannot be empty.");
+
+        Id = id;
+    }
+
+    public void RestoreAdditionalData(
+    string? backdropUrl,
+    string? trailerUrl,
+    string? contentRating,
+    string? country,
+    int? ageRestriction,
+    List<TmdbReview>? tmdbReviews)
+    {
+        BackdropUrl = backdropUrl;
+        TrailerUrl = trailerUrl;
+        ContentRating = contentRating;
+        Country = country;
+        AgeRestriction = ageRestriction;
+
+        TmdbReviews = tmdbReviews ?? new List<TmdbReview>();
+    }
+
     public abstract int CalculateTimeDebt();
 
     public abstract int TotalDurationMinutes { get; }

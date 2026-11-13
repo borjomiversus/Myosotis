@@ -81,4 +81,11 @@ public class WatchCheckpoint
         int percent = (seconds * 100) / totalSeconds;
         return percent > 100 ? 100 : percent;
     }
+
+    public void RestoreStorageData(Guid id, DateTime createdAt)
+    {
+        if (id == Guid.Empty) throw new ArgumentException("Checkpoint ID cannot be empty.");
+        Id = id;
+        CreatedAt = createdAt;
+    }
 }

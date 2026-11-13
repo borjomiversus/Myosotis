@@ -62,4 +62,12 @@ public class UserMediaState
     {
         IsFavorite = !IsFavorite;
     }
+
+    public void RestoreStorageData(Guid id, DateTime? startedAt, DateTime? completedAt)
+    {
+        if (id == Guid.Empty) throw new ArgumentException("State ID cannot be empty.");
+        Id = id;
+        StartedAt = startedAt;
+        CompletedAt = completedAt;
+    }
 }
