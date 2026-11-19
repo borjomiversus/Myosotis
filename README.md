@@ -106,7 +106,7 @@ C# добре підтримує основні принципи ООП, які 
 ![Captures and Notes](docs/screenshots/Screen3.png)
 
 ### Trending Page
-![Tonight's Selection](docs/screenshots/Screen2.png)
+![Trending Page](docs/screenshots/Screen2.png)
 
 ## Дизайн
 
