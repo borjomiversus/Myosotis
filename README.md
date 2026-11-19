@@ -126,14 +126,27 @@ C# добре підтримує основні принципи ООП, які 
 
 ## Локальний запуск
 
-Для запуску потрібен [.NET 10 SDK](https://dotnet.microsoft.com/download).
-Отримати ключ [TmdbApi](https://developer.themoviedb.org/docs/getting-started). 
+### Prerequisites
+- [.NET SDK](https://dotnet.microsoft.com/download)
+- A free API key from [The Movie Database (TMDb)](https://www.themoviedb.org/)
+
+### Run Locally
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/borjomiversus/Myosotis.git](https://github.com/borjomiversus/Myosotis.git)
+   cd Myosotis
+   ```
+2. Configure your TMDb API key in the web project (`MyosotisWeb`) — for example via user secrets or app settings (do not commit real keys to git)[cite: 13].
+3. Run the web application:
+   ```bash
+   cd MyosotisWeb
+   dotnet run
+   ```
+
+### Run Tests
 ```bash
-git clone [https://github.com/your-username/Myosotis.git](https://github.com/your-username/Myosotis.git)
-cd Myosotis/MyosotisWeb
-dotnet run
+dotnet test
 ```
-Після успішного запуску відкрийте у браузері адресу, вказану в терміналі.
 
 ## Структура проєкту
 
