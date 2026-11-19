@@ -93,8 +93,6 @@ C# добре підтримує основні принципи ООП, які 
 
 ## Скріншоти
 
-<img width="1220" height="1220" alt="Picsart_26-11-19_23-31-44-280" src="https://github.com/user-attachments/assets/cf1c184a-0590-431c-90fe-28cdec4cfff4" />
-
 ### Home Page
 ![Home Page](docs/screenshots/Screen6.png)
 ![Home Page](docs/screenshots/Screen7.png)
@@ -106,7 +104,7 @@ C# добре підтримує основні принципи ООП, які 
 ![Captures and Notes](docs/screenshots/Screen3.png)
 
 ### Trending Page
-![Trending Page](docs/screenshots/Screen2.png)
+![Trending Page](docs/screenshots/Screen2.jpg)
 
 ## Дизайн
 
