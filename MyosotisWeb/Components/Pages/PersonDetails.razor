@@ -5,142 +5,160 @@
 @using System.Globalization
 @using MyosotisWeb.ServicesWeb
 
-<PageTitle>@(person?.Name ?? "Person Details") · Myosotis</PageTitle>
+<PageTitle>Myosotis · @(person?.Name ?? "Person Details")</PageTitle>
 
-<div class="relative w-full overflow-hidden px-margin py-space-xl">
-    <div class="absolute -top-32 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="w-full px-margin py-margin flex flex-col gap-10">
 
     @if (isLoading)
     {
-        <div class="flex flex-col items-center justify-center py-space-xl gap-3">
+        <div class="flex flex-col items-center justify-center py-24 gap-3">
             <span class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
-            <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Loading Person Details...</span>
+            <span class="font-title-md text-[13px] text-secondary-text">Loading person details…</span>
         </div>
     }
     else if (person == null)
     {
-        <div class="flex flex-col items-center justify-center py-space-xl text-center">
-            <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40 mb-2">person_off</span>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface">Person not found</h2>
-            <p class="font-body-md text-on-surface-variant mt-1 mb-4">Could not retrieve information from TMDB.</p>
-            <button @onclick='() => Navigation.NavigateTo("/search")' class="px-space-lg py-space-xs rounded-full bg-primary text-on-primary font-title-md hover:bg-primary/80 transition-colors">
-                Back to Search
+        <div class="py-20 flex flex-col items-start gap-4 max-w-xl">
+            <h1 class="font-headline-xl text-headline-xl text-on-surface leading-none">Person not found.</h1>
+            <p class="font-body-md text-[14px] text-secondary-text">
+                Could not retrieve information for this person from TMDB.
+            </p>
+            <button @onclick='() => Navigation.NavigateTo("/search")'
+                    class="mt-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary font-title-md font-semibold text-[13px] hover:opacity-90 transition-opacity">
+                Back to catalog
             </button>
         </div>
     }
     else
     {
-        <!-- Header Info -->
-        <article class="relative bg-gradient-to-r from-prussian-blue via-prussian-blue/90 to-prussian-blue/70 rounded-2xl p-space-lg sm:p-space-xl border border-secondary/20 shadow-xl mb-space-xl">
-            <div class="flex flex-col md:flex-row gap-space-lg items-start">
-                <!-- Profile Image -->
-                <div class="relative w-full md:w-56 shrink-0 aspect-[2/3] rounded-xl overflow-hidden bg-prussian-blue/90 border border-secondary/20 shadow-md">
-                    @if (!string.IsNullOrEmpty(person.ProfileUrl))
-                    {
-                        <img src="@person.ProfileUrl" alt="@person.Name" class="w-full h-full object-cover" />
-                    }
-                    else
-                    {
-                        <div class="w-full h-full flex items-center justify-center text-secondary">
-                            <span class="material-symbols-outlined text-[64px]">person</span>
-                        </div>
-                    }
+        <!-- Шапка персони -->
+        <header class="flex flex-col gap-6 pb-8 border-b border-secondary/25">
+            <!-- Навігація -->
+            <nav class="flex items-center gap-2 font-title-md text-[13px] text-secondary-text">
+                <a href="/search" class="hover:text-primary transition-colors">Catalog</a>
+                <span class="material-symbols-outlined text-[15px]">chevron_right</span>
+                <span class="text-on-surface truncate">@person.Name</span>
+            </nav>
+
+            <div class="flex flex-col md:flex-row gap-8 items-start">
+                <!-- Фото профілю -->
+                <div class="w-48 sm:w-56 shrink-0">
+                    <div class="aspect-[2/3] w-full rounded-xl overflow-hidden bg-background border border-secondary/30">
+                        @if (!string.IsNullOrEmpty(person.ProfileUrl))
+                        {
+                            <img src="@person.ProfileUrl" alt="@person.Name" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex items-center justify-center text-secondary-text">
+                                <span class="material-symbols-outlined text-[56px]">person</span>
+                            </div>
+                        }
+                    </div>
                 </div>
 
-                <!-- Meta & Biography -->
-                <div class="flex flex-col flex-1 min-w-0 justify-between gap-space-md">
-                    <div class="flex flex-col gap-space-xs">
-                        <div class="flex flex-wrap items-center gap-space-xs">
-                            <span class="px-space-sm py-0.5 rounded bg-primary/10 border border-primary/20 font-label-caps text-label-caps text-primary tracking-wider uppercase">
+                <!-- Інформація та біографія -->
+                <div class="flex flex-col flex-1 min-w-0 gap-5">
+                    <div class="flex flex-col gap-3">
+                        <!-- Бейджі метаданих -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md bg-secondary-fill text-primary font-title-md text-[12px]">
                                 @(person.KnownForDepartment ?? "Film Industry")
                             </span>
 
                             @if (!string.IsNullOrEmpty(person.PlaceOfBirth))
                             {
-                                <span class="px-space-sm py-0.5 rounded bg-prussian-blue border border-secondary/30 font-label-caps text-label-caps text-on-surface flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[13px] text-secondary">location_on</span>
+                                <span class="px-2.5 py-1 rounded-md bg-background border border-secondary/30 font-body-md text-[12px] text-secondary-text inline-flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
                                     <span>@person.PlaceOfBirth</span>
                                 </span>
                             }
 
-                            <!-- Відокремлена дата народження -->
                             @if (!string.IsNullOrEmpty(person.Birthday))
                             {
-                                <span class="px-space-sm py-0.5 rounded bg-prussian-blue border border-secondary/30 font-label-caps text-label-caps text-on-surface flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[13px] text-primary">cake</span>
+                                <span class="px-2.5 py-1 rounded-md bg-background border border-secondary/30 font-body-md text-[12px] text-secondary-text inline-flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">cake</span>
                                     <span>Born @person.Birthday</span>
                                 </span>
 
                                 @if (CalculateAge(person.Birthday, person.Deathday) is int age)
                                 {
-                                    <span class="px-space-sm py-0.5 rounded bg-prussian-blue border border-secondary/30 font-label-caps text-label-caps text-on-surface flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[13px] text-secondary">hourglass_top</span>
-                                        <span>@(string.IsNullOrEmpty(person.Deathday) ? $"{age} yrs old" : $"Aged {age}")</span>
+                                    <span class="px-2.5 py-1 rounded-md bg-background border border-secondary/30 font-body-md text-[12px] text-on-surface inline-flex items-center gap-1.5">
+                                        <span>@(string.IsNullOrEmpty(person.Deathday) ? $"{age} years old" : $"Aged {age}")</span>
                                     </span>
                                 }
                             }
 
-                            <!-- Дата смерті (якщо є) -->
                             @if (!string.IsNullOrEmpty(person.Deathday))
                             {
-                                <span class="px-space-sm py-0.5 rounded bg-prussian-blue border border-secondary/30 font-label-caps text-label-caps text-on-surface-variant flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[13px] text-on-surface-variant">sentiment_dissatisfied</span>
+                                <span class="px-2.5 py-1 rounded-md bg-background border border-secondary/30 font-body-md text-[12px] text-secondary-text inline-flex items-center gap-1.5">
                                     <span>Died @person.Deathday</span>
                                 </span>
                             }
                         </div>
 
-                        <h1 class="font-headline-xl text-headline-xl text-on-surface mt-1">@person.Name</h1>
+                        <h1 class="font-headline-xl text-headline-xl text-on-surface leading-tight">
+                            @person.Name
+                        </h1>
 
                         @if (!string.IsNullOrWhiteSpace(person.Biography))
                         {
-                            <div class="mt-space-xs">
-                                <p class="font-body-lg text-body-lg text-on-surface-variant/90 leading-relaxed max-w-4xl @(isBioExpanded ? "" : "line-clamp-4")">
+                            <div class="flex flex-col items-start gap-2 mt-1">
+                                <p class="font-body-md text-[14px] text-on-surface/90 leading-relaxed max-w-4xl @(isBioExpanded ? "" : "line-clamp-4")">
                                     @person.Biography
                                 </p>
                                 @if (person.Biography.Length > 280)
                                 {
-                                    <button @onclick="() => isBioExpanded = !isBioExpanded" class="mt-2 text-primary font-title-md text-title-md hover:underline flex items-center gap-1">
-                                        <span>@(isBioExpanded ? "Show Less" : "Read Full Bio")</span>
+                                    <button @onclick="() => isBioExpanded = !isBioExpanded"
+                                            class="text-primary hover:opacity-80 font-title-md text-[13px] inline-flex items-center gap-1 transition-opacity">
+                                        <span>@(isBioExpanded ? "Show less" : "Read full biography")</span>
                                         <span class="material-symbols-outlined text-[16px]">@(isBioExpanded ? "expand_less" : "expand_more")</span>
                                     </button>
                                 }
                             </div>
                         }
+                        else
+                        {
+                            <p class="font-body-md text-[13px] text-secondary-text">
+                                No biography available for @person.Name yet.
+                            </p>
+                        }
                     </div>
 
-                    <!-- IMDb Profile Link (стилізовано під палітру проєкту) -->
+                    <!-- Посилання на IMDb -->
                     @if (!string.IsNullOrEmpty(person.ImdbId))
                     {
-                        <div class="flex items-center gap-space-sm pt-space-sm border-t border-secondary/20">
-                            <a href="https://www.imdb.com/name/@person.ImdbId" target="_blank" rel="noopener noreferrer"
-                               class="px-space-md py-1 rounded-lg bg-primary/10 border border-primary/30 text-primary font-label-caps text-label-caps hover:bg-primary/20 hover:border-primary transition-all flex items-center gap-1.5 shadow-sm">
-                                <span>IMDb Profile</span>
-                                <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                        <div class="pt-2">
+                            <a href="https://www.imdb.com/name/@person.ImdbId"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-background border border-secondary/35 text-on-surface hover:border-primary hover:text-primary font-title-md text-[13px] transition-colors">
+                                <span>IMDb profile</span>
+                                <span class="material-symbols-outlined text-[15px]">open_in_new</span>
                             </a>
                         </div>
                     }
                 </div>
             </div>
-        </article>
+        </header>
 
-        <!-- Filmography Section -->
-        <section class="flex flex-col gap-space-lg">
-            <div class="flex items-center justify-between border-b border-secondary/20 pb-space-xs">
-                <div class="flex items-center gap-space-sm">
-                    <span class="material-symbols-outlined text-primary text-[22px]">video_library</span>
-                    <h2 class="font-headline-lg text-headline-lg text-on-surface">Filmography</h2>
-                </div>
+        <!-- Фільмографія -->
+        <section class="flex flex-col gap-6 pb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-secondary/25 pb-3">
+                <h2 class="font-serif text-[24px] text-on-surface">Filmography</h2>
 
-                <!-- Department Tabs -->
-                <div class="flex items-center gap-space-xs">
-                    <button @onclick='() => activeTab = "cast"' class="px-space-md py-1 rounded-full font-title-md text-title-md transition-all @(activeTab == "cast" ? "bg-primary text-on-primary" : "bg-prussian-blue text-on-surface-variant hover:text-on-surface border border-secondary/20")">
-                        Acting (@credits?.Cast.Count)
+                <!-- Вкладки підрозділів -->
+                <div class="flex items-center gap-2">
+                    <button @onclick='() => activeTab = "cast"'
+                            class="px-4 py-1.5 rounded-lg font-title-md text-[13px] transition-colors border @(activeTab == "cast" ? "bg-primary text-on-primary font-semibold border-primary" : "bg-background text-secondary-text border-secondary/35 hover:text-on-surface")">
+                        Acting (@(credits?.Cast.Count ?? 0))
                     </button>
+
                     @if (credits?.Crew.Count > 0)
                     {
-                        <button @onclick='() => activeTab = "crew"' class="px-space-md py-1 rounded-full font-title-md text-title-md transition-all @(activeTab == "crew" ? "bg-primary text-on-primary" : "bg-prussian-blue text-on-surface-variant hover:text-on-surface border border-secondary/20")">
-                            Crew / Directing (@credits?.Crew.Count)
+                        <button @onclick='() => activeTab = "crew"'
+                                class="px-4 py-1.5 rounded-lg font-title-md text-[13px] transition-colors border @(activeTab == "crew" ? "bg-primary text-on-primary font-semibold border-primary" : "bg-background text-secondary-text border-secondary/35 hover:text-on-surface")">
+                            Crew & directing (@credits.Crew.Count)
                         </button>
                     }
                 </div>
@@ -154,48 +172,53 @@
 
             @if (activeList.Count > 0)
             {
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-space-md">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
                     @foreach (var item in activeList)
                     {
-                        <div class="group flex flex-col gap-1 bg-prussian-blue/70 rounded-xl p-2 border border-secondary/15 hover:border-secondary/40 transition-all shadow-sm">
-                            <button @onclick="() => OpenMediaAsync(item)" class="relative w-full aspect-[2/3] rounded-lg overflow-hidden bg-prussian-blue block border border-secondary/10 text-left">
+                        <div @onclick="() => OpenMediaAsync(item)"
+                             class="cursor-pointer group flex flex-col gap-2.5">
+                            <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden bg-background border border-secondary/30 group-hover:border-primary/60 transition-colors">
                                 @if (!string.IsNullOrEmpty(item.PosterUrl))
                                 {
-                                    <img src="@item.PosterUrl" alt="@item.DisplayTitle" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                    <img src="@item.PosterUrl" alt="@item.DisplayTitle" class="w-full h-full object-cover" />
                                 }
                                 else
                                 {
-                                    <div class="w-full h-full flex items-center justify-center text-secondary/40">
+                                    <div class="w-full h-full flex items-center justify-center text-secondary-text">
                                         <span class="material-symbols-outlined text-[36px]">@item.IconName</span>
                                     </div>
                                 }
+
                                 @if (item.VoteAverage.HasValue && item.VoteAverage > 0)
                                 {
-                                    <div class="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-prussian-blue/90 backdrop-blur-sm text-primary font-label-caps text-[10px] border border-primary/20">
-                                        <span class="material-symbols-outlined text-[11px]">star</span>
+                                    <div class="absolute bottom-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/90 text-primary font-title-md text-[11px] border border-secondary/30">
+                                        <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
                                         <span>@item.VoteAverage.Value.ToString("0.0", En)</span>
                                     </div>
                                 }
-                            </button>
+                            </div>
 
-                            <!-- Контрастні та читабельні описи ролей -->
-                            <div class="flex flex-col px-1 py-1">
-                                <button @onclick="() => OpenMediaAsync(item)" class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors line-clamp-1 text-left">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-serif font-semibold text-[15px] text-on-surface group-hover:text-primary transition-colors line-clamp-1" title="@item.DisplayTitle">
                                     @item.DisplayTitle
-                                </button>
-                                <div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant mt-0.5">
-                                    <span class="text-on-surface/70">@(item.DisplayYear ?? "TBA")</span>
-                                    <span class="capitalize text-[11px] text-secondary font-medium">@item.MediaType</span>
+                                </span>
+
+                                <div class="flex items-center justify-between font-body-md text-[12px] text-secondary-text">
+                                    <span>@(item.DisplayYear ?? "TBA")</span>
+                                    <span>@(string.Equals(item.MediaType, "tv", StringComparison.OrdinalIgnoreCase) ? "Series" : "Movie")</span>
                                 </div>
+
                                 @if (!string.IsNullOrEmpty(item.Character))
                                 {
-                                    <span class="text-[12px] font-body-md text-on-surface-variant/90 italic line-clamp-1 mt-0.5">
-                                        as <span class="text-on-surface font-medium not-italic">@item.Character</span>
+                                    <span class="font-body-md text-[12px] text-secondary-text line-clamp-1 mt-0.5" title="@item.Character">
+                                        as <span class="text-on-surface">@item.Character</span>
                                     </span>
                                 }
                                 else if (!string.IsNullOrEmpty(item.Job))
                                 {
-                                    <span class="text-[12px] font-body-md text-secondary font-medium italic line-clamp-1 mt-0.5">@item.Job</span>
+                                    <span class="font-body-md text-[12px] text-primary line-clamp-1 mt-0.5" title="@item.Job">
+                                        @item.Job
+                                    </span>
                                 }
                             </div>
                         </div>
@@ -204,7 +227,9 @@
             }
             else
             {
-                <p class="text-on-surface-variant font-body-md italic py-4">No credits recorded in this category.</p>
+                <p class="font-body-md text-[13px] text-secondary-text py-4">
+                    No credits recorded in this category.
+                </p>
             }
         </section>
     }
@@ -223,6 +248,8 @@
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
+        isBioExpanded = false;
+        activeTab = "cast";
 
         var personTask = TmdbService.GetPersonDetailsAsync(Id);
         var creditsTask = TmdbService.GetPersonCombinedCreditsAsync(Id);
@@ -254,6 +281,7 @@
                 return;
 
             media = DataService.GetOrAddToLibrary(media);
+            await DataService.SaveStateAsync();
         }
 
         Navigation.NavigateTo($"/media/{media.Id}");
@@ -271,3 +299,4 @@
         return null;
     }
 }
+//авкуп

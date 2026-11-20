@@ -8,104 +8,141 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
-<PageTitle>Myosotis · Search Archive</PageTitle>
+<PageTitle>Myosotis · Catalog</PageTitle>
 
-<div class="relative w-full min-h-screen overflow-hidden px-margin py-space-xl bg-surface text-on-surface">
+<div class="w-full px-margin py-margin flex flex-col gap-10">
 
-    <!-- Header -->
-    <section class="relative z-10 flex flex-col gap-space-lg mb-space-xl">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-space-sm">
-                <span class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--color-primary-rgb),0.8)]"></span>
-                <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Global TMDB Catalog</span>
+    <!-- Шапка та панель пошуку -->
+    <section class="flex flex-col gap-6 pb-6 border-b border-secondary/25">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div class="flex flex-col gap-2">
+                <h1 class="font-headline-xl text-headline-xl text-on-surface leading-none">Catalog</h1>
+                <p class="font-body-md text-[14px] text-secondary-text">Search films, series, actors, and directors across TMDB.</p>
             </div>
-            <button @onclick="ToggleAdvancedPanel" type="button" class="flex items-center gap-space-xs text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps cursor-pointer">
-                <span>ADVANCED FILTERS</span>
-                <span class="material-symbols-outlined text-[16px]">tune</span>
+
+            <button @onclick="ToggleAdvancedPanel"
+                    type="button"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border transition-colors font-title-md text-[13px] self-start md:self-auto @(showAdvancedPanel || isAdvancedMode ? "bg-secondary-fill border-primary/50 text-primary" : "bg-background border-secondary/35 text-secondary-text hover:text-on-surface")">
+                <span class="material-symbols-outlined text-[17px]">tune</span>
+                <span>Advanced filters</span>
             </button>
         </div>
 
-        <!-- Search Bar -->
-        <form @onsubmit="ExecuteSearch" @onsubmit:preventDefault class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
+        <!-- Рядок пошуку -->
+        <form @onsubmit="ExecuteSearch" @onsubmit:preventDefault class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div class="relative flex-1 group">
-                <div class="absolute inset-y-0 left-0 pl-space-md flex items-center pointer-events-none text-on-surface-variant group-focus-within:text-primary transition-colors">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-secondary-text group-focus-within:text-primary transition-colors">
                     <span class="material-symbols-outlined text-[20px]">search</span>
                 </div>
 
-                <input class="w-full pl-12 pr-12 py-space-md bg-prussian-blue/95 border border-secondary/30 rounded-xl text-body-lg font-body-lg text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 shadow-inner transition-all"
-                       placeholder="Search films, actors, directors, TMDB database..."
+                <input class="w-full pl-11 pr-11 py-3 bg-surface-variant/25 border border-secondary/35 rounded-xl text-[14px] font-body-md text-on-surface placeholder:text-secondary-text focus:outline-none focus:border-primary transition-colors"
+                       placeholder="Search films, series, actors, directors…"
                        type="text"
                        @bind="searchInput" />
 
                 @if (!string.IsNullOrEmpty(searchInput))
                 {
-                    <button @onclick="ClearSearch" aria-label="Clear active query" class="absolute inset-y-0 right-0 pr-space-md flex items-center text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+                    <button @onclick="ClearSearch"
+                            aria-label="Clear query"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-secondary-text hover:text-on-surface transition-colors"
+                            type="button">
                         <span class="material-symbols-outlined text-[18px]">close</span>
                     </button>
                 }
             </div>
-            <div class="flex items-center gap-space-sm">
-                <button type="submit" class="flex items-center gap-space-xs px-space-lg py-space-md rounded-xl bg-primary text-on-primary font-title-md hover:bg-primary/80 transition-all shadow-md active:scale-95">
-                    <span class="material-symbols-outlined text-[18px]">search</span>
-                    <span>Search</span>
-                </button>
-            </div>
+
+            <button type="submit"
+                    class="px-6 py-3 rounded-xl bg-primary text-on-primary font-title-md font-semibold text-[13px] hover:opacity-90 transition-opacity whitespace-nowrap">
+                Search
+            </button>
         </form>
 
-        <!-- Advanced Search Panel -->
+        <!-- Розширені фільтри -->
         @if (showAdvancedPanel)
         {
-            <div class="mt-space-sm p-space-lg bg-prussian-blue/95 border border-primary/30 rounded-2xl shadow-2xl flex flex-col gap-space-md transition-all animate-fadeIn">
-                <div class="flex items-center justify-between border-b border-secondary/20 pb-space-xs">
-                    <div class="flex items-center gap-2 text-primary font-title-md">
-                        <span class="material-symbols-outlined text-[18px]">tune</span>
-                        <span>Advanced Search</span>
-                    </div>
-                    <button type="button" @onclick="ToggleAdvancedPanel" class="text-on-surface-variant hover:text-on-surface transition-colors">
+            <div class="p-6 bg-surface-variant/25 border border-secondary/35 rounded-xl flex flex-col gap-5">
+                <div class="flex items-center justify-between border-b border-secondary/20 pb-3">
+                    <h2 class="font-serif text-[18px] text-on-surface">Advanced search</h2>
+                    <button type="button"
+                            @onclick="ToggleAdvancedPanel"
+                            class="text-secondary-text hover:text-on-surface transition-colors p-1"
+                            title="Close filters">
                         <span class="material-symbols-outlined text-[18px]">close</span>
                     </button>
                 </div>
 
-                <!-- Media Type Selection -->
-                <div class="flex flex-col gap-1">
-                    <label class="text-label-caps text-on-surface-variant font-label-caps">Target Content</label>
-                    <div class="flex gap-2">
-                        <button type="button" @onclick='() => ChangeAdvancedMediaType(SearchMediaType.All)' class="px-space-md py-1.5 rounded-lg text-title-md font-title-md transition-all @(advancedFilters.MediaType == SearchMediaType.All ? "bg-primary text-on-primary shadow-sm" : "bg-prussian-blue border border-secondary/30 text-on-surface-variant hover:text-on-surface")">All</button>
-                        <button type="button" @onclick='() => ChangeAdvancedMediaType(SearchMediaType.Movies)' class="px-space-md py-1.5 rounded-lg text-title-md font-title-md transition-all @(advancedFilters.MediaType == SearchMediaType.Movies ? "bg-primary text-on-primary shadow-sm" : "bg-prussian-blue border border-secondary/30 text-on-surface-variant hover:text-on-surface")">Movies</button>
-                        <button type="button" @onclick='() => ChangeAdvancedMediaType(SearchMediaType.Series)' class="px-space-md py-1.5 rounded-lg text-title-md font-title-md transition-all @(advancedFilters.MediaType == SearchMediaType.Series ? "bg-primary text-on-primary shadow-sm" : "bg-prussian-blue border border-secondary/30 text-on-surface-variant hover:text-on-surface")">TV Series</button>
+                <!-- Тип контенту -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-title-md text-[12px] text-secondary-text">Content type</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button"
+                                @onclick='() => ChangeAdvancedMediaType(SearchMediaType.All)'
+                                class="px-4 py-1.5 rounded-lg text-[13px] font-title-md transition-colors @(advancedFilters.MediaType == SearchMediaType.All ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
+                            All
+                        </button>
+                        <button type="button"
+                                @onclick='() => ChangeAdvancedMediaType(SearchMediaType.Movies)'
+                                class="px-4 py-1.5 rounded-lg text-[13px] font-title-md transition-colors @(advancedFilters.MediaType == SearchMediaType.Movies ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
+                            Movies
+                        </button>
+                        <button type="button"
+                                @onclick='() => ChangeAdvancedMediaType(SearchMediaType.Series)'
+                                class="px-4 py-1.5 rounded-lg text-[13px] font-title-md transition-colors @(advancedFilters.MediaType == SearchMediaType.Series ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
+                            TV Series
+                        </button>
                     </div>
                 </div>
 
-                <!-- Year & Rating Range Inputs -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-label-caps text-on-surface-variant font-label-caps">Year From</label>
-                        <input type="number" placeholder="e.g. 1990" @bind="advancedFilters.YearFrom" class="px-space-md py-1.5 bg-prussian-blue border border-secondary/30 rounded-lg text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary/40 outline-none" />
+                <!-- Роки та рейтинг -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-title-md text-[12px] text-secondary-text">Year from</label>
+                        <input type="number"
+                               placeholder="e.g. 1990"
+                               @bind="advancedFilters.YearFrom"
+                               class="px-3.5 py-2 bg-background border border-secondary/35 rounded-lg text-on-surface placeholder:text-secondary-text font-body-md text-[13px] focus:border-primary outline-none transition-colors" />
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-label-caps text-on-surface-variant font-label-caps">Year To</label>
-                        <input type="number" placeholder="e.g. 2026" @bind="advancedFilters.YearTo" class="px-space-md py-1.5 bg-prussian-blue border border-secondary/30 rounded-lg text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary/40 outline-none" />
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-title-md text-[12px] text-secondary-text">Year to</label>
+                        <input type="number"
+                               placeholder="e.g. 2026"
+                               @bind="advancedFilters.YearTo"
+                               class="px-3.5 py-2 bg-background border border-secondary/35 rounded-lg text-on-surface placeholder:text-secondary-text font-body-md text-[13px] focus:border-primary outline-none transition-colors" />
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-label-caps text-on-surface-variant font-label-caps">Min Rating (TMDB)</label>
-                        <input type="number" step="0.5" min="0" max="10" placeholder="0.0 - 10.0" @bind="advancedFilters.RatingFrom" class="px-space-md py-1.5 bg-prussian-blue border border-secondary/30 rounded-lg text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary/40 outline-none" />
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-title-md text-[12px] text-secondary-text">Min rating (TMDB)</label>
+                        <input type="number"
+                               step="0.5"
+                               min="0"
+                               max="10"
+                               placeholder="e.g. 6.0"
+                               @bind="advancedFilters.RatingFrom"
+                               class="px-3.5 py-2 bg-background border border-secondary/35 rounded-lg text-on-surface placeholder:text-secondary-text font-body-md text-[13px] focus:border-primary outline-none transition-colors" />
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-label-caps text-on-surface-variant font-label-caps">Max Rating (TMDB)</label>
-                        <input type="number" step="0.5" min="0" max="10" placeholder="0.0 - 10.0" @bind="advancedFilters.RatingTo" class="px-space-md py-1.5 bg-prussian-blue border border-secondary/30 rounded-lg text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary/40 outline-none" />
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-title-md text-[12px] text-secondary-text">Max rating (TMDB)</label>
+                        <input type="number"
+                               step="0.5"
+                               min="0"
+                               max="10"
+                               placeholder="e.g. 9.0"
+                               @bind="advancedFilters.RatingTo"
+                               class="px-3.5 py-2 bg-background border border-secondary/35 rounded-lg text-on-surface placeholder:text-secondary-text font-body-md text-[13px] focus:border-primary outline-none transition-colors" />
                     </div>
                 </div>
 
-                <!-- Genres Selection -->
+                <!-- Жанри -->
                 @if (availableGenres.Count > 0)
                 {
-                    <div class="flex flex-col gap-1">
-                        <label class="text-label-caps text-on-surface-variant font-label-caps">Genres</label>
-                        <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
+                    <div class="flex flex-col gap-2">
+                        <label class="font-title-md text-[12px] text-secondary-text">Genres</label>
+                        <div class="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
                             @foreach (var genre in availableGenres)
                             {
                                 bool isSelected = advancedFilters.SelectedGenreIds.Contains(genre.Id);
-                                <button type="button" @onclick="() => ToggleGenre(genre.Id)" class="px-3 py-1 rounded-full text-label-sm font-label-sm border transition-all @(isSelected ? "bg-primary/20 border-primary text-primary font-semibold" : "bg-prussian-blue/60 border-secondary/20 text-on-surface-variant hover:border-secondary/50 hover:text-on-surface")">
+                                <button type="button"
+                                        @onclick="() => ToggleGenre(genre.Id)"
+                                        class="px-3 py-1 rounded-lg text-[12px] font-title-md border transition-colors @(isSelected ? "bg-secondary-fill border-primary/60 text-primary" : "bg-background border-secondary/30 text-secondary-text hover:text-on-surface")">
                                     @genre.Name
                                 </button>
                             }
@@ -113,118 +150,130 @@
                     </div>
                 }
 
-                <!-- Keywords -->
+                <!-- Ключові слова -->
                 <div class="flex flex-col gap-2">
-                    <label class="text-label-caps text-on-surface-variant font-label-caps">Keywords</label>
+                    <label class="font-title-md text-[12px] text-secondary-text">Keywords</label>
 
                     <input type="text"
                            value="@keywordInput"
                            @oninput="OnKeywordInput"
-                           placeholder="Search keywords..."
-                           class="w-full px-space-md py-2 bg-prussian-blue border border-secondary/30 rounded-lg text-on-surface outline-none focus:border-primary" />
+                           placeholder="Search keywords…"
+                           class="w-full px-3.5 py-2 bg-background border border-secondary/35 rounded-lg text-on-surface placeholder:text-secondary-text font-body-md text-[13px] outline-none focus:border-primary transition-colors" />
 
                     @if (keywordSuggestions.Count > 0)
                     {
-                        <div class="flex flex-col rounded-lg border border-secondary/30 overflow-hidden bg-prussian-blue/95">
+                        <div class="flex flex-col rounded-lg border border-secondary/35 overflow-hidden bg-background">
                             @foreach (var keyword in keywordSuggestions)
                             {
                                 <button type="button"
                                         @onclick="() => AddKeyword(keyword)"
-                                        class="text-left px-3 py-2 hover:bg-primary/10 text-on-surface">
+                                        class="text-left px-3.5 py-2 hover:bg-surface-variant/40 text-on-surface font-body-md text-[13px] border-b border-secondary/15 last:border-b-0 transition-colors">
                                     @keyword.Name
                                 </button>
                             }
                         </div>
                     }
 
-                    <div class="flex flex-wrap gap-2">
-                        @foreach (var keyword in advancedFilters.SelectedKeywords)
-                        {
-                            <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-sm">
-                                @keyword.Name
-                                <button type="button" @onclick="() => RemoveKeyword(keyword.Id)">
-                                    ×
-                                </button>
-                            </span>
-                        }
-                    </div>
+                    @if (advancedFilters.SelectedKeywords.Count > 0)
+                    {
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            @foreach (var keyword in advancedFilters.SelectedKeywords)
+                            {
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-secondary-fill border border-primary/40 text-primary font-title-md text-[12px]">
+                                    <span>@keyword.Name</span>
+                                    <button type="button"
+                                            @onclick="() => RemoveKeyword(keyword.Id)"
+                                            class="text-on-surface hover:text-error transition-colors"
+                                            aria-label="Remove keyword">
+                                        ×
+                                    </button>
+                                </span>
+                            }
+                        </div>
+                    }
                 </div>
 
-                <!-- Actions -->
-                <div class="flex items-center justify-end gap-space-sm pt-space-xs border-t border-secondary/20">
-                    <button type="button" @onclick="ResetAdvancedFilters" class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-on-surface text-title-md font-title-md transition-colors">
-                        Reset Filters
+                <!-- Кнопки дій -->
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-secondary/20">
+                    <button type="button"
+                            @onclick="ResetAdvancedFilters"
+                            class="px-4 py-2 rounded-lg text-secondary-text hover:text-on-surface text-[13px] font-title-md transition-colors">
+                        Reset
                     </button>
-                    <button type="button" @onclick="ApplyAdvancedFilters" class="px-space-lg py-space-xs rounded-lg bg-primary text-on-primary text-title-md font-title-md hover:bg-primary/80 transition-all flex items-center gap-1 shadow-md">
-                        <span class="material-symbols-outlined text-[16px]">done</span>
-                        <span>Apply Filters</span>
+                    <button type="button"
+                            @onclick="ApplyAdvancedFilters"
+                            class="px-5 py-2 rounded-lg bg-primary text-on-primary text-[13px] font-title-md font-semibold hover:opacity-90 transition-opacity">
+                        Apply filters
                     </button>
                 </div>
             </div>
         }
 
-        <!-- Result Stats & Heading -->
+        <!-- Підзаголовок результатів і таби -->
         @if (!string.IsNullOrWhiteSpace(Query) || isAdvancedMode)
         {
-            <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-space-xs border-b border-secondary/15 pb-space-sm mt-space-md">
-                <h1 class="font-headline-lg text-headline-lg text-on-surface">
+            <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pt-2">
+                <h2 class="font-serif text-[22px] text-on-surface">
                     @if (isAdvancedMode)
                     {
-                        <span>Advanced Discover Results</span>
+                        <span>Filtered results</span>
                     }
                     else
                     {
                         <span>Results for </span>
-                        <span class="italic text-primary font-serif">“@Query”</span>
+                        <span class="text-primary">“@Query”</span>
                     }
-                </h1>
-                <p class="font-body-md text-body-md text-on-surface-variant">
-                    <span class="text-on-surface font-title-md">@(totalResults > 0 ? totalResults : GetFilteredResults().Count)</span> entries discovered
+                </h2>
+                <p class="font-body-md text-[13px] text-secondary-text">
+                    <strong class="text-on-surface font-semibold">@(totalResults > 0 ? totalResults : GetFilteredResults().Count)</strong> entries found
                 </p>
             </div>
         }
 
-        <!-- Filter Bar -->
         @if (!isAdvancedMode && (results.Count > 0 || peopleResults.Count > 0 || !string.IsNullOrWhiteSpace(Query)))
         {
-            <div class="flex items-center gap-space-xs overflow-x-auto pb-space-xs custom-scrollbar">
-                <button @onclick='() => SelectFilter("All")' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all shadow-sm flex items-center gap-1.5 @(selectedFilter == "All" ? "bg-primary text-on-primary" : "bg-prussian-blue/90 border border-secondary/20 text-on-surface-variant hover:border-primary/40 hover:text-on-surface")">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                <button @onclick='() => SelectFilter("All")'
+                        class="px-3.5 py-1.5 rounded-lg font-title-md text-[13px] transition-colors inline-flex items-center gap-1.5 @(selectedFilter == "All" ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
                     <span>All</span>
-                    <span class="text-[11px] opacity-75 font-label-sm">(@(totalMovies + totalSeries + totalPeople > 0 ? totalMovies + totalSeries + totalPeople : results.Count + peopleResults.Count))</span>
+                    <span class="text-[11px] opacity-80">(@(totalMovies + totalSeries + totalPeople > 0 ? totalMovies + totalSeries + totalPeople : results.Count + peopleResults.Count))</span>
                 </button>
-                <button @onclick='() => SelectFilter("Movies")' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "Movies" ? "bg-primary text-on-primary" : "bg-prussian-blue/90 border border-secondary/20 text-on-surface-variant hover:border-primary/40 hover:text-on-surface")">
+                <button @onclick='() => SelectFilter("Movies")'
+                        class="px-3.5 py-1.5 rounded-lg font-title-md text-[13px] transition-colors inline-flex items-center gap-1.5 @(selectedFilter == "Movies" ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
                     <span>Movies</span>
-                    <span class="text-[11px] opacity-60 font-label-sm">(@(totalMovies > 0 ? totalMovies : CountMovies()))</span>
+                    <span class="text-[11px] opacity-80">(@(totalMovies > 0 ? totalMovies : CountMovies()))</span>
                 </button>
-                <button @onclick='() => SelectFilter("Series")' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "Series" ? "bg-primary text-on-primary" : "bg-prussian-blue/90 border border-secondary/20 text-on-surface-variant hover:border-primary/40 hover:text-on-surface")">
+                <button @onclick='() => SelectFilter("Series")'
+                        class="px-3.5 py-1.5 rounded-lg font-title-md text-[13px] transition-colors inline-flex items-center gap-1.5 @(selectedFilter == "Series" ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
                     <span>TV Series</span>
-                    <span class="text-[11px] opacity-60 font-label-sm">(@(totalSeries > 0 ? totalSeries : CountSeries()))</span>
+                    <span class="text-[11px] opacity-80">(@(totalSeries > 0 ? totalSeries : CountSeries()))</span>
                 </button>
-                <button @onclick='() => SelectFilter("People")' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "People" ? "bg-primary text-on-primary" : "bg-prussian-blue/90 border border-secondary/20 text-on-surface-variant hover:border-primary/40 hover:text-on-surface")">
-                    <span>Actors & Directors</span>
-                    <span class="text-[11px] opacity-60 font-label-sm">(@(totalPeople > 0 ? totalPeople : peopleResults.Count))</span>
+                <button @onclick='() => SelectFilter("People")'
+                        class="px-3.5 py-1.5 rounded-lg font-title-md text-[13px] transition-colors inline-flex items-center gap-1.5 @(selectedFilter == "People" ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
+                    <span>People</span>
+                    <span class="text-[11px] opacity-80">(@(totalPeople > 0 ? totalPeople : peopleResults.Count))</span>
                 </button>
-                <button @onclick='() => SelectFilter("Watchlist")' class="px-space-md py-1.5 rounded-full font-title-md text-title-md transition-all flex items-center gap-1.5 @(selectedFilter == "Watchlist" ? "bg-primary text-on-primary" : "bg-prussian-blue/90 border border-secondary/20 text-secondary hover:border-primary/40 hover:text-on-surface")">
-                    <span class="material-symbols-outlined text-[14px]">bookmark</span>
+                <button @onclick='() => SelectFilter("Watchlist")'
+                        class="px-3.5 py-1.5 rounded-lg font-title-md text-[13px] transition-colors inline-flex items-center gap-1.5 @(selectedFilter == "Watchlist" ? "bg-primary text-on-primary font-semibold" : "bg-background border border-secondary/35 text-secondary-text hover:text-on-surface")">
                     <span>In Watchlists</span>
-                    <span class="text-[11px] opacity-60 font-label-sm">(@CountInWatchlist())</span>
+                    <span class="text-[11px] opacity-80">(@CountInWatchlist())</span>
                 </button>
             </div>
         }
     </section>
 
-    <!-- Main Results Section -->
+    <!-- Результати пошуку -->
     @if (isSearching)
     {
-        <div class="flex flex-col items-center justify-center py-space-xl gap-4">
-            <div class="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase">Querying TMDB Global Archive...</span>
+        <div class="flex flex-col items-center justify-center py-20 gap-4">
+            <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <span class="font-body-md text-[13px] text-secondary-text">Searching catalog…</span>
         </div>
     }
     else if (HasAnyDisplayResults())
     {
-        <div class="flex flex-col gap-space-lg transition-all duration-300">
-            <!-- Media Cards -->
+        <div class="flex flex-col gap-5">
+            <!-- Фільми та серіали -->
             @if (selectedFilter != "People")
             {
                 @foreach (var m in GetFilteredResults())
@@ -232,139 +281,138 @@
                     var containingList = GetContainingWatchlist(m);
                     bool isWatched = Me.IsWatched(m);
                     int searchTimeDebt = m.CalculateTimeDebt();
-                    double? userRating = GetUserRating(m);
 
-                    <article class="group relative bg-prussian-blue/90 rounded-2xl p-space-lg sm:p-space-xl hover:border-primary/50 transition-all duration-300 shadow-lg border border-secondary/25">
-                        <div class="flex flex-col lg:flex-row gap-space-lg items-start">
-                            <!-- Poster -->
-                            <a href="/media/@m.Id" class="relative w-full lg:w-48 shrink-0 aspect-[2/3] rounded-xl overflow-hidden bg-prussian-blue shadow-md block border border-secondary/20 group/poster">
+                    <article class="group bg-surface-variant/20 hover:bg-surface-variant/35 rounded-xl p-5 transition-colors border border-secondary/25">
+                        <div class="flex flex-col md:flex-row gap-6 items-start">
+                            <!-- Постер -->
+                            <a href="/media/@m.Id"
+                               class="w-28 sm:w-32 shrink-0 aspect-[2/3] rounded-lg overflow-hidden bg-background block border border-secondary/30 group-hover:border-primary/50 transition-colors">
                                 @if (!string.IsNullOrEmpty(m.PosterUrl))
                                 {
-                                    <img src="@m.PosterUrl" alt="@m.Title" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover/poster:scale-105 transition-transform duration-500 ease-out" />
+                                    <img src="@m.PosterUrl" alt="@m.Title" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                                 }
                                 else
                                 {
-                                    <div class="w-full h-full flex items-center justify-center text-secondary/40">
-                                        <span class="material-symbols-outlined text-[48px]">movie</span>
+                                    <div class="w-full h-full flex items-center justify-center text-secondary-text text-[12px]">
+                                        —
                                     </div>
                                 }
-                                <div class="absolute inset-0 bg-gradient-to-t from-prussian-blue via-transparent to-transparent opacity-80"></div>
                             </a>
 
-                            <!-- Content Column -->
-                            <div class="flex flex-col flex-1 min-w-0 justify-between gap-space-md w-full">
-                                <div class="flex flex-col gap-space-xs">
-                                    <!-- Badges & Tags -->
-                                    <div class="flex flex-wrap items-center gap-space-xs w-full">
-                                        <span class="px-space-sm py-0.5 rounded-md bg-primary/15 border border-primary/30 font-label-caps text-label-caps text-primary tracking-wider uppercase">
-                                            @(m is Series ? "TV Series" : "Feature Film")
+                            <!-- Інформація -->
+                            <div class="flex flex-col flex-1 min-w-0 justify-between gap-4 w-full">
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex flex-wrap items-center gap-2 w-full">
+                                        <span class="px-2.5 py-0.5 rounded-md bg-secondary-fill text-primary font-title-md text-[11px]">
+                                            @(m is Series ? "TV Series" : "Movie")
                                         </span>
 
-                                        <span class="px-space-sm py-0.5 rounded-md bg-prussian-blue border border-secondary/30 font-label-caps text-label-caps text-on-surface font-semibold">
+                                        <span class="font-body-md text-[12px] text-secondary-text">
                                             @m.ReleaseYear
                                         </span>
 
                                         @if (searchTimeDebt > 1)
                                         {
-                                            <span class="px-space-sm py-0.5 rounded-md bg-prussian-blue border border-secondary/30 font-label-caps text-label-caps text-on-surface-variant font-medium">
+                                            <span class="text-secondary/40">·</span>
+                                            <span class="font-body-md text-[12px] text-secondary-text">
                                                 @UiHelpers.FormatMinutes(searchTimeDebt)
                                             </span>
                                         }
 
                                         @if (m.Genres != null && m.Genres.Count > 0)
                                         {
-                                            <span class="text-on-surface-variant/40 font-body-md">•</span>
-                                            <span class="font-label-sm text-label-sm text-secondary tracking-wide">@string.Join(" • ", m.Genres)</span>
+                                            <span class="text-secondary/40">·</span>
+                                            <span class="font-body-md text-[12px] text-secondary-text">@string.Join(", ", m.Genres)</span>
                                         }
 
-                                        <!-- User Status Badges -->
+                                        <!-- Користувацькі мітки -->
                                         <div class="flex items-center gap-2 ml-auto flex-wrap">
                                             @if (Me.IsFavorite(m))
                                             {
-                                                <span class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary text-label-sm font-label-sm border border-tertiary/30 shadow-sm" title="Favorite">
-                                                    <span class="material-symbols-outlined text-[14px] text-tertiary" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-tertiary/15 text-tertiary text-[11px] font-title-md border border-tertiary/30">
+                                                    <span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
                                                     <span>Favorite</span>
                                                 </span>
                                             }
 
                                             @if (containingList != null)
                                             {
-                                                <span class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/15 text-primary text-label-sm font-label-sm border border-primary/30 shadow-sm">
-                                                    <span class="material-symbols-outlined text-[14px] text-primary">bookmark</span>
-                                                    <span>In Watchlist: @containingList.Name</span>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-secondary-fill text-primary text-[11px] font-title-md border border-primary/30">
+                                                    <span>In list: @containingList.Name</span>
                                                 </span>
                                             }
 
                                             @if (isWatched)
                                             {
-                                                <span class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary/20 text-on-surface text-label-sm font-label-sm border border-secondary/40 shadow-sm">
-                                                    <span class="material-symbols-outlined text-[14px] text-secondary">check_circle</span>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-background text-on-surface text-[11px] font-title-md border border-secondary/35">
+                                                    <span class="material-symbols-outlined text-[13px] text-primary">check_circle</span>
                                                     <span>Watched</span>
                                                 </span>
                                             }
                                         </div>
                                     </div>
 
-                                    <!-- Title & Ratings -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs mt-1">
-                                        <div class="flex items-center gap-space-md flex-wrap">
-                                            <a href="/media/@m.Id" class="font-headline-lg text-headline-lg text-on-surface group-hover:text-primary transition-colors">
-                                                @m.Title
-                                            </a>
+                                    <!-- Назва та рейтинги -->
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <a href="/media/@m.Id"
+                                           class="font-serif font-semibold text-[22px] text-on-surface group-hover:text-primary transition-colors">
+                                            @m.Title
+                                        </a>
 
-                                            @if (m.TmdbRating.HasValue)
+                                        @if (m.TmdbRating.HasValue)
+                                        {
+                                            <div class="inline-flex items-center gap-1 text-[13px] font-title-md text-on-surface" title="TMDB Rating">
+                                                <span class="material-symbols-outlined text-[15px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+                                                <span>@m.TmdbRating.Value.ToString("0.0", En)</span>
+                                                <span class="text-[11px] text-secondary-text font-normal">TMDB</span>
+                                            </div>
+                                        }
+
+                                        @if (m.Vibe != null)
+                                        {
+                                            var vibeAverage = m.Vibe.CalculateAverage();
+                                            @if (vibeAverage > 0)
                                             {
-                                                <div class="flex items-center gap-1 px-2 py-0.5 rounded-md bg-prussian-blue/90 border border-secondary/30 text-label-sm font-label-sm" title="TMDB Rating">
-                                                    <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
-                                                    <span class="text-on-surface font-title-md font-bold">@m.TmdbRating.Value.ToString("0.0", En)</span>
-                                                    <span class="text-[10px] text-on-surface-variant/60 uppercase font-medium">TMDB</span>
+                                                <div class="inline-flex items-center gap-1 text-[13px] font-title-md text-tertiary" title="Your Vibe Rating">
+                                                    <span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                                    <span>@vibeAverage.ToString("0.0", En)</span>
+                                                    <span class="text-[11px] text-secondary-text font-normal">Vibe</span>
                                                 </div>
                                             }
-
-                                            @if (m.Vibe != null)
-                                            {
-                                                var vibeAverage = m.Vibe.CalculateAverage();
-                                                @if (vibeAverage > 0)
-                                                {
-                                                    <div class="flex items-center gap-1 px-2 py-0.5 rounded-md bg-tertiary/10 border border-tertiary/30 text-label-sm font-label-sm" title="Personal Vibe Rating">
-                                                        <span class="material-symbols-outlined text-[16px] text-tertiary">star_shine</span>
-                                                        <span class="text-tertiary font-title-md font-bold">@vibeAverage.ToString("0.0", En)</span>
-                                                        <span class="text-[10px] text-tertiary/80 uppercase font-semibold">Vibe</span>
-                                                    </div>
-                                                }
-                                            }
-                                        </div>
+                                        }
                                     </div>
 
                                     @if (!string.IsNullOrWhiteSpace(m.Description))
                                     {
-                                        <p class="font-body-lg text-body-lg text-on-surface-variant/90 line-clamp-2 max-w-3xl mt-1 leading-relaxed">
+                                        <p class="font-body-md text-[13px] text-secondary-text line-clamp-2 max-w-4xl leading-relaxed">
                                             @m.Description
                                         </p>
                                     }
                                 </div>
 
-                                <!-- Action Buttons -->
-                                <div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-md border-t border-secondary/20 mt-space-xs">
-                                    <div class="flex flex-wrap items-center gap-space-sm w-full sm:w-auto justify-between sm:justify-start">
-                                        <a href="/media/@m.Id" class="px-space-md py-space-xs rounded-xl bg-primary text-on-primary font-title-md text-title-md hover:bg-primary/80 transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
-                                            <span>View Details</span>
-                                            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                <!-- Дії -->
+                                <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-secondary/15">
+                                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                        <a href="/media/@m.Id"
+                                           class="px-4 py-1.5 rounded-lg bg-primary text-on-primary font-title-md font-semibold text-[12px] hover:opacity-90 transition-opacity inline-flex items-center gap-1.5">
+                                            <span>Details</span>
+                                            <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
                                         </a>
 
                                         @if (Me.Watchlists.Count > 0)
                                         {
                                             <div class="flex items-center gap-2">
                                                 <select @onchange="e => PickList(m, e.Value?.ToString())"
-                                                        class="bg-prussian-blue border border-secondary/40 rounded-xl px-3 py-1.5 text-primary font-title-md text-title-md outline-none focus:border-primary cursor-pointer transition-colors">
+                                                        aria-label="Choose watchlist"
+                                                        class="bg-background border border-secondary/35 rounded-lg px-3 py-1.5 text-on-surface font-body-md text-[12px] outline-none focus:border-primary cursor-pointer transition-colors">
                                                     @foreach (var list in Me.Watchlists)
                                                     {
-                                                        <option value="@list.Name" class="bg-prussian-blue text-on-surface">@list.Name</option>
+                                                        <option value="@list.Name" class="bg-background text-on-surface">@list.Name</option>
                                                     }
                                                 </select>
-                                                <button @onclick="async () => await AddToList(m)" class="px-space-md py-space-xs rounded-xl bg-prussian-blue hover:bg-primary/20 text-on-surface hover:text-primary font-title-md text-title-md transition-all flex items-center gap-1.5 border border-secondary/40 active:scale-95">
-                                                    <span class="material-symbols-outlined text-[16px] text-primary">bookmark_add</span>
-                                                    <span>+ Add</span>
+                                                <button @onclick="async () => await AddToList(m)"
+                                                        class="px-3.5 py-1.5 rounded-lg border border-primary/50 text-primary hover:bg-primary hover:text-on-primary font-title-md font-semibold text-[12px] transition-colors whitespace-nowrap">
+                                                    Add
                                                 </button>
                                             </div>
                                         }
@@ -376,52 +424,51 @@
                 }
             }
 
-            <!-- Person Cards -->
+            <!-- Персони -->
             @if (selectedFilter == "All" || selectedFilter == "People")
             {
                 @foreach (var p in peopleResults)
                 {
-                    <article class="group relative bg-prussian-blue/90 rounded-2xl p-space-lg sm:p-space-xl hover:border-primary/50 transition-all duration-300 shadow-lg border border-secondary/25">
-                        <div class="flex flex-col sm:flex-row gap-space-lg items-start">
-                            <!-- Profile Avatar -->
-                            <a href="/person/@p.Id" class="relative w-full sm:w-36 shrink-0 aspect-[2/3] rounded-xl overflow-hidden bg-prussian-blue shadow-md block border border-secondary/20 group/avatar">
+                    <article class="group bg-surface-variant/20 hover:bg-surface-variant/35 rounded-xl p-5 transition-colors border border-secondary/25">
+                        <div class="flex flex-col sm:flex-row gap-6 items-start">
+                            <a href="/person/@p.Id"
+                               class="w-24 sm:w-28 shrink-0 aspect-[2/3] rounded-lg overflow-hidden bg-background block border border-secondary/30 group-hover:border-primary/50 transition-colors">
                                 @if (!string.IsNullOrEmpty(p.ProfileUrl))
                                 {
-                                    <img src="@p.ProfileUrl" alt="@p.Name" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover/avatar:scale-105 transition-transform duration-500 ease-out" />
+                                    <img src="@p.ProfileUrl" alt="@p.Name" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                                 }
                                 else
                                 {
-                                    <div class="w-full h-full flex items-center justify-center text-secondary/40">
-                                        <span class="material-symbols-outlined text-[48px]">person</span>
+                                    <div class="w-full h-full flex items-center justify-center text-secondary-text">
+                                        <span class="material-symbols-outlined text-[32px]">person</span>
                                     </div>
                                 }
                             </a>
 
-                            <!-- Info -->
-                            <div class="flex flex-col flex-1 min-w-0 justify-between gap-space-sm h-full">
-                                <div class="flex flex-col gap-space-xs">
-                                    <div class="flex flex-wrap items-center gap-space-xs">
-                                        <span class="px-space-sm py-0.5 rounded-md bg-primary/10 border border-primary/20 font-label-caps text-label-caps text-primary tracking-wider uppercase">
-                                            @(p.KnownForDepartment ?? "Film Industry")
-                                        </span>
-                                    </div>
+                            <div class="flex flex-col flex-1 min-w-0 justify-between gap-3">
+                                <div class="flex flex-col gap-1.5">
+                                    <span class="px-2.5 py-0.5 rounded-md bg-secondary-fill text-primary font-title-md text-[11px] w-fit">
+                                        @(p.KnownForDepartment ?? "Film Industry")
+                                    </span>
 
-                                    <a href="/person/@p.Id" class="font-headline-lg text-headline-lg text-on-surface group-hover:text-primary transition-colors mt-1">
+                                    <a href="/person/@p.Id"
+                                       class="font-serif font-semibold text-[22px] text-on-surface group-hover:text-primary transition-colors">
                                         @p.Name
                                     </a>
 
                                     @if (!string.IsNullOrWhiteSpace(p.KnownForTitles))
                                     {
-                                        <p class="font-body-md text-body-md text-on-surface-variant/80 mt-1">
-                                            <span class="text-secondary font-medium">Known for:</span> @p.KnownForTitles
+                                        <p class="font-body-md text-[13px] text-secondary-text">
+                                            <span class="text-on-surface font-medium">Known for:</span> @p.KnownForTitles
                                         </p>
                                     }
                                 </div>
 
-                                <div class="pt-space-md border-t border-secondary/20 mt-2">
-                                    <a href="/person/@p.Id" class="inline-flex items-center gap-1.5 px-space-md py-space-xs rounded-xl bg-primary text-on-primary font-title-md text-title-md hover:bg-primary/80 transition-all shadow-sm active:scale-95">
-                                        <span>View Profile</span>
-                                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                <div class="pt-2">
+                                    <a href="/person/@p.Id"
+                                       class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-secondary/35 text-on-surface hover:text-primary hover:border-primary/60 font-title-md text-[12px] transition-colors">
+                                        <span>View profile</span>
+                                        <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
                                     </a>
                                 </div>
                             </div>
@@ -431,113 +478,92 @@
             }
         </div>
 
-        <!-- Pagination -->
+        <!-- Пагінація -->
         @if (totalPages > 1 && selectedFilter != "Watchlist")
         {
-            <div class="flex items-center justify-center gap-space-md mt-space-xl pt-space-lg border-t border-secondary/20">
-                <button disabled="@(currentPage <= 1)" @onclick="PrevPage"
-                        class="px-space-md py-space-xs rounded-xl bg-prussian-blue text-on-surface hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 flex items-center gap-2 border border-secondary/30 active:scale-95">
-                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                    <span class="font-title-md">Prev</span>
+            <div class="flex items-center justify-center gap-4 pt-6 border-t border-secondary/25">
+                <button disabled="@(currentPage <= 1)"
+                        @onclick="PrevPage"
+                        class="px-4 py-2 rounded-lg bg-background border border-secondary/35 text-on-surface hover:border-primary/60 hover:text-primary transition-colors disabled:opacity-40 inline-flex items-center gap-1.5 font-title-md text-[13px]">
+                    <span class="material-symbols-outlined text-[17px]">chevron_left</span>
+                    <span>Previous</span>
                 </button>
 
-                <div class="font-body-md text-on-surface-variant flex gap-2 items-center mx-2">
+                <div class="font-body-md text-[13px] text-secondary-text flex gap-2 items-center">
                     <span>Page</span>
-                    <span class="text-on-surface font-title-md bg-prussian-blue px-3 py-1 rounded-lg border border-secondary/40 shadow-inner">@currentPage</span>
+                    <span class="text-on-surface font-semibold">@currentPage</span>
                     <span>of @totalPages</span>
                 </div>
 
-                <button disabled="@(currentPage >= totalPages)" @onclick="NextPage"
-                        class="px-space-md py-space-xs rounded-xl bg-prussian-blue text-on-surface hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 flex items-center gap-2 border border-secondary/30 active:scale-95">
-                    <span class="font-title-md">Next</span>
-                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                <button disabled="@(currentPage >= totalPages)"
+                        @onclick="NextPage"
+                        class="px-4 py-2 rounded-lg bg-background border border-secondary/35 text-on-surface hover:border-primary/60 hover:text-primary transition-colors disabled:opacity-40 inline-flex items-center gap-1.5 font-title-md text-[13px]">
+                    <span>Next</span>
+                    <span class="material-symbols-outlined text-[17px]">chevron_right</span>
                 </button>
             </div>
         }
     }
     else if (!string.IsNullOrWhiteSpace(Query) || isAdvancedMode)
     {
-        <!-- Empty State -->
-        <div class="flex flex-col items-center justify-center py-space-xl px-space-md text-center transition-all duration-300 mb-space-xl">
-            <div class="relative w-24 h-24 mb-space-md flex items-center justify-center">
-                <div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
-                <div class="relative w-16 h-16 rounded-2xl bg-prussian-blue/90 flex items-center justify-center text-on-surface-variant/50 border border-secondary/20 shadow-lg">
-                    <span class="material-symbols-outlined text-[36px] text-primary/70">hourglass_empty</span>
-                </div>
-            </div>
-            <span class="font-label-caps text-label-caps text-primary tracking-widest uppercase mb-space-xs">NO RESULTS FOUND</span>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface max-w-xl">
-                The archive is silent.
+        <!-- Порожній результат пошуку -->
+        <div class="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto gap-3">
+            <h2 class="font-serif text-[22px] text-on-surface">
+                Nothing matched your search
             </h2>
-            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mt-space-sm mb-space-lg">
-                No matches found for your active criteria in the catalog.
+            <p class="font-body-md text-[14px] text-secondary-text leading-relaxed">
+                Try adjusting your keywords or clearing active filters.
             </p>
-
-            <div class="flex flex-wrap items-center justify-center gap-space-sm">
-                <button @onclick="ClearSearch" class="px-space-lg py-space-xs rounded-xl bg-primary/20 text-primary font-title-md text-title-md hover:bg-primary hover:text-on-primary transition-all flex items-center gap-1.5 shadow-sm border border-primary/30 active:scale-95">
-                    <span class="material-symbols-outlined text-[16px]">restart_alt</span>
-                    <span>Reset Search</span>
-                </button>
-            </div>
+            <button @onclick="ClearSearch"
+                    class="mt-2 px-5 py-2 rounded-lg border border-primary/50 text-primary hover:bg-primary hover:text-on-primary font-title-md font-semibold text-[13px] transition-colors">
+                Reset search
+            </button>
         </div>
     }
     else
     {
+        <!-- Тренди тижня -->
         @if (trendingMedia.Count > 0)
         {
-            <div class="mt-space-md">
-                <div class="flex items-center justify-between mb-space-md">
-                    <div class="flex items-center gap-space-sm">
-                        <span class="material-symbols-outlined text-primary text-[24px]">trending_up</span>
-                        <h2 class="font-headline-lg text-headline-lg text-on-surface">Trending Now</h2>
-                    </div>
-                    <span class="font-label-caps text-label-caps text-on-surface-variant">Popular this week</span>
+            <section class="flex flex-col gap-5">
+                <div class="flex items-baseline justify-between pb-2.5 border-b border-secondary/25">
+                    <h2 class="font-serif text-[22px] text-on-surface">Trending this week</h2>
+                    <span class="font-body-md text-[12px] text-secondary-text">Popular on TMDB</span>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-space-md">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
                     @foreach (var media in trendingMedia.Take(18))
                     {
-                        <a href="/media/@media.Id" class="group flex flex-col gap-2 bg-prussian-blue/60 border border-secondary/20 rounded-xl p-2 hover:border-primary/50 transition-all duration-300">
-                            <div class="aspect-[2/3] w-full rounded-lg overflow-hidden bg-prussian-blue relative">
+                        <a href="/media/@media.Id" class="group flex flex-col gap-2.5">
+                            <div class="aspect-[2/3] w-full rounded-lg overflow-hidden bg-background relative border border-secondary/30 group-hover:border-primary/60 transition-colors">
                                 @if (!string.IsNullOrEmpty(media.PosterUrl))
                                 {
-                                    <img src="@media.PosterUrl" alt="@media.Title" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
+                                    <img src="@media.PosterUrl" alt="@media.Title" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                                 }
                                 else
                                 {
-                                    <div class="w-full h-full flex items-center justify-center text-secondary/40">
-                                        <span class="material-symbols-outlined text-[32px]">movie</span>
+                                    <div class="w-full h-full flex items-center justify-center text-secondary-text text-[12px]">
+                                        —
                                     </div>
                                 }
                                 @if (media.TmdbRating.HasValue)
                                 {
-                                    <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-prussian-blue/95 border border-secondary/30 text-primary text-[11px] font-bold flex items-center gap-0.5">
+                                    <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-background/90 border border-secondary/35 text-primary text-[11px] font-title-md font-semibold inline-flex items-center gap-0.5">
                                         <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
                                         <span>@media.TmdbRating.Value.ToString("0.0", En)</span>
                                     </div>
                                 }
                             </div>
-                            <div class="flex flex-col">
-                                <span class="font-title-md text-title-md text-on-surface truncate group-hover:text-primary transition-colors">@media.Title</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">@media.ReleaseYear</span>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-serif font-semibold text-[15px] text-on-surface truncate group-hover:text-primary transition-colors">@media.Title</span>
+                                <span class="font-body-md text-[12px] text-secondary-text">@media.ReleaseYear</span>
                             </div>
                         </a>
                     }
                 </div>
-            </div>
+            </section>
         }
     }
-
-    <!-- Footer -->
-    <footer class="mt-space-xl pt-space-md border-t border-secondary/20 flex flex-col sm:flex-row items-center justify-between gap-space-sm text-on-surface-variant/60 font-label-sm text-label-sm">
-        <div class="flex items-center gap-space-xs">
-            <span class="w-1.5 h-1.5 rounded-full bg-primary/70"></span>
-            <span>Myosotis • @(totalResults > 0 ? totalResults : results.Count + peopleResults.Count) Active Query Matches</span>
-        </div>
-        <div>
-            <span>Personal Journal</span>
-        </div>
-    </footer>
 </div>
 
 @code {
@@ -606,8 +632,6 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        results = new List<Media>();
-        peopleResults = new List<TmdbPersonSearchDto>();
         searchInput = Query ?? "";
         currentPage = PageParam > 0 ? PageParam : 1;
         selectedFilter = !string.IsNullOrWhiteSpace(FilterParam) ? FilterParam : "All";
@@ -630,9 +654,16 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(Query)) return;
+        if (string.IsNullOrWhiteSpace(Query))
+        {
+            results.Clear();
+            peopleResults.Clear();
+            return;
+        }
 
         isSearching = true;
+        results = new List<Media>();
+        peopleResults = new List<TmdbPersonSearchDto>();
 
         if (currentPage == 1 && selectedFilter != "People")
         {
@@ -694,18 +725,12 @@
         totalPeople = tmdbResponse.TotalPeople;
         peopleResults = tmdbResponse.People;
 
+        results.Clear();
+
         foreach (var item in tmdbResponse.Results)
         {
-            AddUnique(new List<Media> { item });
-
-            bool existsInLibrary = DataService.Library.Any(libItem =>
-                (libItem.TmdbId.HasValue && item.TmdbId.HasValue && libItem.TmdbId == item.TmdbId) ||
-                (libItem.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase) && libItem.ReleaseYear == item.ReleaseYear));
-
-            if (!existsInLibrary)
-            {
-                DataService.GetOrAddToLibrary(item);
-            }
+            var libraryItem = DataService.GetOrAddToLibrary(item);
+            AddUnique(new List<Media> { libraryItem });
         }
     }
 
@@ -816,45 +841,44 @@
         isAdvancedMode = true;
         showAdvancedPanel = false;
 
-        await LoadAdvancedResultsAsync(1);
+        Navigation.NavigateTo($"/search?adv=true&p=1");
     }
 
     private async Task LoadAdvancedResultsAsync(int page)
+{
+    if (appliedAdvancedFilters == null)
+        return;
+
+    isSearching = true;
+
+    try
     {
-        if (appliedAdvancedFilters == null)
-            return;
+        var response = await TmdbService.DiscoverMediaPagedAsync(
+            appliedAdvancedFilters,
+            page);
 
-        isSearching = true;
+        results.Clear();
+        peopleResults.Clear();
 
-        try
-        {
-            var response = await TmdbService.DiscoverMediaPagedAsync(
-                appliedAdvancedFilters,
-                page);
-
-            results.Clear();
-            peopleResults.Clear();
-
-            ApplyPagedResult(response);
-
-            currentPage = response.CurrentPage;
-            totalPages = response.TotalPages;
-            totalResults = response.TotalResults;
-            totalMovies = response.TotalMovies;
-            totalSeries = response.TotalSeries;
-            totalPeople = response.TotalPeople;
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(
-                $"Advanced search failed: {ex.Message}",
-                Severity.Error);
-        }
-        finally
-        {
-            isSearching = false;
-        }
+        ApplyPagedResult(response); 
+        currentPage = response.CurrentPage;
+        totalPages = response.TotalPages;
+        totalResults = response.TotalResults;
+        totalMovies = response.TotalMovies;
+        totalSeries = response.TotalSeries;
+        totalPeople = response.TotalPeople;
     }
+    catch (Exception ex)
+    {
+        Snackbar.Add(
+            $"Advanced search failed: {ex.Message}",
+            Severity.Error);
+    }
+    finally
+    {
+        isSearching = false;
+    }
+}
 
     private void ResetAdvancedFilters()
     {
@@ -872,6 +896,7 @@
         currentPage = 1;
 
         isAdvancedMode = false;
+        Navigation.NavigateTo("/search");
     }
 
     private void ExecuteSearch()
@@ -902,7 +927,7 @@
 
         if (isAdvancedMode)
         {
-            await LoadAdvancedResultsAsync(currentPage - 1);
+            Navigation.NavigateTo($"/search?adv=true&p={currentPage - 1}");
             return;
         }
 
@@ -917,7 +942,7 @@
 
         if (isAdvancedMode)
         {
-            await LoadAdvancedResultsAsync(currentPage + 1);
+            Navigation.NavigateTo($"/search?adv=true&p={currentPage + 1}");
             return;
         }
 
@@ -973,12 +998,6 @@
                 filtered.Add(m);
         }
         return filtered;
-    }
-
-    private double? GetUserRating(Media m)
-    {
-        return (double?)m.GetType().GetProperty("UserRating")?.GetValue(m)
-            ?? (double?)m.GetType().GetProperty("PersonalRating")?.GetValue(m);
     }
 
     private int CountMovies() => results.Count(m => m is Movie);

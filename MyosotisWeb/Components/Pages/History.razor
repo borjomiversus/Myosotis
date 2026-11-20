@@ -5,20 +5,14 @@
 
 <PageTitle>Myosotis · History</PageTitle>
 
-<div class="max-w-[1200px] mx-auto px-margin py-margin flex flex-col gap-10">
+<div class="w-full px-margin py-margin flex flex-col gap-10">
 
-    <!-- Заголовок -->
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div class="flex flex-col">
-            <h1 class="font-headline-xl text-[48px] text-on-surface tracking-tight leading-none mb-2">History</h1>
-            <p class="font-body-md text-[16px] text-secondary italic font-serif">Everything you’ve watched, all in one place.</p>
-        </div>
-    </header>
 
     @{
         var now = DateTime.Now;
         int monthMinutes = Me.GetMonthlyStats(now.Year, now.Month);
         int monthTitles = Me.GetMonthlyWatchCount(now.Year, now.Month);
+        int totalTitles = Me.WatchHistory.Count(h => h.Action == ActivityAction.Watched);
 
         var groupedEntries = Me.WatchHistory
             .Where(h => h.Action == ActivityAction.Watched)
@@ -32,141 +26,151 @@
             .ToList();
     }
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
-        <div class="bg-secondary/10 border border-secondary/20 rounded-xl p-5 flex flex-col justify-between group">
-            <div class="flex items-center justify-between text-secondary mb-4">
-                <span class="font-label-caps text-[10px] uppercase tracking-wider">Titles Watched</span>
-                <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">task_alt</span>
-            </div>
-            <div>
-                <div class="font-serif font-bold text-[32px] text-on-surface leading-none mb-1">@monthTitles</div>
-                <span class="font-label-sm text-[11px] text-secondary">In @now.ToString("MMMM", En)</span>
-            </div>
+    <!-- Заголовок без дашборд-карток -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-secondary/25">
+        <div class="flex flex-col gap-2">
+            <h1 class="font-headline-xl-mobile md:font-headline-xl text-headline-xl-mobile md:text-headline-xl text-on-surface leading-none">
+                History
+            </h1>
+            <p class="font-body-md text-[14px] text-secondary-text">
+                Everything you’ve watched, all in one place.
+            </p>
         </div>
 
-        <div class="bg-secondary/10 border border-secondary/20 rounded-xl p-5 flex flex-col justify-between group">
-            <div class="flex items-center justify-between text-secondary mb-4">
-                <span class="font-label-caps text-[10px] uppercase tracking-wider">Watch Time</span>
-                <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">schedule</span>
+        @if (totalTitles > 0)
+        {
+            <div class="font-body-md text-[13px] text-secondary-text flex flex-wrap items-center gap-2">
+                <span>
+                    <strong class="text-on-surface font-semibold">@monthTitles</strong> watched in @now.ToString("MMMM", En)
+                </span>
+                @if (monthMinutes > 0)
+                {
+                    <span class="text-secondary/40">·</span>
+                    <span>@UiHelpers.FormatMinutes(monthMinutes)</span>
+                }
+                <span class="text-secondary/40">·</span>
+                <span><strong class="text-on-surface font-semibold">@totalTitles</strong> all-time</span>
             </div>
-            <div>
-                <div class="font-serif font-bold text-[32px] text-on-surface leading-none mb-1">
-                    @(monthMinutes / 60)<span class="text-[18px] text-secondary font-normal ml-1">hrs</span>
-                </div>
-                <span class="font-label-sm text-[11px] text-secondary">This month</span>
-            </div>
-        </div>
-
-        <div class="bg-secondary/10 border border-secondary/20 rounded-xl p-5 flex flex-col justify-between group">
-            <div class="flex items-center justify-between text-secondary mb-4">
-                <span class="font-label-caps text-[10px] uppercase tracking-wider">All-Time</span>
-                <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">history</span>
-            </div>
-            <div>
-                <div class="font-serif font-bold text-[32px] text-on-surface leading-none mb-1">@Me.WatchHistory.Count(h => h.Action == ActivityAction.Watched)</div>
-                <span class="font-label-sm text-[11px] text-secondary">Since you started</span>
-            </div>
-        </div>
-    </div>
+        }
+    </header>
 
     @if (groupedEntries.Count == 0)
     {
-        <div class="flex flex-col items-center justify-center py-20 opacity-50">
-            <span class="material-symbols-outlined text-[48px] text-secondary mb-4">history_toggle_off</span>
-            <p class="font-body-md text-on-surface">Nothing watched yet. Mark a title as watched from its details page.</p>
+        <!-- Порожній стан (чистий текст, місце під власний SVG у майбутньому) -->
+        <div class="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto">
+            <p class="font-body-md text-[14px] text-secondary-text leading-relaxed">
+                Nothing watched yet. Mark a title as watched from its details page.
+            </p>
         </div>
     }
     else
     {
+        <!-- Хронологічний каталог без важких коробок -->
         <div class="flex flex-col gap-10">
             @foreach (var group in groupedEntries)
             {
-                <div class="flex flex-col gap-4">
-  
-                    <div class="flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(132,220,198,0.5)]"></span>
-                        <span class="font-label-caps text-[10px] text-secondary tracking-widest uppercase">
-                            @group.Date.ToString("dddd, MMMM d, yyyy", En)
+                <section class="flex flex-col">
+                    <div class="flex items-baseline justify-between pb-2.5 mb-2 border-b border-secondary/25">
+                        <h2 class="font-serif text-[18px] text-on-surface">
+                            @group.Date.ToString("MMMM d, yyyy", En)
+                        </h2>
+                        <span class="font-label-sm text-[11px] text-secondary-text">
+                            @group.Date.ToString("dddd", En)
                         </span>
                     </div>
 
-                    <div class="flex flex-col gap-3">
+                    <div class="flex flex-col divide-y divide-secondary/15">
                         @foreach (var h in group.Entries)
                         {
                             var item = h.WatchedItem;
                             int duration = item.TotalDurationMinutes > 0 ? item.TotalDurationMinutes : item.CalculateTimeDebt();
 
-                            <div class="bg-secondary/10 hover:bg-secondary/15 rounded-xl p-4 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 border border-secondary/20 group">
+                            <div class="py-4 px-2 -mx-2 rounded-lg hover:bg-surface-variant/25 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
 
-                                <div class="flex items-start md:items-center gap-5 min-w-0">
+                                <a href="/media/@item.Id" class="flex items-center gap-4 min-w-0 flex-1">
                                     @if (!string.IsNullOrEmpty(item.PosterUrl))
                                     {
-                                        <div class="w-24 h-16 sm:w-28 sm:h-16 flex-shrink-0 rounded-lg bg-cover bg-center border border-secondary/30 shadow-md group-hover:scale-105 transition-transform duration-300"
+                                        <div class="w-12 h-[72px] flex-shrink-0 rounded bg-cover bg-center border border-secondary/30 group-hover:border-primary/60 transition-colors"
                                              style="@UiHelpers.CardBackground(item.PosterUrl)">
                                         </div>
                                     }
-
-                                    <div class="flex flex-col min-w-0 gap-1.5">
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <a href="/media/@item.Id" class="font-serif font-bold text-[18px] text-on-surface group-hover:text-primary transition-colors truncate">@item.Title</a>
-                                            <span class="font-body-md text-[13px] text-secondary">(@item.ReleaseYear)</span>
-                                        </div>
-
-                                        <div class="flex items-center gap-2 text-secondary font-label-sm text-[11px] flex-wrap">
-                                            <span class="bg-background border border-secondary/30 px-2 py-0.5 rounded text-secondary">
-                                                @(item is Series ? "Series" : "Feature Film")
-                                            </span>
-                                            @if (Me.IsFavorite(item))
-                                            {
-                                                <span class="material-symbols-outlined text-[14px] text-tertiary" style="font-variation-settings: 'FILL' 1;" title="Favorite">favorite</span>
-                                            }
-                                            <span>·</span>
-                                            <span>@UiHelpers.FormatMinutes(duration)</span>
-                                            <span>·</span>
-                                            <span class="text-secondary/60">Watched at @h.WatchDate.ToString("HH:mm")</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center justify-between md:justify-end gap-6 flex-shrink-0 pt-2 md:pt-0">
-
-                                    @if (item.Vibe != null)
+                                    else
                                     {
-                                        <div class="flex items-center gap-1.5 bg-background/50 border border-secondary/20 px-2.5 py-1 rounded-lg">
-                                            <span class="material-symbols-outlined text-[16px] text-tertiary" style="font-variation-settings: 'FILL' 1;">star</span>
-                                            <div class="font-title-md text-[14px] text-on-surface">
-                                                @item.Vibe.CalculateAverage().ToString("0.0", En)
-                                                <span class="text-secondary text-[11px] font-normal">/ 10</span>
-                                            </div>
+                                        <div class="w-12 h-[72px] flex-shrink-0 rounded bg-surface-variant/30 border border-secondary/25 flex items-center justify-center text-secondary-text text-[11px] font-body-md">
+                                            —
                                         </div>
                                     }
 
-                                    <a href="/media/@item.Id" class="inline-flex items-center gap-1.5 bg-background border border-secondary/30 text-secondary px-3 py-1.5 rounded-lg font-label-sm text-[11px] group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-colors">
-                                        <span class="material-symbols-outlined text-[14px]">auto_stories</span>
+                                    <div class="flex flex-col min-w-0 gap-1">
+                                        <div class="flex items-baseline gap-2 flex-wrap">
+                                            <span class="font-serif font-semibold text-[18px] text-on-surface group-hover:text-primary transition-colors truncate">
+                                                @item.Title
+                                            </span>
+                                            <span class="font-body-md text-[13px] text-secondary-text">
+                                                (@item.ReleaseYear)
+                                            </span>
+                                            @if (Me.IsFavorite(item))
+                                            {
+                                                <span class="material-symbols-outlined text-[15px] text-tertiary self-center"
+                                                      style="font-variation-settings: 'FILL' 1;"
+                                                      title="Favorite">
+                                                    favorite
+                                                </span>
+                                            }
+                                        </div>
+
+                                        <div class="flex items-center gap-2 text-secondary-text font-body-md text-[12px] flex-wrap">
+                                            <span>@(item is Series ? "Series" : "Movie")</span>
+
+                                            @if (duration > 1)
+                                            {
+                                                <span class="text-secondary/40">·</span>
+                                                <span>@UiHelpers.FormatMinutes(duration)</span>
+                                            }
+
+                                            <span class="text-secondary/40">·</span>
+                                            <span>Watched at @h.WatchDate.ToString("HH:mm")</span>
+                                        </div>
+                                    </div>
+                                </a>
+
+                                <div class="flex items-center justify-between sm:justify-end gap-4 flex-shrink-0 pt-1 sm:pt-0">
+                                    @if (item.Vibe != null)
+                                    {
+                                        <div class="flex items-center gap-1 text-tertiary font-title-md text-[13px]" title="Your rating">
+                                            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                            <span>@item.Vibe.CalculateAverage().ToString("0.0", En)</span>
+                                            <span class="text-secondary-text text-[11px] font-normal">/ 10</span>
+                                        </div>
+                                    }
+
+                                    <a href="/media/@item.Id"
+                                       class="px-3.5 py-1.5 rounded-lg border border-secondary/40 text-on-surface hover:text-primary hover:border-primary/60 font-title-md text-[12px] transition-colors">
                                         Details
                                     </a>
                                 </div>
                             </div>
                         }
                     </div>
-                </div>
+                </section>
             }
         </div>
 
-        <div class="flex flex-col items-center justify-center py-10 gap-2 text-secondary/60 mt-4">
-            <div class="w-1.5 h-1.5 rounded-full bg-secondary/40"></div>
-            <span class="font-label-caps text-[10px] tracking-widest uppercase">Beginning of journal</span>
+        <!-- Маркер початку історії -->
+        <div class="flex items-center justify-center py-8 text-secondary-text">
+            <span class="font-label-sm text-[11px]">Beginning of journal</span>
         </div>
     }
 
     @if (Me.RecentSearches.Count > 0)
     {
-        <div class="mt-8 pt-8 border-t border-secondary/20">
+        <div class="pt-6 border-t border-secondary/25">
             <h2 class="font-serif text-[20px] text-on-surface mb-4">Recent searches</h2>
             <div class="flex flex-wrap gap-2">
                 @foreach (var query in Me.RecentSearches)
                 {
-                    <a href="@($"/search?q={Uri.EscapeDataString(query)}")" class="px-4 py-2 rounded-lg bg-secondary/10 border border-secondary/30 text-secondary hover:text-primary hover:border-primary transition-colors font-body-md text-[13px]">
+                    <a href="@($"/search?q={Uri.EscapeDataString(query)}")"
+                       class="px-3.5 py-1.5 rounded-lg border border-secondary/35 text-secondary-text hover:text-primary hover:border-primary/60 transition-colors font-body-md text-[13px]">
                         @query
                     </a>
                 }
