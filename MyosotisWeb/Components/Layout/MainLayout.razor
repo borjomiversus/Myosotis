@@ -2,6 +2,7 @@
 @using MudBlazor
 @inject NavigationManager Navigation
 @inject MyosotisWeb.ServicesWeb.DemoDataService DataService
+@inject MyosotisWeb.ServicesWeb.TmdbApiService TmdbService
 
 <MudThemeProvider Theme="_theme" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -13,17 +14,21 @@
     <!-- БІЧНЕ МЕНЮ -->
     <aside class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-low border-r border-secondary/30 z-50 flex flex-col justify-between">
         <div class="flex flex-col">
-            <div class="h-16 px-4 flex items-center gap-3 border-b border-secondary/20">
-                <img src="images/logo-icon.png" alt="Myosotis" class="w-7 h-7 object-contain drop-shadow-[0_0_8px_rgba(132,220,198,0.4)]" />
-                <span class="font-headline-md text-headline-md text-primary tracking-wide">Myosotis</span>
-            </div>
+            <a href="/" class="h-16 px-4 flex items-center border-b border-secondary/20">
+                <img src="images/logo-icon.png"
+                     alt="Myosotis"
+                     class="h-10 w-auto max-w-[196px] object-contain" />
+                <span class="font-serif text-[32px] tracking-tight leading-none select-none">
+                    <span class="text-alice-blue">Myo</span><span class="bg-gradient-to-r from-glaucous to-primary bg-clip-text text-transparent">sotis</span>
+                </span>
+            </a>
 
             <nav class="flex flex-col gap-1 px-3 pt-6">
                 @foreach (var item in navItems)
                 {
                     <NavLink href="@item.Href"
                              Match="@(item.Href == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-secondary/15 hover:text-on-surface transition-all"
+                             class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-secondary/15 hover:text-white transition-all"
                              ActiveClass="bg-secondary/20 text-white font-medium">
                         <span class="material-symbols-outlined text-[18px]">@item.Icon</span>
                         <span>@item.Label</span>
@@ -37,7 +42,7 @@
                 <div class="w-9 h-9 rounded-full bg-secondary text-on-primary-container flex items-center justify-center font-title-md text-title-md font-bold">@Initial</div>
                 <div class="flex flex-col min-w-0">
                     <span class="font-title-md text-title-md text-on-surface truncate">@Me.Username</span>
-                    <span class="font-label-sm text-label-sm text-secondary truncate">@Me.WatchHistory.Count titles logged</span>
+                    <span class="font-label-sm text-label-sm text-slate-400 truncate">@Me.WatchHistory.Count titles logged</span>
                 </div>
             </div>
         </div>
@@ -46,13 +51,39 @@
     <div class="pl-[240px]">
 
         <header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-secondary/30 z-40 flex items-center justify-between px-8">
-            <div class="flex items-center gap-3 w-80 bg-surface-container-low px-4 py-2 rounded-xl border border-secondary/30 focus-within:border-primary focus-within:bg-surface-container transition-all shadow-sm">
-                <span class="material-symbols-outlined text-[18px] text-secondary">search</span>
-                <input @bind="searchText"
-                       @bind:event="oninput"
-                       @onkeydown="OnSearchKey"
-                       placeholder="Search your library…"
-                       class="bg-transparent outline-none w-full text-on-surface placeholder:text-on-surface-variant/60" />
+            <!-- пошук з випадаючим списком -->
+            <div class="relative w-80">
+                <div class="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-xl border border-secondary/30 focus-within:border-primary focus-within:bg-surface-container transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px] text-slate-400">search</span>
+                    <input value="@searchText"
+                           @oninput="OnSearchInput"
+                           @onkeydown="OnSearchKey"
+                           @onfocusout="HandleFocusOut"
+                           placeholder="Search library & TMDB…"
+                           class="bg-transparent outline-none w-full text-on-surface placeholder:text-slate-400 text-[13px]" />
+                </div>
+
+                @if (showDropdown && quickResults.Count > 0)
+                {
+                    <div class="absolute left-0 right-0 mt-2 bg-[#1A2235] border border-secondary/40 rounded-xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto">
+                       @foreach (var media in quickResults)
+                        {
+                            <div @onmousedown="() => GoToMedia(media)"
+                                 class="flex items-center gap-3 px-4 py-3 bg-[#1A2235] hover:bg-secondary/20 cursor-pointer transition-colors border-b border-secondary/15 last:border-b-0">
+                                <div class="w-9 h-12 rounded bg-background overflow-hidden shrink-0 border border-secondary/20">
+                                    @if (!string.IsNullOrEmpty(media.PosterUrl))
+                                    {
+                                        <img src="@media.PosterUrl" alt="@media.Title" class="w-full h-full object-cover" />
+                                    }
+                                </div>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="font-title-md text-[13px] text-on-surface truncate">@media.Title</span>
+                                    <span class="font-body-md text-[11px] text-slate-400">@media.ReleaseYear · @(media is Series ? "Series" : "Movie")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
             </div>
         </header>
 
@@ -73,15 +104,64 @@
     };
 
     private string searchText = "";
+    private bool showDropdown = false;
+    private List<Media> quickResults = new();
 
     private User Me => DataService.CurrentUser;
-
     private string Initial => string.IsNullOrEmpty(Me.Username) ? "?" : Me.Username.Substring(0, 1).ToUpper();
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString() ?? "";
+        if (searchText.Trim().Length < 2)
+        {
+            showDropdown = false;
+            quickResults.Clear();
+            return;
+        }
+
+        var result = await TmdbService.SearchMediaPagedAsync(searchText, 1);
+        quickResults = result.Results.Take(5).ToList();
+        showDropdown = quickResults.Count > 0;
+    }
 
     private void OnSearchKey(KeyboardEventArgs e)
     {
-        if (e.Key != "Enter" || string.IsNullOrWhiteSpace(searchText)) return;
-        Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(searchText.Trim())}");
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchText))
+        {
+            showDropdown = false;
+            Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(searchText.Trim())}");
+        }
+    }
+
+    private void CloseDropdown()
+    {
+        showDropdown = false;
+    }
+
+    private async Task GoToMedia(Media selectedMedia)
+    {
+        showDropdown = false;
+        quickResults.Clear();
+        searchText = "";
+        var trackedMedia = DataService.GetOrAddToLibrary(selectedMedia);
+
+        if (trackedMedia.TmdbId.HasValue)
+        {
+            await TmdbService.EnrichMediaDetailsAsync(trackedMedia);
+        }
+
+        await DataService.SaveStateAsync();
+        StateHasChanged();
+
+        Navigation.NavigateTo($"/media/{trackedMedia.Id}");
+    }
+
+    private async Task HandleFocusOut()
+    {
+        await Task.Delay(200);
+        showDropdown = false;
+        StateHasChanged();
     }
 
     private MudTheme _theme = new MudTheme
@@ -94,7 +174,7 @@
             Background = "#1A2235",
             Surface = "#1A2235",
             TextPrimary = "#E2E8F0",
-            TextSecondary = "#5C80BC"
+            TextSecondary = "#94A3B8"
         }
     };
 
