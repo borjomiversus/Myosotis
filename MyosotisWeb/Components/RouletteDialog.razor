@@ -27,7 +27,7 @@
                     <select @bind="selectedWatchlistName"
                             style="background-color: #1A2235; color: #E2E8F0;"
                             class="w-full border border-secondary/30 rounded-xl px-3 py-2 bg-surface-container-lowest text-on-surface outline-none focus:border-primary hover:border-primary/60 hover:scale-[1.02] transition-all duration-200 font-body-md text-[12px] cursor-pointer truncate shadow-sm">
-                        <option value="" style="background-color: #1A2235; color: #E2E8F0;">All Lists</option>
+                        <option value="" style="background-color: #1A2235; color: #E2E8F0;">All Saved Media</option>
                         @foreach (var wl in Me.Watchlists)
                         {
                             <option value="@wl.Name" style="background-color: #1A2235; color: #E2E8F0;">@wl.Name</option>
@@ -177,25 +177,23 @@
 
     protected override void OnInitialized()
     {
-        var planned = Me.GetPlannedMedia();
-        foreach (var media in planned)
+        var allMedia = DataService.GetAllMedia();
+        foreach (var media in allMedia)
         {
-            foreach (var genre in media.Genres)
+            if (media.Genres != null)
             {
-                if (!availableGenres.Contains(genre))
-                    availableGenres.Add(genre);
+                foreach (var genre in media.Genres)
+                {
+                    if (!availableGenres.Contains(genre))
+                        availableGenres.Add(genre);
+                }
             }
         }
         availableGenres.Sort();
 
-        if (planned.Count > 0)
+        if (allMedia.Count > 0)
         {
-            displayMedia = planned[new Random().Next(planned.Count)];
-        }
-        else
-        {
-            var all = DataService.GetAllMedia();
-            if (all.Count > 0) displayMedia = all[new Random().Next(all.Count)];
+            displayMedia = allMedia[new Random().Next(allMedia.Count)];
         }
     }
 
@@ -206,7 +204,7 @@
             if (list.Name != listName) continue;
             foreach (var entry in list.Entries)
             {
-                if (entry.Item == media) return true;
+                if (entry.Item?.Id == media.Id) return true;
             }
         }
         return false;
@@ -214,16 +212,18 @@
 
     private async Task SpinAction()
     {
+        var allMedia = DataService.GetAllMedia();
         var pool = new List<Media>();
-        foreach (var media in Me.GetPlannedMedia())
+
+        foreach (var media in allMedia)
         {
             if (!string.IsNullOrEmpty(selectedWatchlistName) && !IsInList(media, selectedWatchlistName))
                 continue;
 
-            if (!string.IsNullOrEmpty(selectedGenre) && !media.Genres.Contains(selectedGenre))
+            if (!string.IsNullOrEmpty(selectedGenre) && (media.Genres == null || !media.Genres.Contains(selectedGenre)))
                 continue;
 
-            int duration = media.TotalDurationMinutes > 0 ? media.TotalDurationMinutes : media.CalculateTimeDebt();
+            int duration = media.TotalDurationMinutes > 0 ? media.TotalDurationMinutes : 120;
             if (selectedMaxMinutes < 1000 && duration > selectedMaxMinutes)
                 continue;
 
@@ -235,6 +235,7 @@
             noResult = true;
             pickedMedia = null;
             displayMedia = null;
+            StateHasChanged();
             return;
         }
 
