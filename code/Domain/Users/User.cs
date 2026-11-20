@@ -374,4 +374,12 @@ public class User
         }
         return false;
     }
+
+    public void RestoreId(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("User ID cannot be empty.", nameof(id));
+
+        Id = id;
+    }
 }

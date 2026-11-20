@@ -13,7 +13,6 @@
     public List<WatchHistoryEntryDto> WatchHistory { get; set; } = new();
     public List<UserMediaStateDto> MediaStates { get; set; } = new();
     public List<WatchCheckpointDto> Checkpoints { get; set; } = new();
-    public List<CaptureEntryDto> ActiveCaptures { get; set; } = new();
 }
 
 public class WatchlistDto
@@ -100,7 +99,6 @@ public class MediaDto
     public List<string> Tags { get; set; } = new();
     public VibeRatingDto? Vibe { get; set; }
     public List<SeasonDto> Seasons { get; set; } = new();
-
     public class TmdbReviewDto
     {
         public string Author { get; set; } = "";

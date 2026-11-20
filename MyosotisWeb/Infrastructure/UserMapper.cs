@@ -60,18 +60,17 @@ namespace MyosotisWeb.Infrastructure
                     IsActive = cp.IsActive
                 }).ToList(),
 
-                ActiveCaptures = user.Captures
-                    .Where(c => c.Status != CaptureStatus.Archived)
-                    .OrderByDescending(c => c.CapturedAt)
-                    .Select(MapCaptureToDto)
-                    .ToList()
             };
         }
 
         public static User ToDomain(UserStorageDto dto)
         {
-            var user = new User(dto.Username);
             var mediaCache = new Dictionary<Guid, Media>();
+            var user = new User(dto.Username);
+            if (dto.Id != Guid.Empty)
+            {
+                user.RestoreId(dto.Id);
+            }
 
             foreach (var wDto in dto.Watchlists ?? new())
             {
@@ -195,6 +194,7 @@ namespace MyosotisWeb.Infrastructure
                 Title = media.Title,
                 ReleaseYear = media.ReleaseYear,
                 ProductionStudio = media.ProductionStudio,
+                
                 PosterUrl = media.PosterUrl,
                 Description = media.Description,
                 TmdbRating = media.TmdbRating,
@@ -254,6 +254,8 @@ namespace MyosotisWeb.Infrastructure
                     Soundtrack = media.Vibe.Soundtrack
                 };
             }
+
+
 
             return dto;
         }
@@ -320,6 +322,7 @@ namespace MyosotisWeb.Infrastructure
             {
                 foreach (var t in dto.Tags) media.AddTag(t);
             }
+
 
             return media;
         }
