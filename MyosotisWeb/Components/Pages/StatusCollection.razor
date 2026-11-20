@@ -1,0 +1,287 @@
+﻿@page "/collection/{Slug}"
+@page "/watchlists/system/{Slug}"
+@using MudBlazor
+@using MyosotisWeb.ServicesWeb
+@inject DemoDataService DataService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Myosotis · @CollectionTitle</PageTitle>
+
+<div class="w-full px-margin py-margin flex flex-col gap-8">
+
+    <!-- заголовок -->
+    <header class="flex flex-col gap-4 pb-6 border-b border-secondary/25">
+        <nav class="flex items-center gap-2 font-title-md text-[13px] text-secondary-text">
+            <a href="/watchlists" class="hover:text-primary transition-colors">Watchlists</a>
+            <span class="material-symbols-outlined text-[15px]">chevron_right</span>
+            <span class="text-on-surface">@CollectionTitle</span>
+        </nav>
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div class="flex flex-col gap-1.5">
+                <div class="flex items-center gap-3">
+                    <h1 class="font-headline-xl text-headline-xl text-on-surface leading-none">@CollectionTitle</h1>
+                    <span class="px-2.5 py-0.5 rounded-md bg-secondary-fill text-primary font-title-md text-[11px]">
+                        Auto collection
+                    </span>
+                </div>
+                <p class="font-body-md text-[14px] text-secondary-text">@CollectionSubtitle</p>
+            </div>
+
+            <span class="font-body-md text-[13px] text-secondary-text">
+                <strong class="text-on-surface font-semibold">@FilteredItems.Count</strong> @(FilteredItems.Count == 1 ? "title" : "titles")
+            </span>
+        </div>
+    </header>
+
+    <!-- фільтр-->
+    @if (AllItems.Count > 0)
+    {
+        <div class="flex flex-col sm:flex-row gap-3 items-center bg-surface-variant/25 p-3.5 rounded-xl border border-secondary/30">
+            <div class="flex items-center gap-2.5 flex-1 w-full bg-background rounded-lg px-3.5 py-2 border border-secondary/30 focus-within:border-primary transition-colors">
+                <span class="material-symbols-outlined text-[18px] text-secondary-text">search</span>
+                <input @bind="searchQuery"
+                       @bind:event="oninput"
+                       placeholder="Filter in @CollectionTitle…"
+                       class="bg-transparent outline-none w-full text-on-surface placeholder:text-secondary-text font-body-md text-[13px]" />
+                @if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    <button type="button"
+                            @onclick='() => searchQuery = ""'
+                            class="text-secondary-text hover:text-on-surface flex items-center">
+                        <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                }
+            </div>
+
+            <div class="flex items-center gap-1.5 w-full sm:w-auto shrink-0">
+                <button type="button"
+                        @onclick='() => typeFilter = "all"'
+                        class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg font-title-md text-[12px] border transition-colors @(typeFilter == "all" ? "bg-primary text-on-primary font-semibold border-primary" : "bg-background text-secondary-text border-secondary/30 hover:text-on-surface")">
+                    All
+                </button>
+                <button type="button"
+                        @onclick='() => typeFilter = "movie"'
+                        class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg font-title-md text-[12px] border transition-colors @(typeFilter == "movie" ? "bg-primary text-on-primary font-semibold border-primary" : "bg-background text-secondary-text border-secondary/30 hover:text-on-surface")">
+                    Movies
+                </button>
+                <button type="button"
+                        @onclick='() => typeFilter = "series"'
+                        class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg font-title-md text-[12px] border transition-colors @(typeFilter == "series" ? "bg-primary text-on-primary font-semibold border-primary" : "bg-background text-secondary-text border-secondary/30 hover:text-on-surface")">
+                    Series
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="py-20 flex items-center justify-center">
+            <span class="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+        </div>
+    }
+    else if (AllItems.Count == 0)
+    {
+        <div class="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto gap-3">
+            <p class="font-body-md text-[14px] text-secondary-text leading-relaxed">
+                No titles in <strong class="text-on-surface">@CollectionTitle</strong> yet.
+            </p>
+            <a href="/search"
+               class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-title-md font-semibold text-[13px] hover:opacity-90 transition-opacity">
+                Browse Catalog
+            </a>
+        </div>
+    }
+    else if (FilteredItems.Count == 0)
+    {
+        <div class="flex flex-col items-center justify-center py-16 text-center max-w-md mx-auto gap-2">
+            <p class="font-body-md text-[14px] text-secondary-text">
+                Nothing matches «@searchQuery».
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+            @foreach (var media in FilteredItems)
+            {
+                var currentStatus = GetStatus(media);
+
+                <div class="flex flex-col gap-2.5 group">
+                    <a href="/media/@media.Id"
+                       class="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-background border border-secondary/30 group-hover:border-primary/60 transition-colors block">
+                        @if (!string.IsNullOrEmpty(media.PosterUrl))
+                        {
+                            <img src="@media.PosterUrl" alt="@media.Title" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex items-center justify-center text-secondary-text">
+                                <span class="material-symbols-outlined text-[32px]">movie</span>
+                            </div>
+                        }
+
+                        @if (NormalizedSlug == "favorites")
+                        {
+                            <button type="button"
+                                    @onclick="() => RemoveFavorite(media)"
+                                    @onclick:preventDefault="true"
+                                    @onclick:stopPropagation="true"
+                                    title="Remove from Favorites"
+                                    class="absolute top-2.5 right-2.5 w-8 h-8 rounded-lg bg-background/85 border border-tertiary/40 text-tertiary hover:bg-tertiary hover:text-on-primary transition-colors flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[17px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                            </button>
+                        }
+                    </a>
+
+                    <div class="flex flex-col gap-1">
+                        <a href="/media/@media.Id"
+                           class="font-serif font-semibold text-[15px] text-on-surface group-hover:text-primary transition-colors truncate"
+                           title="@media.Title">
+                            @media.Title
+                        </a>
+
+                        <div class="flex items-center justify-between gap-2 text-[12px] text-secondary-text font-body-md">
+                            <span>@media.ReleaseYear · @(media is Series ? "Series" : "Movie")</span>
+                            @if (media.TmdbRating.HasValue && media.TmdbRating.Value > 0)
+                            {
+                                <span class="text-tertiary font-semibold">★ @media.TmdbRating.Value.ToString("0.0")</span>
+                            }
+                        </div>
+
+                        <select value="@(currentStatus?.ToString() ?? "")"
+                                @onchange="(e) => OnStatusChanged(media, e.Value?.ToString())"
+                                aria-label="Change status"
+                                class="mt-1 w-full bg-surface-variant/30 text-on-surface font-title-md text-[11px] px-2.5 py-1.5 rounded-lg border border-secondary/30 focus:border-primary outline-none cursor-pointer">
+                            <option value="" class="bg-background text-secondary-text">No status</option>
+                            <option value="@WatchStatus.Planned" class="bg-background text-on-surface">Planned</option>
+                            <option value="@WatchStatus.Watching" class="bg-background text-on-surface">Watching</option>
+                            <option value="@WatchStatus.Rewatching" class="bg-background text-on-surface">Rewatching</option>
+                            <option value="@WatchStatus.Paused" class="bg-background text-on-surface">Paused</option>
+                            <option value="@WatchStatus.Watched" class="bg-background text-on-surface">Watched</option>
+                            <option value="@WatchStatus.Dropped" class="bg-background text-on-surface">Dropped</option>
+                        </select>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private bool isLoading = true;
+    private string searchQuery = "";
+    private string typeFilter = "all";
+
+    private User Me => DataService.CurrentUser;
+    private string NormalizedSlug => (Slug ?? "").Trim().ToLowerInvariant();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        searchQuery = "";
+        typeFilter = "all";
+        await DataService.InitializeAsync();
+        isLoading = false;
+    }
+
+    private string CollectionTitle => NormalizedSlug switch
+    {
+        "favorites" => "Favorites",
+        "watching" => "Watching",
+        "planned" => "Planned",
+        "paused" => "Paused",
+        "dropped" => "Dropped",
+        "watched" => "Watched",
+        _ => "Collection"
+    };
+
+    private string CollectionSubtitle => NormalizedSlug switch
+    {
+        "favorites" => "Titles you marked with a heart.",
+        "watching" => "Movies and series you are currently watching or rewatching.",
+        "planned" => "Titles queued up to watch next.",
+        "paused" => "Titles currently put on hold.",
+        "dropped" => "Titles you decided not to finish.",
+        "watched" => "Completed movies and series.",
+        _ => "Automatically grouped titles from your library."
+    };
+
+    private List<Media> AllItems => NormalizedSlug switch
+    {
+        "favorites" => DataService.Library.Where(m => Me.IsFavorite(m)).ToList(),
+        "watching" => Me.MediaStates
+            .Where(s => s.Status == WatchStatus.Watching || s.Status == WatchStatus.Rewatching)
+            .Select(s => s.Item)
+            .ToList(),
+        "planned" => Me.MediaStates
+            .Where(s => s.Status == WatchStatus.Planned)
+            .Select(s => s.Item)
+            .ToList(),
+        "paused" => Me.MediaStates
+            .Where(s => s.Status == WatchStatus.Paused)
+            .Select(s => s.Item)
+            .ToList(),
+        "dropped" => Me.MediaStates
+            .Where(s => s.Status == WatchStatus.Dropped)
+            .Select(s => s.Item)
+            .ToList(),
+        "watched" => Me.MediaStates
+            .Where(s => s.Status == WatchStatus.Watched)
+            .Select(s => s.Item)
+            .ToList(),
+        _ => new List<Media>()
+    };
+
+    private List<Media> FilteredItems
+    {
+        get
+        {
+            IEnumerable<Media> query = AllItems;
+
+            if (typeFilter == "movie")
+                query = query.Where(m => m is Movie);
+            else if (typeFilter == "series")
+                query = query.Where(m => m is Series);
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                string term = searchQuery.Trim();
+                query = query.Where(m => m.Title.Contains(term, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return query.ToList();
+        }
+    }
+
+    private WatchStatus? GetStatus(Media media) =>
+        Me.MediaStates.FirstOrDefault(s => s.Item.Id == media.Id)?.Status;
+
+    private async Task RemoveFavorite(Media media)
+    {
+        Me.ToggleFavorite(media);
+        await DataService.SaveStateAsync();
+        Snackbar.Add($"«{media.Title}» removed from Favorites", Severity.Info);
+    }
+
+    private async Task OnStatusChanged(Media media, string? rawValue)
+    {
+        if (string.IsNullOrWhiteSpace(rawValue))
+        {
+            Me.ClearStatus(media);
+        }
+        else if (Enum.TryParse<WatchStatus>(rawValue, out var newStatus))
+        {
+            if (newStatus == WatchStatus.Watched)
+                Me.CompleteWatching(media);
+            else
+                Me.SetStatus(media, newStatus);
+        }
+
+        await DataService.SaveStateAsync();
+        Snackbar.Add($"Updated status for «{media.Title}»", Severity.Success);
+    }
+}
