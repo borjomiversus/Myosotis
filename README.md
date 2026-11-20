@@ -75,8 +75,8 @@ C# добре підтримує основні принципи ООП, які 
 - Реалізовано предметну модель і основні сервіси.
 - Створено сторінки Blazor: Overview, Watchlists, Captures, History, Search, MediaDetails.
 - Інтегровано TMDb API для пошуку фільмів і серіалів та отримання детальної інформації про них.
-- Дані користувацьких списків і історії переглядів наразі зберігаються в пам'яті та не зберігаються після перезапуску застосунку.
-- Збереження даних у JSON і розгортання застосунку заплановані на наступні етапи.
+- Дані користувацьких списків і історії переглядів наразі зберігаються в JSON та зберігаються після перезапуску застосунку.
+- Розгортання застосунку в Azure заплановано на наступні етапи.
 
 ## Модель предметної області (основні класи)
 
@@ -93,7 +93,18 @@ C# добре підтримує основні принципи ООП, які 
 
 ## Скріншоти
 
-Файли скріншотів будуть додані згодом.
+### Home Page
+![Home Page](docs/screenshots/Screen6.png)
+![Home Page](docs/screenshots/Screen7.png)
+
+### Movie Details
+![Movie Details](docs/screenshots/Screen1.png)
+
+### Captures & Notes
+![Captures and Notes](docs/screenshots/Screen3.png)
+
+### Trending Page
+![Trending Page](docs/screenshots/Screen2.jpg)
 
 ## Дизайн
 
@@ -115,14 +126,29 @@ C# добре підтримує основні принципи ООП, які 
 
 ## Локальний запуск
 
-Для запуску потрібен [.NET 10 SDK](https://dotnet.microsoft.com/download).
-Отримати ключ [TmdbApi](https://developer.themoviedb.org/docs/getting-started). 
+## Запуск проєкту
+
+### Що потрібно
+- [.NET SDK](https://dotnet.microsoft.com/download)
+- Безкоштовний API-ключ від [The Movie Database (TMDb)](https://www.themoviedb.org/)
+
+### Локальний запуск
+1. Клонуйте репозиторій:
+   ```bash
+   git clone [https://github.com/borjomiversus/Myosotis.git](https://github.com/borjomiversus/Myosotis.git)
+   cd Myosotis
+   ```
+2. Вкажіть свій ключ TMDb у вебпроєкті (`MyosotisWeb`) — наприклад, через user secrets або налаштування конфігурації (не додавайте реальні ключі в git).
+3. Запустіть вебзастосунок:
+   ```bash
+   cd MyosotisWeb
+   dotnet run
+   ```
+
+### Запуск тестів
 ```bash
-git clone [https://github.com/your-username/Myosotis.git](https://github.com/your-username/Myosotis.git)
-cd Myosotis/MyosotisWeb
-dotnet run
+dotnet test
 ```
-Після успішного запуску відкрийте у браузері адресу, вказану в терміналі.
 
 ## Структура проєкту
 
@@ -141,7 +167,7 @@ Myosotis/
 - [x] Roulette, рекомендації, щомісячна статистика
 - [x] Сторінка фільму / серіалу
 - [x] Інтеграція TMDb (метадані та постери)
-- [ ] Збереження даних у JSON
+- [x] Збереження даних у JSON
 - [ ] Розгортання в Azure
 - [ ] Користувацький профіль
 
