@@ -924,7 +924,7 @@ else
                         @if (CurrentMaxDurationMinutes > 0)
                         {
                             <span class="font-body-md text-[11px] text-secondary-text">
-                                Max: @FormatMinutesAsTimecode(CurrentMaxDurationMinutes) (@CurrentMaxDurationMinutes mins)
+                                Max: @TimecodeHelper.FormatMinutesAsTimecode(CurrentMaxDurationMinutes) (@CurrentMaxDurationMinutes mins)
                             </span>
                         }
                     </div>
@@ -976,24 +976,14 @@ else
     private Media? MediaItem { get; set; }
     private User Me => DataService.CurrentUser;
 
-    private Watchlist? ContainingWatchlist
-    {
-        get
-        {
-            if (MediaItem == null) return null;
-            foreach (var w in Me.Watchlists)
-            {
-                foreach (var e in w.Entries)
-                {
-                    if (e.Item.Id == MediaItem.Id) return w;
-                }
-            }
-            return null;
-        }
-    }
+    private Watchlist? ContainingWatchlist =>
+        MediaItem == null
+            ? null
+            : Me.Watchlists.FirstOrDefault(w => w.Entries.Any(e => e.Item.Id == MediaItem.Id));
 
     private WatchCheckpoint? ActiveCheckpoint => MediaItem != null ? Me.GetActiveCheckpoint(MediaItem) : null;
     private bool IsWatched => MediaItem != null && Me.IsWatched(MediaItem);
+    private bool IsFav => MediaItem != null && Me.IsFavorite(MediaItem);
 
     private List<Media> SimilarTitles = new();
     private int activeSeasonIndex = 0;
@@ -1014,6 +1004,7 @@ else
     private string? inputReason = "";
     private int inputSeason = 1;
     private int inputEpisode = 1;
+    private string? checkpointError = null;
 
     private string activeTab = "tags";
     private bool isCastExpanded = false;
@@ -1021,6 +1012,7 @@ else
     private bool isTagsExpanded = false;
 
     private int similarPageIndex = 0;
+
     private void SetActiveTab(string tab)
     {
         activeTab = tab;
@@ -1038,12 +1030,12 @@ else
         isCrewExpanded = false;
         isTagsExpanded = false;
         activeTab = "tags";
-        MediaItem = DataService.GetById(Id);
-        await DataService.SaveStateAsync();
 
+        MediaItem = DataService.GetById(Id);
         if (MediaItem == null) return;
 
         Me.RecordDetailsView(MediaItem);
+        await DataService.SaveStateAsync();
 
         if (MediaItem.Vibe != null)
         {
@@ -1084,31 +1076,23 @@ else
                 }
             }
         }
-
-        StateHasChanged();
     }
 
-    private bool IsFav => Me.IsFavorite(MediaItem);
-
-    private async void ToggleFavorite()
+    private async Task ToggleFavorite()
     {
-        if (MediaItem != null)
-        {
-            Me.ToggleFavorite(MediaItem);
-            await DataService.SaveStateAsync();
-            StateHasChanged();
-        }
+        if (MediaItem == null) return;
+        Me.ToggleFavorite(MediaItem);
+        await DataService.SaveStateAsync();
     }
 
-    private async void ClearUserStatus()
+    private async Task ClearUserStatus()
     {
         if (MediaItem == null) return;
         Me.ClearStatus(MediaItem);
         await DataService.SaveStateAsync();
-        StateHasChanged();
     }
 
-    private async void SaveVibeRating()
+    private async Task SaveVibeRating()
     {
         if (MediaItem == null) return;
         var newVibe = new VibeRating(vibeCharacters, vibePlot, vibeVisuals, vibePacing, vibeVibe, vibeSoundtrack);
@@ -1116,7 +1100,7 @@ else
         await DataService.SaveStateAsync();
     }
 
-    private async void ToggleWatched()
+    private async Task ToggleWatched()
     {
         if (MediaItem == null) return;
         if (!IsWatched)
@@ -1126,10 +1110,31 @@ else
         }
     }
 
-    private async void AddToList(Watchlist watchlist)
+    private async Task AddToList(Watchlist watchlist)
     {
         if (MediaItem == null) return;
         Me.AddMediaToWatchlist(watchlist, MediaItem, "Added from details page");
+        await DataService.SaveStateAsync();
+    }
+
+    private UserMediaState? CurrentMediaState =>
+        MediaItem != null ? Me.MediaStates.FirstOrDefault(s => s.Item.Id == MediaItem.Id) : null;
+
+    private WatchStatus? CurrentWatchStatus => CurrentMediaState?.Status;
+
+    private async Task ChangeUserStatus(WatchStatus newStatus)
+    {
+        if (MediaItem == null) return;
+
+        if (newStatus == WatchStatus.Watched)
+        {
+            Me.CompleteWatching(MediaItem);
+        }
+        else
+        {
+            Me.SetStatus(MediaItem, newStatus);
+        }
+
         await DataService.SaveStateAsync();
     }
 
@@ -1151,6 +1156,51 @@ else
             inputEpisode = 1;
         }
         showCheckpointModal = true;
+    }
+
+    private void CloseCheckpointModal()
+    {
+        checkpointError = null;
+        showCheckpointModal = false;
+    }
+
+    private int CurrentMaxDurationMinutes =>
+        MediaItem == null
+            ? 0
+            : WatchCheckpoint.GetTargetDurationMinutes(MediaItem, inputSeason, inputEpisode);
+
+    private async Task SaveCheckpoint()
+    {
+        checkpointError = null;
+        if (MediaItem == null) return;
+
+        if (!WatchCheckpoint.TryValidateAndCreate(
+            MediaItem,
+            inputTimecode,
+            inputReason,
+            inputSeason,
+            inputEpisode,
+            out var cp,
+            out checkpointError))
+        {
+            return;
+        }
+
+        Me.SetCheckpoint(cp!);
+        showCheckpointModal = false;
+        await DataService.SaveStateAsync();
+    }
+
+    private async Task ClearCheckpoint()
+    {
+        if (MediaItem == null) return;
+        Me.ClearCheckpoint(MediaItem);
+        await DataService.SaveStateAsync();
+    }
+
+    private void FormatCheckpointTimecode(ChangeEventArgs e)
+    {
+        inputTimecode = TimecodeHelper.FormatInput(e.Value?.ToString());
     }
 
     private List<TmdbReview> VisibleTmdbReviews
@@ -1193,192 +1243,11 @@ else
             expandedReviews.Add(rev);
     }
 
-    private string? checkpointError = null;
-
-private int CurrentMaxDurationMinutes
-{
-    get
-    {
-        if (MediaItem is Movie movie)
-            return movie.TotalDurationMinutes;
-
-        if (MediaItem is Series series)
-        {
-            var season = series.Seasons.FirstOrDefault(s => s.Number == inputSeason);
-            var ep = season?.Episodes.FirstOrDefault(e => e.Number == inputEpisode);
-            if (ep != null && ep.RuntimeMinutes > 0)
-                return ep.RuntimeMinutes;
-        }
-
-        return 0;
-    }
-}
-
-private static string FormatMinutesAsTimecode(int totalMinutes)
-{
-    int hours = totalMinutes / 60;
-    int mins = totalMinutes % 60;
-    return hours > 0 ? $"{hours:D2}:{mins:D2}:00" : $"{mins:D2}:00";
-}
-
-private void CloseCheckpointModal()
-{
-    checkpointError = null;
-    showCheckpointModal = false;
-}
-
-private bool TryParseTimecodeSeconds(string tc, out int totalSeconds, out string error)
-{
-    totalSeconds = 0;
-    error = "";
-
-    var parts = tc.Split(':');
-    if (parts.Length is < 2 or > 3)
-    {
-        error = "Enter timecode as MM:SS or HH:MM:SS.";
-        return false;
-    }
-
-    if (parts.Length == 2)
-    {
-        if (!int.TryParse(parts[0], out int mins) || !int.TryParse(parts[1], out int secs) || secs >= 60 || mins < 0 || secs < 0)
-        {
-            error = "Invalid timecode. Seconds must be between 00 and 59.";
-            return false;
-        }
-        totalSeconds = mins * 60 + secs;
-        return true;
-    }
-    else
-    {
-        if (!int.TryParse(parts[0], out int hours) || !int.TryParse(parts[1], out int mins) || !int.TryParse(parts[2], out int secs)
-            || hours < 0 || mins < 0 || mins >= 60 || secs < 0 || secs >= 60)
-        {
-            error = "Invalid timecode. Minutes and seconds must be between 00 and 59.";
-            return false;
-        }
-        totalSeconds = hours * 3600 + mins * 60 + secs;
-        return true;
-    }
-}
-
-private async Task SaveCheckpoint()
-{
-    checkpointError = null;
-    if (MediaItem == null) return;
-
-    if (string.IsNullOrWhiteSpace(inputTimecode))
-    {
-        checkpointError = "Please enter a timecode.";
-        return;
-    }
-
-    if (!TryParseTimecodeSeconds(inputTimecode.Trim(), out int enteredSeconds, out string parseError))
-    {
-        checkpointError = parseError;
-        return;
-    }
-
-    if (MediaItem is Series series)
-    {
-        var validSeasons = series.Seasons.Where(s => s.Number > 0 && s.Number < 100).ToList();
-        var seasonObj = validSeasons.FirstOrDefault(s => s.Number == inputSeason);
-
-        if (validSeasons.Count > 0 && seasonObj == null)
-        {
-            checkpointError = $"Season {inputSeason} does not exist.";
-            return;
-        }
-
-        if (seasonObj != null && seasonObj.Episodes.Count > 0 && !seasonObj.Episodes.Any(e => e.Number == inputEpisode))
-        {
-            checkpointError = $"Episode {inputEpisode} does not exist in Season {inputSeason}.";
-            return;
-        }
-    }
-
-    int maxMinutes = CurrentMaxDurationMinutes;
-    if (maxMinutes > 0 && enteredSeconds > maxMinutes * 60)
-    {
-        checkpointError = $"Timecode exceeds total duration ({FormatMinutesAsTimecode(maxMinutes)} / {maxMinutes} mins).";
-        return;
-    }
-
-    WatchCheckpoint cp;
-    if (MediaItem is Series sItem)
-    {
-        cp = new WatchCheckpoint(sItem, inputSeason, inputEpisode, inputTimecode.Trim(), inputReason);
-    }
-    else if (MediaItem is Movie movie)
-    {
-        cp = new WatchCheckpoint(movie, inputTimecode.Trim(), inputReason);
-    }
-    else return;
-
-    Me.SetCheckpoint(cp);
-    showCheckpointModal = false;
-    await DataService.SaveStateAsync();
-}
-
-private async Task ClearCheckpoint()
-{
-    if (MediaItem == null) return;
-    Me.ClearCheckpoint(MediaItem);
-    await DataService.SaveStateAsync();
-}
-
     private void NavigateToPerson(int? tmdbId)
     {
         if (tmdbId.HasValue)
         {
             Navigation.NavigateTo($"/person/{tmdbId.Value}");
-        }
-    }
-
-    private UserMediaState? CurrentMediaState => MediaItem != null ? Me.MediaStates.FirstOrDefault(s => s.Item.Id == MediaItem.Id) : null;
-    private WatchStatus? CurrentWatchStatus => CurrentMediaState?.Status;
-
-    private async void ChangeUserStatus(WatchStatus newStatus)
-    {
-        if (MediaItem == null) return;
-
-        if (newStatus == WatchStatus.Watched)
-        {
-            Me.CompleteWatching(MediaItem);
-        }
-        else
-        {
-            Me.SetStatus(MediaItem, newStatus);
-        }
-        await DataService.SaveStateAsync();
-        StateHasChanged();
-    }
-
-    private void FormatCheckpointTimecode(ChangeEventArgs e)
-    {
-        var rawInput = e.Value?.ToString() ?? "";
-        var digits = new string(rawInput.Where(char.IsDigit).ToArray());
-
-        if (digits.Length > 6)
-        {
-            digits = digits.Substring(0, 6);
-        }
-
-        if (digits.Length >= 5)
-        {
-            inputTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2, 2)}:{digits.Substring(4)}";
-        }
-        else if (digits.Length == 4)
-        {
-            inputTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2, 2)}";
-        }
-        else if (digits.Length == 3)
-        {
-            inputTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2)}";
-        }
-        else
-        {
-            inputTimecode = digits;
         }
     }
 

@@ -479,16 +479,13 @@
             Snackbar.Add($"Added \"{c.ResolvedMedia.Title}\" to \"{list.Name}\"", Severity.Success);
 
             await DataService.SaveStateAsync();
-            StateHasChanged();
         }
     }
 
     private void ToggleExpand(CaptureEntry c)
     {
-        if (expandedCaptures.Contains(c))
+        if (!expandedCaptures.Add(c))
             expandedCaptures.Remove(c);
-        else
-            expandedCaptures.Add(c);
     }
 
     private async Task Delete(Guid captureId)
@@ -497,40 +494,16 @@
         Snackbar.Add("Note deleted", Severity.Info);
 
         await DataService.SaveStateAsync();
-        StateHasChanged();
     }
 
     private void ToggleSourceExpand(Guid captureId)
     {
-        if (expandedSources.Contains(captureId))
+        if (!expandedSources.Add(captureId))
             expandedSources.Remove(captureId);
-        else
-            expandedSources.Add(captureId);
     }
 
     private void OnTimecodeInput(ChangeEventArgs e)
     {
-        string? val = e.Value?.ToString();
-        if (string.IsNullOrEmpty(val))
-        {
-            newTimecode = "";
-            return;
-        }
-
-        string digits = new string(val.Where(char.IsDigit).ToArray());
-        if (digits.Length > 6) digits = digits.Substring(0, 6);
-
-        if (digits.Length > 4)
-        {
-            newTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2, 2)}:{digits.Substring(4)}";
-        }
-        else if (digits.Length > 2)
-        {
-            newTimecode = $"{digits.Substring(0, 2)}:{digits.Substring(2)}";
-        }
-        else
-        {
-            newTimecode = digits;
-        }
+        newTimecode = TimecodeHelper.FormatInput(e.Value?.ToString());
     }
 }
