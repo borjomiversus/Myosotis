@@ -3,6 +3,7 @@
 @using System.Globalization
 @using MudBlazor
 @using MyosotisWeb.ServicesWeb
+@using Newtonsoft.Json
 @inject DemoDataService DataService
 @inject MediaSearch SearchService
 @inject NavigationManager Navigation
@@ -579,6 +580,29 @@
     [SupplyParameterFromQuery(Name = "adv")]
     public bool AdvParam { get; set; } = false;
 
+    [SupplyParameterFromQuery(Name = "type")]
+    public string? AdvTypeParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "yFrom")]
+    public int? AdvYearFromParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "yTo")]
+    public int? AdvYearToParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "rFrom")]
+    public double? AdvRatingFromParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "rTo")]
+    public double? AdvRatingToParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "genres")]
+    public string? AdvGenresParam { get; set; }
+
+    [SupplyParameterFromQuery(Name = "kw")]
+    public string? AdvKeywordsParam { get; set; }
+
+    private SearchMediaType? loadedGenresForType = null;
+
     private string searchInput = "";
     private string selectedFilter = "All";
     private List<Media> results = new List<Media>();
@@ -589,7 +613,6 @@
     private readonly Dictionary<Media, string> pickedLists = new Dictionary<Media, string>();
     private static readonly CultureInfo En = new CultureInfo("en-US");
 
-    // Advanced Search state
     private bool showAdvancedPanel = false;
     private bool isAdvancedMode = false;
     private AdvancedSearchFilters advancedFilters = new AdvancedSearchFilters();
@@ -637,22 +660,15 @@
         selectedFilter = !string.IsNullOrWhiteSpace(FilterParam) ? FilterParam : "All";
         isAdvancedMode = AdvParam;
 
-        if (availableGenres.Count == 0)
-        {
-            availableGenres = await TmdbService.GetAllGenresAsync();
-        }
-
         if (isAdvancedMode)
         {
-            if (appliedAdvancedFilters == null)
-            {
-                isAdvancedMode = false;
-                return;
-            }
-
+            RestoreAdvancedFiltersFromQuery();
+            await EnsureGenresLoadedAsync(advancedFilters.MediaType);
             await LoadAdvancedResultsAsync(currentPage);
             return;
         }
+
+        await EnsureGenresLoadedAsync(SearchMediaType.All);
 
         if (string.IsNullOrWhiteSpace(Query))
         {
@@ -716,6 +732,104 @@
         }
     }
 
+    private async Task EnsureGenresLoadedAsync(SearchMediaType mediaType)
+    {
+        if (availableGenres.Count > 0 && loadedGenresForType == mediaType)
+            return;
+
+        availableGenres = mediaType switch
+        {
+            SearchMediaType.Movies => await TmdbService.GetMovieGenresAsync(),
+            SearchMediaType.Series => await TmdbService.GetTvGenresAsync(),
+            _ => await TmdbService.GetAllGenresAsync()
+        };
+
+        loadedGenresForType = mediaType;
+    }
+
+    private string BuildAdvancedSearchUrl(int page)
+    {
+        var filters = appliedAdvancedFilters ?? advancedFilters;
+
+        var queryParts = new List<string>
+        {
+            "adv=true",
+            $"p={page}"
+        };
+
+        if (filters.MediaType != SearchMediaType.All)
+            queryParts.Add($"type={filters.MediaType}");
+
+        if (filters.YearFrom.HasValue)
+            queryParts.Add($"yFrom={filters.YearFrom.Value}");
+
+        if (filters.YearTo.HasValue)
+            queryParts.Add($"yTo={filters.YearTo.Value}");
+
+        if (filters.RatingFrom.HasValue)
+            queryParts.Add($"rFrom={filters.RatingFrom.Value.ToString(CultureInfo.InvariantCulture)}");
+
+        if (filters.RatingTo.HasValue)
+            queryParts.Add($"rTo={filters.RatingTo.Value.ToString(CultureInfo.InvariantCulture)}");
+
+        if (filters.SelectedGenreIds.Count > 0)
+            queryParts.Add($"genres={string.Join(",", filters.SelectedGenreIds)}");
+
+        if (filters.SelectedKeywords.Count > 0)
+        {
+            var json = JsonConvert.SerializeObject(
+                filters.SelectedKeywords.Select(k => new { k.Id, k.Name }));
+            queryParts.Add($"kw={Uri.EscapeDataString(json)}");
+        }
+
+        return "/search?" + string.Join("&", queryParts);
+    }
+
+    private void RestoreAdvancedFiltersFromQuery()
+    {
+        advancedFilters.Clear();
+
+        if (Enum.TryParse<SearchMediaType>(AdvTypeParam, true, out var parsedType) &&
+            Enum.IsDefined(typeof(SearchMediaType), parsedType))
+        {
+            advancedFilters.MediaType = parsedType;
+        }
+
+        advancedFilters.YearFrom = AdvYearFromParam;
+        advancedFilters.YearTo = AdvYearToParam;
+        advancedFilters.RatingFrom = AdvRatingFromParam;
+        advancedFilters.RatingTo = AdvRatingToParam;
+
+        if (!string.IsNullOrWhiteSpace(AdvGenresParam))
+        {
+            foreach (var part in AdvGenresParam.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(part, out int id))
+                    advancedFilters.SelectedGenreIds.Add(id);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(AdvKeywordsParam))
+        {
+            try
+            {
+                var keywords = JsonConvert.DeserializeObject<List<SelectedKeyword>>(AdvKeywordsParam);
+                if (keywords != null)
+                {
+                    advancedFilters.SelectedKeywords = keywords
+                        .Where(k => k.Id > 0 && !string.IsNullOrWhiteSpace(k.Name))
+                        .ToList();
+                }
+            }
+            catch (JsonException)
+            {
+                advancedFilters.SelectedKeywords.Clear();
+            }
+        }
+
+        appliedAdvancedFilters = advancedFilters.Clone();
+    }
+
     private void ApplyPagedResult(PagedMediaResult tmdbResponse)
     {
         totalPages = tmdbResponse.TotalPages;
@@ -737,9 +851,9 @@
     private async Task ToggleAdvancedPanel()
     {
         showAdvancedPanel = !showAdvancedPanel;
-        if (showAdvancedPanel && availableGenres.Count == 0)
+        if (showAdvancedPanel)
         {
-            availableGenres = await TmdbService.GetAllGenresAsync();
+            await EnsureGenresLoadedAsync(advancedFilters.MediaType);
         }
     }
 
@@ -750,15 +864,7 @@
 
         advancedFilters.MediaType = type;
         advancedFilters.SelectedGenreIds.Clear();
-
-        if (type == SearchMediaType.Movies)
-            availableGenres = await TmdbService.GetMovieGenresAsync();
-        else if (type == SearchMediaType.Series)
-            availableGenres = await TmdbService.GetTvGenresAsync();
-        else
-            availableGenres = await TmdbService.GetAllGenresAsync();
-
-        StateHasChanged();
+        await EnsureGenresLoadedAsync(type);
     }
 
     private void ToggleGenre(int genreId)
@@ -837,48 +943,57 @@
         }
 
         appliedAdvancedFilters = advancedFilters.Clone();
-
         isAdvancedMode = true;
         showAdvancedPanel = false;
 
-        Navigation.NavigateTo($"/search?adv=true&p=1");
+        var targetUrl = BuildAdvancedSearchUrl(1);
+        var currentRelativeUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        if (string.Equals(currentRelativeUrl, targetUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            await LoadAdvancedResultsAsync(1);
+        }
+        else
+        {
+            Navigation.NavigateTo(targetUrl);
+        }
     }
 
     private async Task LoadAdvancedResultsAsync(int page)
-{
-    if (appliedAdvancedFilters == null)
-        return;
-
-    isSearching = true;
-
-    try
     {
-        var response = await TmdbService.DiscoverMediaPagedAsync(
-            appliedAdvancedFilters,
-            page);
+        if (appliedAdvancedFilters == null)
+            return;
 
-        results.Clear();
-        peopleResults.Clear();
+        isSearching = true;
 
-        ApplyPagedResult(response); 
-        currentPage = response.CurrentPage;
-        totalPages = response.TotalPages;
-        totalResults = response.TotalResults;
-        totalMovies = response.TotalMovies;
-        totalSeries = response.TotalSeries;
-        totalPeople = response.TotalPeople;
+        try
+        {
+            var response = await TmdbService.DiscoverMediaPagedAsync(
+                appliedAdvancedFilters,
+                page);
+
+            results.Clear();
+            peopleResults.Clear();
+
+            ApplyPagedResult(response);
+            currentPage = response.CurrentPage;
+            totalPages = response.TotalPages;
+            totalResults = response.TotalResults;
+            totalMovies = response.TotalMovies;
+            totalSeries = response.TotalSeries;
+            totalPeople = response.TotalPeople;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(
+                $"Advanced search failed: {ex.Message}",
+                Severity.Error);
+        }
+        finally
+        {
+            isSearching = false;
+        }
     }
-    catch (Exception ex)
-    {
-        Snackbar.Add(
-            $"Advanced search failed: {ex.Message}",
-            Severity.Error);
-    }
-    finally
-    {
-        isSearching = false;
-    }
-}
 
     private void ResetAdvancedFilters()
     {
@@ -917,37 +1032,38 @@
         searchInput = "";
         isAdvancedMode = false;
         advancedFilters.Clear();
+        appliedAdvancedFilters = null;
         Navigation.NavigateTo("/search");
     }
 
-    private async Task PrevPage()
+    private void PrevPage()
     {
         if (currentPage <= 1)
             return;
 
         if (isAdvancedMode)
         {
-            Navigation.NavigateTo($"/search?adv=true&p={currentPage - 1}");
+            Navigation.NavigateTo(BuildAdvancedSearchUrl(currentPage - 1));
             return;
         }
 
         Navigation.NavigateTo(
-            $"/search?q={Uri.EscapeDataString(Query!)}&p={currentPage - 1}&f={selectedFilter}");
+            $"/search?q={Uri.EscapeDataString(Query ?? "")}&p={currentPage - 1}&f={selectedFilter}");
     }
 
-    private async Task NextPage()
+    private void NextPage()
     {
         if (currentPage >= totalPages)
             return;
 
         if (isAdvancedMode)
         {
-            Navigation.NavigateTo($"/search?adv=true&p={currentPage + 1}");
+            Navigation.NavigateTo(BuildAdvancedSearchUrl(currentPage + 1));
             return;
         }
 
         Navigation.NavigateTo(
-            $"/search?q={Uri.EscapeDataString(Query!)}&p={currentPage + 1}&f={selectedFilter}");
+            $"/search?q={Uri.EscapeDataString(Query ?? "")}&p={currentPage + 1}&f={selectedFilter}");
     }
 
     private void SelectFilter(string filter)
