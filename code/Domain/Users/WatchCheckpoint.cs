@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Linq;
 
-// запис "де я зупинилась і чому".
+// запис "де я зупинилась і чому"
 public class WatchCheckpoint
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Media PausedMedia { get; private set; }
-    public int? Season { get; private set; }      
-    public int? Episode { get; private set; }       
+    public int? Season { get; private set; }
+    public int? Episode { get; private set; }
     public string Timecode { get; private set; }
     public string? Reason { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -34,6 +35,88 @@ public class WatchCheckpoint
         IsActive = true;
     }
 
+    public static int GetTargetDurationMinutes(Media media, int? seasonNumber, int? episodeNumber)
+    {
+        if (media is Movie movie)
+            return movie.DurationMinutes ?? 0;
+
+        if (media is Series series)
+        {
+            var season = series.Seasons.FirstOrDefault(s => s.Number == seasonNumber);
+            var ep = season?.Episodes.FirstOrDefault(e => e.Number == episodeNumber);
+            if (ep != null && ep.RuntimeMinutes > 0)
+                return ep.RuntimeMinutes;
+
+            return series.AverageEpisodeLength ?? 0;
+        }
+
+        return media.CalculateTimeDebt();
+    }
+
+    public static bool TryValidateAndCreate(
+        Media media,
+        string? inputTimecode,
+        string? inputReason,
+        int inputSeason,
+        int inputEpisode,
+        out WatchCheckpoint? checkpoint,
+        out string? error)
+    {
+        checkpoint = null;
+        error = null;
+
+        if (string.IsNullOrWhiteSpace(inputTimecode))
+        {
+            error = "Please enter a timecode.";
+            return false;
+        }
+
+        if (!TimecodeHelper.TryParseSeconds(inputTimecode.Trim(), out int enteredSeconds, out string parseError))
+        {
+            error = parseError;
+            return false;
+        }
+
+        if (media is Series series)
+        {
+            var validSeasons = series.Seasons.Where(s => s.Number > 0 && s.Number < 100).ToList();
+            var seasonObj = validSeasons.FirstOrDefault(s => s.Number == inputSeason);
+
+            if (validSeasons.Count > 0 && seasonObj == null)
+            {
+                error = $"Season {inputSeason} does not exist.";
+                return false;
+            }
+
+            if (seasonObj != null && seasonObj.Episodes.Count > 0 && !seasonObj.Episodes.Any(e => e.Number == inputEpisode))
+            {
+                error = $"Episode {inputEpisode} does not exist in Season {inputSeason}.";
+                return false;
+            }
+        }
+
+        int maxMinutes = GetTargetDurationMinutes(media, inputSeason, inputEpisode);
+        if (maxMinutes > 0 && enteredSeconds > maxMinutes * 60)
+        {
+            error = $"Timecode exceeds total duration ({TimecodeHelper.FormatMinutesAsTimecode(maxMinutes)} / {maxMinutes} mins).";
+            return false;
+        }
+
+        if (media is Series sItem)
+        {
+            checkpoint = new WatchCheckpoint(sItem, inputSeason, inputEpisode, inputTimecode.Trim(), inputReason);
+            return true;
+        }
+
+        if (media is Movie movie)
+        {
+            checkpoint = new WatchCheckpoint(movie, inputTimecode.Trim(), inputReason);
+            return true;
+        }
+
+        return false;
+    }
+
     public string ResumeWatching()
     {
         IsActive = false;
@@ -59,22 +142,10 @@ public class WatchCheckpoint
 
     public int GetProgressPercent()
     {
-        string[] parts = Timecode.Split(':');
-        int seconds = 0;
-        foreach (string part in parts)
-        {
-            if (!int.TryParse(part, out int number))
-                return 0;
-            seconds = seconds * 60 + number;
-        }
+        if (!TimecodeHelper.TryParseSeconds(Timecode, out int seconds, out _))
+            return 0;
 
-        int totalMinutes = PausedMedia switch
-        {
-            Movie movie => movie.DurationMinutes ?? 0,
-            Series series => series.AverageEpisodeLength ?? 0,
-            _ => PausedMedia.CalculateTimeDebt()
-        };
-
+        int totalMinutes = GetTargetDurationMinutes(PausedMedia, Season, Episode);
         int totalSeconds = totalMinutes * 60;
         if (totalSeconds <= 0) return 0;
 
