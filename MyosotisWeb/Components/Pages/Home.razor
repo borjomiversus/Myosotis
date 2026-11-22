@@ -12,7 +12,7 @@
 
 <div class="w-full px-margin-mobile md:px-margin py-margin-mobile md:py-margin flex flex-col gap-12">
 
-    <!-- HERO -->
+    <!-- банер -->
     @if (isLoading)
     {
         <div class="w-full h-[340px] rounded-lg border border-secondary/25 bg-surface-variant/20 flex flex-col items-center justify-center gap-3">
@@ -115,7 +115,7 @@
         </div>
     }
 
-    <!-- ВОТЧЛІСТИ -->
+<!-- вотчлісти -->
     <section class="flex flex-col">
         <div class="flex items-center gap-4 mb-6">
             <h2 class="font-serif text-[24px] text-on-surface">Your watchlists</h2>
@@ -123,10 +123,18 @@
 
             @if (Me.Watchlists.Count > 0)
             {
-                <a href="/watchlists"
-                   class="text-[13px] text-secondary-text hover:text-primary transition-colors font-body-md">
-                    View all (@Me.Watchlists.Count)
-                </a>
+                <div class="flex items-center gap-4 text-[13px] font-body-md">
+                    <a href="/watchlists"
+                       class="inline-flex items-center gap-1 text-primary hover:underline underline-offset-4 transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+                        <span>New list</span>
+                    </a>
+                    <span class="text-secondary/40">·</span>
+                    <a href="/watchlists"
+                       class="text-secondary-text hover:text-primary transition-colors">
+                        View all (@Me.Watchlists.Count)
+                    </a>
+                </div>
             }
         </div>
 
@@ -153,75 +161,75 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @foreach (var list in TopWatchlists)
                 {
-                    <div @onclick="() => OpenList(list.Name)"
-                         class="w-full h-[190px] rounded-lg border border-secondary/25 hover:border-primary/50 cursor-pointer group relative overflow-hidden flex flex-col justify-end p-6 bg-surface-variant/25 transition-colors">
+                    int totalCount = list.Entries.Count;
+                    int watchedCount = list.Entries.Count(e => Me.IsWatched(e.Item));
+                    int unwatchedCount = totalCount - watchedCount;
+                    int percent = totalCount > 0 ? (int)Math.Round((double)watchedCount / totalCount * 100) : 0;
 
-                        <div class="absolute inset-0 z-0 overflow-hidden">
-                            <div class="absolute -right-4 -top-2 flex -space-x-12 opacity-80 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300 pt-6 pr-6">
-                                @if (list.Entries.Count > 0)
-                                {
-                                    int maxCount = list.Entries.Count < 3 ? list.Entries.Count : 3;
-                                    for (int i = 0; i < maxCount; i++)
+                    <article @onclick="() => OpenList(list.Name)"
+                             class="relative h-[205px] rounded-lg border border-secondary/25 bg-surface-variant/15 hover:border-primary/50 hover:bg-surface-variant/25 cursor-pointer transition-all overflow-hidden group">
+
+                        @if (list.Entries.Count > 0)
+                        {
+                            var topEntries = list.Entries.Take(3).ToList();
+                            <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                                <div class="absolute right-4 top-4 flex -space-x-9 opacity-85 group-hover:opacity-100 group-hover:-translate-y-0.5 transition-all duration-300">
+                                    @for (int i = 0; i < topEntries.Count; i++)
                                     {
-                                        var entry = list.Entries[i];
-                                        string rotation = i == 0 ? "-rotate-12 mt-4" : i == 1 ? "-rotate-3 mt-1" : "rotate-12 mt-5";
+                                        var entry = topEntries[i];
+                                        string rotation = i == 0 ? "-rotate-6 mt-2" : i == 1 ? "rotate-0 mt-0" : "rotate-6 mt-3";
                                         string zIndex = i == 0 ? "z-30" : i == 1 ? "z-20" : "z-10";
 
-                                        <div class="@zIndex @rotation w-[82px] h-[120px] rounded bg-cover bg-center border border-secondary/35"
+                                        <div class="@zIndex @rotation w-[74px] h-[108px] rounded-sm bg-cover bg-center border border-secondary/40 shadow-lg"
                                              style="@UiHelpers.CardBackground(entry.Item.PosterUrl)">
                                         </div>
                                     }
+                                </div>
+                            </div>
+
+                            <div class="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/35 z-10 pointer-events-none"></div>
+                        }
+
+                        <div class="relative z-20 h-full p-5 flex flex-col justify-between">
+                            <div class="flex items-center">
+                                @if (list.IsPrivate)
+                                {
+                                    <span class="material-symbols-outlined text-[15px] text-secondary-text" title="Private list">lock</span>
                                 }
                             </div>
-                        </div>
 
-                        <div class="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10"></div>
-
-                        <div class="relative z-20 flex items-end justify-between">
-                            <div class="flex flex-col">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h3 class="font-serif text-[20px] text-on-surface group-hover:text-primary transition-colors">
+                            <div class="flex flex-col gap-2.5">
+                                <div class="flex flex-col gap-0.5 @(list.Entries.Count > 0 ? "pr-16" : "")">
+                                    <h3 class="font-serif text-[21px] text-on-surface group-hover:text-primary transition-colors leading-snug truncate">
                                         @list.Name
                                     </h3>
-                                    @if (list.IsPrivate)
-                                    {
-                                        <span class="material-symbols-outlined text-[15px] text-secondary-text" title="Private list">
-                                            lock
-                                        </span>
-                                    }
+                                    <span class="text-[12px] text-secondary-text font-body-md">
+                                        @totalCount @(totalCount == 1 ? "title" : "titles") · @unwatchedCount unwatched
+                                    </span>
                                 </div>
-                                <span class="text-[13px] text-secondary-text font-body-md">
-                                    @list.Entries.Count @(list.Entries.Count == 1 ? "title" : "titles")
-                                </span>
+
+                                <div class="flex flex-col gap-1.5 pt-0.5">
+                                    <div class="w-full h-[2px] bg-secondary/20 overflow-hidden">
+                                        <div class="h-full bg-primary transition-all duration-300" style="width: @percent%;"></div>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[12px] font-body-md">
+                                        <span class="text-secondary-text">@percent% watched</span>
+                                        <span class="text-on-surface group-hover:text-primary font-title-md text-[12px] inline-flex items-center gap-1 transition-colors">
+                                            <span>Open</span>
+                                            <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-
-                            <span class="material-symbols-outlined text-[20px] text-secondary-text group-hover:text-primary group-hover:translate-x-1 transition-all">
-                                arrow_forward
-                            </span>
                         </div>
-                    </div>
-                }
-
-                @if (Me.Watchlists.Count < 3)
-                {
-                    <a href="/watchlists"
-                       class="w-full h-[190px] rounded-lg border border-dashed border-secondary/35 hover:border-primary/60 hover:bg-surface-variant/20 transition-colors flex flex-col items-center justify-center gap-3 group">
-                        <span class="material-symbols-outlined text-[24px] text-secondary-text group-hover:text-primary transition-colors">
-                            add
-                        </span>
-                        <span class="text-[13px] text-secondary-text group-hover:text-on-surface transition-colors text-center font-body-md">
-                            Create new<br />watchlist
-                        </span>
-                    </a>
+                    </article>
                 }
             </div>
         }
     </section>
 
-    <!-- НИЖНІЙ БЛОК -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-2">
 
-        <!-- Рекомендації для вечора (Playfair для назв фільмів) -->
         <section class="lg:col-span-5 flex flex-col">
             <div class="flex items-baseline justify-between pb-3 mb-5 border-b border-secondary/20">
                 <h3 class="font-serif text-[20px] text-on-surface">
@@ -253,7 +261,7 @@
             </div>
         </section>
 
-        <!-- Нотатки (Montserrat для тексту) -->
+        <!-- Нотатки -->
         <section class="lg:col-span-4 flex flex-col">
             <div class="flex items-baseline justify-between pb-3 mb-5 border-b border-secondary/20">
                 <h3 class="font-serif text-[20px] text-on-surface">
@@ -293,7 +301,7 @@
             }
         </section>
 
-        <!-- Швидкі дії (Montserrat) -->
+        <!-- Швидкі дії  -->
         <section class="lg:col-span-3 flex flex-col">
             <div class="flex items-baseline justify-between pb-3 mb-5 border-b border-secondary/20">
                 <h3 class="font-serif text-[20px] text-on-surface">
@@ -336,7 +344,6 @@
 
     </div>
 
-    <!-- ПІДСУМОК МІСЯЦЯ (Montserrat) -->
     @{
         var now = DateTime.Now;
         int monthMinutes = Me.GetMonthlyStats(now.Year, now.Month);

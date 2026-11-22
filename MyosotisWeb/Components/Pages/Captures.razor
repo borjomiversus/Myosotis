@@ -8,7 +8,7 @@
 
 <PageTitle>Myosotis · Captures</PageTitle>
 
-<div class="w-full px-margin py-margin flex flex-col gap-10">
+<div class="w-full px-margin py-margin flex flex-col gap-12">
 
     @{
         var waiting = Me.Captures.Where(c => c.Status == CaptureStatus.Unresolved).OrderByDescending(c => c.CapturedAt).ToList();
@@ -18,7 +18,7 @@
     <!-- Заголовок -->
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-secondary/25">
         <div class="flex flex-col gap-2">
-            <h1 class="font-headline-xl text-headline-xl text-on-surface leading-none">Captures & notes</h1>
+            <h1 class="font-headline-xl text-headline-xl text-on-surface leading-none">Captures &amp; notes</h1>
             <p class="font-body-md text-[14px] text-secondary-text">Save it now. Figure out what it is later.</p>
         </div>
 
@@ -41,46 +41,54 @@
     </header>
 
     <!-- Форма швидкого запису -->
-    <div class="flex flex-col lg:flex-row gap-3 items-center bg-surface-variant/25 p-4 rounded-xl border border-secondary/30">
+<section class="flex flex-col gap-3 pb-6 border-b border-secondary/20">
+    <div class="relative flex items-center bg-surface-container-lowest border border-secondary/35 focus-within:border-primary rounded-lg px-4 py-3 transition-colors">
+        <span class="material-symbols-outlined text-[20px] text-secondary-text mr-3 shrink-0">edit_note</span>
         <input @bind="newCaptureText"
                @bind:event="oninput"
                @onkeydown="OnCaptureKey"
                placeholder="Half-remembered scene, a dialogue line, a thought…"
-               class="flex-1 w-full bg-background rounded-lg px-4 py-2.5 outline-none text-on-surface placeholder:text-secondary-text border border-secondary/30 focus:border-primary font-body-md text-[14px] transition-colors" />
-
-        <div class="flex w-full lg:w-auto gap-3">
-            <select @bind="selectedKind"
-                    aria-label="Note type"
-                    class="w-full lg:w-[130px] bg-background border border-secondary/30 rounded-lg px-3 py-2.5 text-on-surface outline-none focus:border-primary font-body-md text-[13px] cursor-pointer">
-                @foreach (CaptureKind kind in Enum.GetValues(typeof(CaptureKind)))
-                {
-                    <option value="@kind" class="bg-background text-on-surface">@kind</option>
-                }
-            </select>
-
-            <input value="@newTimecode"
-                   @oninput="OnTimecodeInput"
-                   maxlength="8"
-                   placeholder="00:00:00"
-                   title="Format: mm:ss or hh:mm:ss"
-                   class="w-full lg:w-[100px] bg-background rounded-lg px-3 py-2.5 outline-none text-on-surface placeholder:text-secondary-text border border-secondary/30 focus:border-primary font-body-md text-[13px] text-center transition-colors" />
-
-            <input @bind="customSource"
-                   placeholder="Source"
-                   class="w-full lg:w-[150px] bg-background rounded-lg px-3 py-2.5 outline-none text-on-surface placeholder:text-secondary-text border border-secondary/30 focus:border-primary font-body-md text-[13px] transition-colors" />
-        </div>
-
-        <button @onclick="AddCapture"
-                class="w-full lg:w-auto px-6 py-2.5 bg-primary text-on-primary rounded-lg font-title-md font-semibold text-[13px] hover:opacity-90 transition-opacity whitespace-nowrap">
-            Catch it
-        </button>
+               class="w-full bg-transparent outline-none text-on-surface placeholder:text-secondary-text font-sans text-[17px]" />
     </div>
+
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+                <select @bind="selectedKind"
+                        aria-label="Note type"
+                        style="background-color: #1A2235; color: #E2E8F0;"
+                        class="bg-surface-container-lowest border border-secondary/30 rounded-lg px-3 py-2 text-on-surface outline-none focus:border-primary font-title-md text-[12px] cursor-pointer">
+                    @foreach (CaptureKind kind in Enum.GetValues(typeof(CaptureKind)))
+                    {
+                        <option value="@kind" style="background-color: #1A2235; color: #E2E8F0;">@kind</option>
+                    }
+                </select>
+
+                <input value="@newTimecode"
+                       @oninput="OnTimecodeInput"
+                       maxlength="8"
+                       placeholder="00:00:00"
+                       title="Format: mm:ss or hh:mm:ss"
+                       class="w-[104px] bg-surface-container-lowest border border-secondary/30 rounded-lg px-3 py-2 outline-none text-on-surface placeholder:text-secondary-text focus:border-primary font-body-md text-[12px] text-center transition-colors" />
+
+                <input @bind="customSource"
+                       placeholder="Source (e.g. YouTube, TikTok…)"
+                       class="w-full sm:w-[210px] bg-surface-container-lowest border border-secondary/30 rounded-lg px-3 py-2 outline-none text-on-surface placeholder:text-secondary-text focus:border-primary font-body-md text-[13px] transition-colors" />
+            </div>
+
+            <button @onclick="AddCapture"
+                    class="inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-primary text-background rounded-lg font-title-md font-semibold text-[12px] hover:opacity-90 transition-opacity whitespace-nowrap">
+                <span class="material-symbols-outlined text-[15px]">add</span>
+                <span>Catch it</span>
+            </button>
+        </div>
+    </section>
 
     @if (waiting.Count == 0 && named.Count == 0)
     {
-        <div class="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto">
-            <p class="font-body-md text-[14px] text-secondary-text leading-relaxed">
-                Nothing here yet. Write down the first thing that caught your eye.
+        <div class="border border-secondary/25 rounded-lg py-16 px-6 text-center max-w-lg mx-auto bg-surface-container-lowest/40">
+            <p class="font-serif text-[18px] text-on-surface mb-1">Nothing captured yet</p>
+            <p class="font-body-md text-[13px] text-secondary-text leading-relaxed">
+                Write down a quote, timestamp, or half-remembered scene above.
             </p>
         </div>
     }
@@ -89,44 +97,45 @@
     @if (waiting.Count > 0)
     {
         <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <h2 class="font-serif text-[24px] text-on-surface">Waiting to be named</h2>
-                <span class="text-secondary-text font-body-md text-[13px]">(@waiting.Count)</span>
-                <div class="flex-1 h-px bg-secondary/25"></div>
+            <div class="flex items-baseline justify-between gap-4 border-b border-secondary/20 pb-3">
+                <div class="flex items-baseline gap-3">
+                    <h2 class="font-serif text-[24px] text-on-surface">Waiting to be named</h2>
+                    <span class="font-body-md text-[13px] text-secondary-text">(@waiting.Count)</span>
+                </div>
+                <span class="font-body-md text-[12px] text-secondary-text hidden sm:inline">Link each note to a title once you recall it</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach (var c in waiting)
                 {
                     bool isExpanded = expandedCaptures.Contains(c);
+                    string kindBorder = GetKindBorderClass(c.Kind, isResolved: false);
+                    string kindText = GetKindTextClass(c.Kind, isResolved: false);
 
-                    <article class="relative flex flex-col justify-between rounded-xl bg-surface-variant/20 border border-dashed border-secondary/40 p-6 hover:border-primary/50 transition-colors group">
+                    <article class="relative flex flex-col justify-between rounded-lg bg-surface-container-lowest/60 border border-secondary/25 border-l-2 @kindBorder p-6 hover:border-secondary/45 transition-colors group">
 
                         <div class="flex flex-col gap-4 mb-6">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="bg-secondary-fill text-on-surface font-title-md text-[11px] px-2.5 py-0.5 rounded-md">
-                                    Unresolved · @c.Kind
-                                </span>
-
                                 <div class="flex items-center gap-2">
+                                    <span class="font-label-caps text-[11px] uppercase tracking-wider @kindText font-semibold">@c.Kind</span>
                                     @if (!string.IsNullOrEmpty(c.Timecode))
                                     {
-                                        <span class="text-secondary-text font-body-md text-[12px]">
-                                            @c.Timecode
-                                        </span>
+                                        <span class="text-secondary/40">·</span>
+                                        <span class="font-body-md text-[12px] text-on-surface">@c.Timecode</span>
                                     }
-                                    <button @onclick="() => Delete(c.Id)"
-                                            class="text-secondary-text hover:text-error transition-colors p-1"
-                                            title="Delete note">
-                                        <span class="material-symbols-outlined text-[18px]">delete</span>
-                                    </button>
                                 </div>
+
+                                <button @onclick="() => Delete(c.Id)"
+                                        class="text-secondary-text hover:text-tertiary transition-colors p-1 -mr-1"
+                                        title="Delete note">
+                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
                             </div>
 
                             @if (!string.IsNullOrWhiteSpace(c.RawNote))
                             {
                                 <div>
-                                    <p class="font-body-md text-[14px] text-on-surface leading-relaxed break-words @(isExpanded ? "" : "line-clamp-4")">
+                                    <p class="font-serif text-[18px] text-on-surface leading-relaxed break-words @(isExpanded ? "" : "line-clamp-4")">
                                         &ldquo;@c.RawNote&rdquo;
                                     </p>
 
@@ -140,7 +149,7 @@
                                 </div>
                             }
 
-                            <div class="text-[12px] text-secondary-text font-body-md flex items-center justify-between gap-2 pt-3 border-t border-secondary/15">
+                            <div class="text-[12px] text-secondary-text font-body-md flex items-center justify-between gap-2 pt-3 border-t border-secondary/20">
                                 <div class="flex items-center gap-1.5 truncate flex-1 min-w-0">
                                     @{
                                         string source = string.IsNullOrWhiteSpace(c.Source) ? "Manual" : c.Source.Trim();
@@ -176,18 +185,20 @@
                             </div>
                         </div>
 
-                        <!-- Пошук для прив'язки до фільму/серіалу -->
-                        <div class="relative mt-auto pt-4 border-t border-secondary/20">
-                            <input type="text"
-                                   placeholder="Search title to link..."
-                                   value="@GetSearchQuery(c)"
-                                   @oninput="e => UpdateSearchQuery(c, e.Value?.ToString())"
-                                   class="w-full bg-background border border-secondary/35 rounded-lg px-3.5 py-2 text-on-surface outline-none focus:border-primary transition-colors font-body-md text-[13px] placeholder:text-secondary-text" />
+                        <div class="relative mt-auto pt-3 border-t border-secondary/20">
+                            <div class="flex items-center gap-2 border-b border-secondary/35 focus-within:border-primary pb-1.5 transition-colors">
+                                <span class="material-symbols-outlined text-[15px] text-secondary-text">link</span>
+                                <input type="text"
+                                       placeholder="Link to movie or series…"
+                                       value="@GetSearchQuery(c)"
+                                       @oninput="e => UpdateSearchQuery(c, e.Value?.ToString())"
+                                       class="w-full bg-transparent text-on-surface outline-none font-body-md text-[13px] placeholder:text-secondary-text" />
+                            </div>
 
                             @if (IsSearching(c))
                             {
                                 var matches = GetMatches(c).ToList();
-                                <div class="absolute left-0 right-0 top-full mt-2 bg-surface-variant border border-secondary/40 rounded-xl max-h-72 overflow-y-auto flex flex-col z-50">
+                                <div class="absolute left-0 right-0 top-full mt-2 bg-surface-container border border-secondary/40 rounded-lg max-h-72 overflow-y-auto flex flex-col z-50 shadow-2xl">
                                     @if (matches.Count == 0)
                                     {
                                         <div class="px-4 py-4 text-[13px] text-secondary-text font-body-md text-center">
@@ -202,16 +213,16 @@
                                                     class="text-left px-3.5 py-2.5 text-[13px] text-on-surface hover:bg-secondary/20 hover:text-primary transition-colors border-b border-secondary/15 last:border-b-0 flex items-center gap-3">
                                                 @if (!string.IsNullOrEmpty(m.PosterUrl))
                                                 {
-                                                    <div class="w-9 h-[54px] rounded bg-cover bg-center shrink-0 border border-secondary/30" style="@UiHelpers.CardBackground(m.PosterUrl)"></div>
+                                                    <div class="w-8 h-[48px] rounded-sm bg-cover bg-center shrink-0 border border-secondary/30" style="@UiHelpers.CardBackground(m.PosterUrl)"></div>
                                                 }
                                                 else
                                                 {
-                                                    <div class="w-9 h-[54px] rounded bg-background flex items-center justify-center shrink-0 text-secondary-text text-[11px]">
+                                                    <div class="w-8 h-[48px] rounded-sm bg-surface-container-lowest flex items-center justify-center shrink-0 text-secondary-text text-[11px]">
                                                         —
                                                     </div>
                                                 }
                                                 <div class="flex flex-col truncate">
-                                                    <span class="truncate font-serif font-semibold text-[15px]">@m.Title</span>
+                                                    <span class="truncate font-serif text-[15px]">@m.Title</span>
                                                     <span class="text-secondary-text font-body-md text-[12px]">@m.ReleaseYear · @(m is Series ? "Series" : "Movie")</span>
                                                 </div>
                                             </button>
@@ -230,40 +241,37 @@
     @if (named.Count > 0)
     {
         <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <h2 class="font-serif text-[24px] text-on-surface">Linked notes</h2>
-                <span class="text-secondary-text font-body-md text-[13px]">(@named.Count)</span>
-                <div class="flex-1 h-px bg-secondary/25"></div>
+            <div class="flex items-baseline justify-between gap-4 border-b border-secondary/20 pb-3">
+                <div class="flex items-baseline gap-3">
+                    <h2 class="font-serif text-[24px] text-on-surface">Linked notes</h2>
+                    <span class="font-body-md text-[13px] text-secondary-text">(@named.Count)</span>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach (var c in named)
                 {
                     bool isExpanded = expandedCaptures.Contains(c);
+                   string kindBorder = GetKindBorderClass(c.Kind, isResolved: true);
+                   string kindText = GetKindTextClass(c.Kind, isResolved: true);
 
-                    <article class="flex flex-col justify-between rounded-xl bg-surface-variant/25 border border-secondary/25 overflow-hidden hover:border-primary/50 transition-colors group">
+                    <article class="flex flex-col justify-between rounded-lg bg-surface-container-lowest/60 border border-secondary/25 border-l-2 @kindBorder overflow-hidden hover:border-secondary/45 transition-colors group">
 
                         @if (c.Kind == CaptureKind.Scene && !string.IsNullOrEmpty(c.ResolvedMedia?.PosterUrl))
                         {
-                            <div class="relative h-44 w-full bg-background overflow-hidden border-b border-secondary/20">
+                            <div class="relative h-40 w-full bg-surface-container-lowest overflow-hidden border-b border-secondary/20">
                                 <div class="absolute inset-0 bg-cover bg-center opacity-85" style="@UiHelpers.CardBackground(c.ResolvedMedia.PosterUrl)"></div>
-                                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent"></div>
+                                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent"></div>
 
-                                <span class="absolute top-3 left-3 bg-background/85 text-primary font-title-md text-[11px] px-2.5 py-0.5 rounded-md border border-secondary/30">
-                                    @c.Kind
-                                </span>
+                                <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                                    <span class="bg-surface-container-lowest/90 @kindText font-label-caps text-[11px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-sm border border-secondary/30">
+                                        @c.Kind @(!string.IsNullOrEmpty(c.Timecode) ? $"· {c.Timecode}" : "")
+                                    </span>
 
-                                <div class="absolute top-3 right-3 flex items-center gap-2">
-                                    @if (!string.IsNullOrEmpty(c.Timecode))
-                                    {
-                                        <span class="font-body-md text-[11px] text-on-surface bg-background/85 px-2.5 py-0.5 rounded-md border border-secondary/30">
-                                            @c.Timecode
-                                        </span>
-                                    }
                                     <button @onclick="() => Delete(c.Id)"
-                                            class="text-secondary-text hover:text-error bg-background/85 p-1 rounded-md border border-secondary/30 transition-colors"
+                                            class="text-secondary-text hover:text-tertiary bg-surface-container-lowest/90 p-1 rounded-sm border border-secondary/30 transition-colors"
                                             title="Delete note">
-                                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                                        <span class="material-symbols-outlined text-[15px]">delete</span>
                                     </button>
                                 </div>
                             </div>
@@ -274,36 +282,36 @@
                             @if (c.Kind != CaptureKind.Scene || string.IsNullOrEmpty(c.ResolvedMedia?.PosterUrl))
                             {
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="bg-secondary-fill text-primary font-title-md text-[11px] px-2.5 py-0.5 rounded-md">
-                                        @c.Kind
-                                    </span>
                                     <div class="flex items-center gap-2">
+                                        <span class="font-label-caps text-[11px] uppercase tracking-wider @kindText font-semibold">@c.Kind</span>
                                         @if (!string.IsNullOrEmpty(c.Timecode))
                                         {
-                                            <span class="text-secondary-text font-body-md text-[12px]">
-                                                @c.Timecode
-                                            </span>
+                                            <span class="text-secondary/40">·</span>
+                                            <span class="font-body-md text-[12px] text-on-surface">@c.Timecode</span>
                                         }
-                                        <button @onclick="() => Delete(c.Id)"
-                                                class="text-secondary-text hover:text-error transition-colors p-1"
-                                                title="Delete note">
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
                                     </div>
+
+                                    <button @onclick="() => Delete(c.Id)"
+                                            class="text-secondary-text hover:text-tertiary transition-colors p-1 -mr-1"
+                                            title="Delete note">
+                                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                                    </button>
                                 </div>
                             }
 
+                            <!-- Прив'язаний фільм/серіал -->
                             <div class="flex items-baseline justify-between gap-2 border-b border-secondary/20 pb-3">
-                                <a href="/media/@c.ResolvedMedia?.Id" class="font-serif font-semibold text-[18px] text-on-surface hover:text-primary transition-colors truncate">
+                                <a href="/media/@c.ResolvedMedia?.Id" class="font-serif text-[19px] text-on-surface hover:text-primary transition-colors truncate">
                                     @c.ResolvedMedia?.Title
                                 </a>
                                 <span class="font-body-md text-[12px] text-secondary-text shrink-0">@c.ResolvedMedia?.ReleaseYear</span>
                             </div>
 
+                            <!-- Цитата/нотатка -->
                             @if (!string.IsNullOrWhiteSpace(c.RawNote))
                             {
                                 <div>
-                                    <p class="font-body-md text-[14px] text-on-surface/90 leading-relaxed break-words @(isExpanded ? "" : "line-clamp-4")">
+                                    <p class="font-body-md text-[14px] text-on-surface leading-relaxed break-words @(isExpanded ? "" : "line-clamp-4")">
                                         &ldquo;@c.RawNote&rdquo;
                                     </p>
 
@@ -319,12 +327,13 @@
 
                             @if (!string.IsNullOrEmpty(c.Annotation))
                             {
-                                <p class="font-body-md text-[13px] text-secondary-text leading-relaxed bg-background/60 p-3 rounded-lg border border-secondary/20 line-clamp-2 break-words" title="@c.Annotation">
+                                <p class="font-body-md text-[13px] text-secondary-text leading-relaxed bg-surface-container-lowest/70 p-3 rounded-lg border border-secondary/20 line-clamp-2 break-words" title="@c.Annotation">
                                     @c.Annotation
                                 </p>
                             }
 
-                            <div class="text-[12px] text-secondary-text font-body-md flex items-center justify-between gap-2 pt-3 border-t border-secondary/15">
+                            <!-- Джерело і дата -->
+                            <div class="text-[12px] text-secondary-text font-body-md flex items-center justify-between gap-2 pt-3 border-t border-secondary/20">
                                 <div class="flex items-center gap-1.5 truncate flex-1 min-w-0">
                                     @{
                                         string source = string.IsNullOrWhiteSpace(c.Source) ? "Manual" : c.Source.Trim();
@@ -369,7 +378,7 @@
 
                                 @if (containingList != null)
                                 {
-                                    <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-secondary-fill/60 border border-secondary/30 text-primary w-full">
+                                    <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-container border border-secondary/30 text-primary w-full">
                                         <span class="font-title-md text-[12px] truncate">In list: @containingList.Name</span>
                                         <button @onclick='() => Navigation.NavigateTo($"/watchlists/{Uri.EscapeDataString(containingList.Name)}")'
                                                 class="text-[12px] text-on-surface hover:text-primary underline underline-offset-4 font-title-md shrink-0 ml-2">
@@ -386,14 +395,15 @@
                                     <div class="flex items-center gap-2 w-full">
                                         <select @onchange="e => PickList(c, e.Value?.ToString())"
                                                 aria-label="Choose watchlist"
-                                                class="flex-1 min-w-0 bg-background border border-secondary/35 rounded-lg px-3 py-1.5 text-on-surface outline-none focus:border-primary font-body-md text-[12px] cursor-pointer">
+                                                style="background-color: #1A2235; color: #E2E8F0;"
+                                                class="flex-1 min-w-0 bg-surface-container-lowest border border-secondary/30 rounded-lg px-3 py-1.5 text-on-surface outline-none focus:border-primary font-body-md text-[12px] cursor-pointer">
                                             @foreach (var list in Me.Watchlists)
                                             {
-                                                <option value="@list.Name" class="bg-background text-on-surface">@list.Name</option>
+                                                <option value="@list.Name" style="background-color: #1A2235; color: #E2E8F0;">@list.Name</option>
                                             }
                                         </select>
                                         <button @onclick="() => AddToList(c)"
-                                                class="px-3.5 py-1.5 rounded-lg border border-primary/50 text-primary hover:bg-primary hover:text-on-primary font-title-md font-semibold text-[12px] transition-colors whitespace-nowrap">
+                                                class="px-3.5 py-1.5 rounded-lg border border-primary/50 text-primary hover:bg-primary hover:text-background font-title-md font-semibold text-[12px] transition-colors whitespace-nowrap">
                                             Add
                                         </button>
                                     </div>
@@ -506,4 +516,32 @@
     {
         newTimecode = TimecodeHelper.FormatInput(e.Value?.ToString());
     }
+
+    private string GetKindBorderClass(CaptureKind kind, bool isResolved)
+    {
+        if (isResolved) return "border-l-secondary/40";
+
+        return kind switch
+        {
+            CaptureKind.Thought => "border-l-primary",
+            CaptureKind.Quote => "border-l-tertiary",
+            CaptureKind.Scene => "border-l-secondary",
+            CaptureKind.Note => "border-l-on-surface",
+            _ => "border-l-primary"
+        };
+    }
+
+    private string GetKindTextClass(CaptureKind kind, bool isResolved)
+    {
+        if (isResolved) return "text-secondary-text";
+
+        return kind switch
+        {
+            CaptureKind.Thought => "text-primary",
+            CaptureKind.Quote => "text-tertiary",
+            CaptureKind.Scene => "text-secondary",
+            CaptureKind.Note => "text-on-surface",
+            _ => "text-primary"
+        };
+}
 }
