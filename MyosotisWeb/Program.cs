@@ -5,6 +5,8 @@ using MyosotisWeb.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddDataProtection();
+builder.Services.AddScoped<UserSessionContext>();
 builder.Services.AddScoped<AnonymousUserDataService>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.DataProtection
+@using MyosotisWeb.Infrastructure
+@inject IDataProtectionProvider DataProtectionProvider
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -106,10 +109,32 @@
 </head>
 <body class="bg-background font-body-md text-body-md text-on-surface antialiased">
 
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="InteractiveServer" ProtectedUserId="@_protectedUserId" />
     <ReconnectModal />
 
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 </body>
 </html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string _protectedUserId = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (HttpContext?.Items.TryGetValue("AnonUserId", out var idObj) != true ||
+            idObj is not Guid userId ||
+            userId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Anonymous user ID was not initialized by middleware.");
+        }
+
+        _protectedUserId = DataProtectionProvider
+            .CreateProtector(UserSessionContext.ProtectionPurpose)
+            .Protect(userId.ToString("N"));
+    }
+}

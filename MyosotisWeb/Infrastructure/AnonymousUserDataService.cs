@@ -11,9 +11,8 @@ namespace MyosotisWeb.Infrastructure
 {
     public class AnonymousUserDataService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _storageDirectory;
-        private Guid? _cachedUserId;
+        private readonly UserSessionContext _sessionContext;
 
         // блок на рівні користувача, щоб уникнути конфліктів при паралельних запитах
         private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
@@ -25,9 +24,9 @@ namespace MyosotisWeb.Infrastructure
             Formatting = Formatting.Indented
         };
 
-        public AnonymousUserDataService(IHttpContextAccessor httpContextAccessor)
+        public AnonymousUserDataService(UserSessionContext sessionContext)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _sessionContext = sessionContext;
 
             var homePath = Environment.GetEnvironmentVariable("HOME");
             var basePath = !string.IsNullOrEmpty(homePath) ? Path.Combine(homePath, "data") : AppContext.BaseDirectory;
@@ -41,19 +40,8 @@ namespace MyosotisWeb.Infrastructure
 
         public Guid GetCurrentUserId()
         {
-            if (_cachedUserId.HasValue)
-                return _cachedUserId.Value;
-
-            var context = _httpContextAccessor.HttpContext;
-
-            if (context != null &&
-                context.Items.TryGetValue("AnonUserId", out var idObj) &&
-                idObj is Guid userId &&
-                userId != Guid.Empty)
-            {
-                _cachedUserId = userId;
-                return userId;
-            }
+            if (_sessionContext.IsInitialized)
+                return _sessionContext.UserId!.Value;
 
             throw new InvalidOperationException(
                 "Anonymous user ID has not been initialized for this Blazor circuit.");

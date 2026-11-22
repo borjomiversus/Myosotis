@@ -1,6 +1,32 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@using Microsoft.AspNetCore.DataProtection
+@using MyosotisWeb.Infrastructure
+@inject UserSessionContext SessionContext
+@inject IDataProtectionProvider DataProtectionProvider
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    [Parameter]
+    public string ProtectedUserId { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(ProtectedUserId))
+            throw new InvalidOperationException("ProtectedUserId parameter is missing.");
+
+        var protector = DataProtectionProvider
+            .CreateProtector(UserSessionContext.ProtectionPurpose);
+
+        var rawId = protector.Unprotect(ProtectedUserId);
+
+        if (!Guid.TryParseExact(rawId, "N", out var userId) || userId == Guid.Empty)
+            throw new InvalidOperationException("Invalid anonymous user ID.");
+
+        SessionContext.Initialize(userId);
+    }
+}
