@@ -191,9 +191,9 @@ Myosotis/
 Google Stitch використовувався для дослідження та прототипування дизайну інтерфейсу. Створені прототипи слугували орієнтиром для подальшої реалізації й адаптації інтерфейсу в застосунку. [Переглянути проєкт у Google Stitch](https://stitch.google.com/projects/32231074868639292).
 GitHub Copilot використовувався, зокрема, для допомоги з оформленням README.
 
-- * **Модульне тестування (Unit Tests):** реалізовано окремий тестовий проєкт на базі **xUnit** (`MediaDomainTests`, `PeopleTests`, `ServicesTests`, `UserInteractionsTests`), що перевіряє доменну логіку, розрахунки, валідацію граничних значень та обробку винятків.
+- **Модульне тестування (Unit Tests):** реалізовано окремий тестовий проєкт на базі **xUnit** (`MediaDomainTests`, `PeopleTests`, `ServicesTests`, `UserInteractionsTests`), що перевіряє доменну логіку, розрахунки, валідацію граничних значень та обробку винятків.
 
-- * **Стиль кодування:** дотримано стандартів [Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
+- **Стиль кодування:** дотримано стандартів [Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
 
 - **Документація та сторонні матеріали.** Під час розробки використовувалися офіційна документація, навчальні матеріали, відкриті проєкти та дизайнерські референси. Відповідні джерела наведено в розділі [Джерела](#джерела).
 
