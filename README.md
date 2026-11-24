@@ -191,7 +191,71 @@ Myosotis/
 Google Stitch використовувався для дослідження та прототипування дизайну інтерфейсу. Створені прототипи слугували орієнтиром для подальшої реалізації й адаптації інтерфейсу в застосунку. [Переглянути проєкт у Google Stitch](https://stitch.google.com/projects/32231074868639292).
 GitHub Copilot використовувався, зокрема, для допомоги з оформленням README.
 
+- * **Модульне тестування (Unit Tests):** реалізовано окремий тестовий проєкт на базі **xUnit** (`MediaDomainTests`, `PeopleTests`, `ServicesTests`, `UserInteractionsTests`), що перевіряє доменну логіку, розрахунки, валідацію граничних значень та обробку винятків.
+
+- * **Стиль кодування:** дотримано стандартів [Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
+
 - **Документація та сторонні матеріали.** Під час розробки використовувалися офіційна документація, навчальні матеріали, відкриті проєкти та дизайнерські референси. Відповідні джерела наведено в розділі [Джерела](#джерела).
+
+## Відповідність вимогам лабораторних робіт
+
+### Лабораторна робота №1: Базові ідеї ООП
+
+1. **Кількість класів та типів (вимога: $\ge 9$)** — реалізовано **понад 25 власних класів та структур** (без урахування DTO для API та сховища):
+   * *Доменна модель:* `Media` (абстрактний), `Movie`, `Series`, `Season`, `Episode`, `Person` (абстрактний), `Actor`, `Director`, `User`, `Watchlist`, `WatchlistEntry`, `UserMediaState`, `WatchHistoryEntry`, `WatchCheckpoint`, `CaptureEntry`, `VibeRating`, `TmdbReview`, `FranchiseTimeLine`.
+   * *Сервіси та фільтри:* `MediaSearch`, `MediaRecommendation`, `TimecodeParser`, `DemoDataService`, `TmdbApiService`, `AnonymousUserDataService`, `AnonymousUserMiddleware`, `UserSessionContext`, `UserMapper`, `AdvancedSearchFilters`, `SelectedKeyword`, `UiHelpers`.
+   * *Переліки (`enum`):* `WatchStatus`, `ActivityAction`, `CaptureStatus`, `CaptureKind`, `SearchMediaType`.
+
+2. **Кількість полів та властивостей (вимога: $\ge 15$)** — реалізовано **понад 75 полів та властивостей** із контрольованим доступом (`private set`, `readonly`, обчислювані властивості).
+
+3. **Кількість нетривіальних методів та функцій (вимога: $\ge 25$)** — реалізовано **понад 40 нетривіальних методів**, зокрема:
+   * *Бізнес-логіка та обчислення:* `Movie.CalculateTimeDebt()`, `Series.CalculateTimeDebt()`, `Series.TotalDurationMinutes`, `Series.MarkEpisodeWatched()`, `VibeRating.Validate()`, `VibeRating.GetAverageScore()`, `TimecodeParser.TryParse()`, `CaptureEntry.TrySetTimecode()`, `CaptureEntry.Resolve()`, `User.SetStatus()`, `User.ToggleFavorite()`, `User.GetMonthlyGenreStats()`, `Watchlist.AddEntry()`.
+   * *Пошук та рекомендації:* `MediaRecommendation.FindSimilar()` (багатокритеріальне ранжування), `MediaSearch.SearchByTitle()`, `MediaSearch.FilterByGenre()`, `MediaSearch.AdvancedSearch()`, `DemoDataService.RebuildLibraryFromUser()`, `DemoDataService.GetOrAddToLibrary()`.
+   * *Інфраструктура та API:* `TmdbApiService.SearchMediaPagedAsync()`, `DiscoverMediaPagedAsync()`, `EnrichMediaDetailsAsync()`, `PopulateSeriesSeasonsAndEpisodesAsync()`, `UserMapper.ToDto()`, `UserMapper.ToDomain()`, `UserMapper.GetOrCreateMedia()`, `AnonymousUserDataService.GetUserDataAsync()`, `SaveUserDataAsync()`.
+
+4. **Ієрархії успадкування (вимога: $\ge 2$ ієрархії, хоча б одна з $\ge 3$ класів):**
+   * **Ієрархія 1 (3 класи):** `Media` (абстрактний базовий клас) $\rightarrow$ `Movie`, `Series`.
+   * **Ієрархія 2 (3 класи):** `Person` (абстрактний базовий клас) $\rightarrow$ `Actor`, `Director`.
+   * **Ієрархія 3 (фреймворк UI):** `LayoutComponentBase` $\rightarrow$ `MainLayout`.
+
+5. **Поліморфізм (вимога: $\ge 3$ незалежні випадки — статичний та динамічний + клієнтський код):**
+   * *Динамічний поліморфізм (run-time):*
+     1. Перевизначення (`override`) абстрактних методів/властивостей `CalculateTimeDebt()`, `TotalDurationMinutes` та `UpdateRuntimeInfo()` у класах `Movie` та `Series`.
+     2. Перевизначення віртуальних методів `Equals()` та `GetHashCode()` від `object` у класі `SelectedKeyword`.
+     3. Реалізація інтерфейсу `IComparable<Media>` (`CompareTo`) у класі `Media`.
+   * *Статичний поліморфізм (compile-time):*
+     4. Перевантаження конструкторів у класі `WatchCheckpoint` (окремі конструктори для `Series` із сезоном/серією та для `Movie`).
+     5. Узагальнене програмування (Generics): `List<Media>`, `Dictionary<Guid, Media>`, `HashSet<int>`, `EventCallback<Media>`.
+   * *Клієнтський код:* `Watchlist`, `User.WatchHistory`, `DemoDataService.RebuildLibraryFromUser()` та `MediaRecommendation.FindSimilar()` працюють з узагальненими колекціями базового типу `List<Media>`, викликаючи поліморфні члени без прив'язки до конкретного типу.
+
+6. **Інкапсуляція:** усі доменні класи захищають свої інваріанти через `private set` для властивостей, `protected` конструктори базових класів (`Media`, `Person`) та валідацію вхідних даних у методах і конструкторах із генерацією винятків (`ArgumentException`, `ArgumentOutOfRangeException`).
+
+### Лабораторна робота №2: Графічний інтерфейс користувача (GUI)
+
+Інтерфейс реалізовано як веб-застосунок на **Blazor Server** із бібліотекою компонентів **MudBlazor**.
+
+1. **Кількість вікон / сторінок (вимога: $\ge 4$)** — реалізовано **9 сторінок та 2 модальні вікна**:
+   * *Сторінки:* Головна (`Home.razor`), Пошук та каталог (`Search.razor`), Деталі медіа (`MediaDetails.razor`), Сторінка персони (`PersonDetails.razor`), Списки перегляду (`Watchlists.razor`), Деталі списку (`WatchlistDetails.razor`), Історія активності (`History.razor`), Швидкі нотатки (`Captures.razor`), Статистика (`Stats.razor`).
+   * *Модальні діалоги:* Рулетка вибору фільму (`RouletteDialog.razor`), діалог створення/редагування чекпойнта (`MediaDetails.razor`).
+
+2. **Елементи керування та контейнери (вимога: $\ge 20$ контролів, $\ge 1$ контейнер):**
+   * *Контейнери:* `MudTabs` (вкладки інформації, сезонів серіалу, фільмографії), горизонтальні каруселі (`MediaCarousel.razor`), адаптивні сітки карток, списки елементів, згортані блоки тексту та списків.
+   * *Елементи керування (понад 50 у сумі):* поля текстового пошуку, числові інпути (роки, рейтинг, номери сезону/серії), кнопки дій, випадаючі списки вибору вішліста, фільтри-чіпси жанрів та ключових слів, інтерактивні оцінки за 6 критеріями `VibeRating`, навігаційне меню, сповіщення `MudSnackbar`.
+
+3. **Обробники подій (вимога: $\ge 10$)** — реалізовано **понад 25 обробників подій**:
+   * UI-події компонентів: `@onclick` (додавання до списків, зміна статусу перегляду, перемикання вкладок/пагінації, розгортання описів), `@oninput` (живий пошук та автодоповнення), `@onkeydown` (швидке збереження нотатки за `Enter`), `@onchange`.
+   * Міжкомпонентні та сервісні події: `EventCallback<Media> OnSelect` у `MediaCarousel.razor`, глобальна подія стану `public event Action? OnStateChanged` у `DemoDataService`.
+
+4. **Розділення бізнес-логіки та UI:** доменні сутності (`Domain`) та алгоритми пошуку/рекомендацій (`Services`) не містять залежностей від Blazor або HTTP; робота із зовнішнім API (`TmdbApiService`) та файловим сховищем (`AnonymousUserDataService`) винесена в окремі інфраструктурні сервіси.
+
+## Лабораторна робота №3: Використання зовнішніх бібліотек та фреймворків
+
+У проєкті використано дві зовнішні бібліотеки (NuGet-пакети), які не входять до стандартної бібліотеки .NET:
+
+1. **MudBlazor** (`MudBlazor` v7+) — зовнішня бібліотека Material Design UI-компонентів для Blazor.
+   * *Використані можливості:* система модальних вікон (`IDialogService`, `MudDialog` для рулетки вибору фільму та чекпойнтів), спливаючі сповіщення (`ISnackbar`, `MudSnackbar` для валідації фільтрів у пошуку), вкладки (`MudTabs`), фільтри-чіпси (`MudChipSet`), адаптивна сітка (`MudGrid`, `MudItem`), поля введення та кнопки.
+2. **Newtonsoft.Json (`Json.NET`)** — зовнішня бібліотека для серіалізації та десеріалізації даних у формат JSON.
+   * *Використані можливості:* `JsonConvert.SerializeObject` / `JsonConvert.DeserializeObject` у сервісі `AnonymousUserDataService` для збереження стану анонімного користувача (`UserStorageDto`), налаштування безпеки та форматування через `JsonSerializerSettings` (`TypeNameHandling.None`, `ObjectCreationHandling.Replace`, `Formatting.Indented`).
 
 ## Джерела
 
